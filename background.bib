@@ -1,0 +1,1524 @@
+@InProceedings{10.1007/978-3-030-72019-3_21,
+author = {Ricciotti, Wilmer and Cheney, James},
+editor = {Yoshida, Nobuko},
+title = {Query Lifting: Language-integrated query for heterogeneous nested collections},
+booktitle = {Programming Languages and Systems},
+year = {2021},
+publisher = {Springer International Publishing},
+address = {Cham},
+pages = {579--606},
+abstract = {Language-integrated query based on comprehension syntax is a powerful technique for safe database programming, and provides a basis for advanced techniques such as query shredding or query flattening that allow efficient programming with complex nested collections. However, the foundations of these techniques are lacking: although SQL, the most widely-used database query language, supports heterogeneous queries that mix set and multiset semantics, these important capabilities are not supported by known correctness results or implementations that assume homogeneous collections. In this paper we study language-integrated query for a heterogeneous query language {\$}{\$}{\backslash}mathcal {\{}NRC{\}}{\_}{\{}{\backslash}lambda {\}}( Set,Bag ){\$}{\$}NRC$\lambda$(Set,Bag)that combines set and multiset constructs. We show how to normalize and translate queries to SQL, and develop a novel approach to querying heterogeneous nested collections, based on the insight that ``local'' query subexpressions that calculate nested subcollections can be ``lifted'' to the top level analogously to lambda-lifting for local function definitions.},
+isbn = {978-3-030-72019-3},
+series = {Lecture Notes in Computer Science},
+volume = {12648},
+doi = {10.1007/978-3-030-72019-3_21}
+}
+
+@InProceedings{10.1007/978-3-031-17715-6_15,
+author="Cruz-Filipe, Luís
+and Graversen, Eva
+and Lugović, Lovro
+and Montesi, Fabrizio
+and Peressotti, Marco",
+editor="Seidl, Helmut
+and Liu, Zhiming
+and Pasareanu, Corina S.",
+title="Functional Choreographic Programming",
+booktitle="Theoretical Aspects of Computing -- ICTAC 2022",
+year="2022",
+publisher="Springer International Publishing",
+address="Cham",
+pages="212--237",
+abstract="Choreographic programming is an emerging programming paradigm for concurrent and distributed systems, where developers write the communications that should be enacted and a compiler then automatically generates a distributed implementation.",
+isbn="978-3-031-17715-6"
+}
+
+@article{10.1016/j.tcs.2004.07.036,
+author = {Baeten, J. C. M.},
+title = {A Brief History of Process Algebra},
+year = {2005},
+issue_date = {23 May 2005},
+publisher = {Elsevier Science Publishers Ltd.},
+address = {GBR},
+volume = {335},
+number = {2--3},
+issn = {0304-3975},
+url = {https://doi.org/10.1016/j.tcs.2004.07.036},
+doi = {10.1016/j.tcs.2004.07.036},
+abstract = {This note addresses the history of process algebra as an area of research in concurrency theory, the theory of parallel and distributed systems in computer science. Origins are traced back to the early seventies of the twentieth century, and developments since that time are sketched. The author gives his personal views on these matters. He also considers the present situation, and states some challenges for the future.},
+journal = {Theor. Comput. Sci.},
+month = {may},
+pages = {131--146},
+numpages = {16},
+keywords = {history, process algebra}
+}
+
+@inproceedings{10.1109/SEFM.2008.11,
+author = {Lanese, Ivan and Guidi, Claudio and Montesi, Fabrizio and Zavattaro, Gianluigi},
+title = {Bridging the Gap between Interaction- and Process-Oriented Choreographies},
+year = {2008},
+isbn = {9780769534374},
+publisher = {IEEE Computer Society},
+address = {USA},
+url = {https://doi.org/10.1109/SEFM.2008.11},
+doi = {10.1109/SEFM.2008.11},
+abstract = {In service oriented computing, choreography languages are used to specify multi-party service compositions. Two main approaches have been followed: the interaction-oriented approach of WS-CDL and the process-oriented approach of BPEL4Chor. We investigate the relationship between them.In particular, we consider several interpretations for interaction-oriented choreographies spanning from synchronous to asynchronous communication. Under each of these interpretations we characterize the class of interaction-oriented choreographies which have a process-oriented counterpart, and we formalize the notion of equivalence between the initial interaction-oriented choreography and the corresponding process-oriented one.},
+booktitle = {Proceedings of the 2008 Sixth IEEE International Conference on Software Engineering and Formal Methods},
+pages = {323--332},
+numpages = {10},
+keywords = {Choreography, Service Oriented Computing, calculi, bisimilarity, conformance},
+series = {SEFM '08}
+}
+
+@inproceedings{10.1145/1040305.1040324,
+  author    = {Neubauer, Matthias and Thiemann, Peter},
+  title     = {From sequential programs to multi-tier applications by program transformation},
+  year      = {2005},
+  isbn      = {158113830X},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/1040305.1040324},
+  doi       = {10.1145/1040305.1040324},
+  abstract  = {Modern applications are designed in multiple tiers to separate concerns. Since each tier may run at a separate location, middleware is required to mediate access between tiers. However, introducing this middleware is tiresome and error-prone.We propose a multi-tier calculus and a splitting transformation to address this problem. The multi-tier calculus serves as a sequential core programming language for constructing a multi-tier application. The application can be developed in the sequential setting. Splitting extracts one process per tier from the sequential program such that their concurrent execution behaves like the original program.The splitting transformation starts from an assignment of primitive operations to tiers. A program analysis determines communication requirements and inserts remote procedure calls. The next transformation step performs resource pooling: it optimizes the communication behavior by transforming sequences of remote procedure calls to a stream-based protocol. The final transformation step splits the resulting program into separate communicating processes.The multi-tier calculus is also applicable to the construction of interactive Web applications. It facilitates their development by providing a uniform programming framework for client-side and server-side programming.},
+  booktitle = {Proceedings of the 32nd ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+  pages     = {221–232},
+  numpages  = {12},
+  keywords  = {application partioning, concurrency, type systems},
+  location  = {Long Beach, California, USA},
+  series    = {POPL '05},
+}
+
+@inproceedings{10.1145/1159876.1159889,
+author = {Balat, Vincent},
+title = {{Ocsigen}: Typing Web Interaction with {Objective Caml}},
+year = {2006},
+isbn = {1595934839},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1159876.1159889},
+doi = {10.1145/1159876.1159889},
+abstract = {Ocsigen is a framework for programming highly dynamic web sites in Objective Caml. It allows to program sites as Ocaml applications and introduces new concepts to take into account the particularities of Web interaction, especially the management of URLs and sessions. This paper describes how Ocsigen uses the Objective Caml type system in a thoroughgoing way in order to produce valid XHTML and valid remote function calls through links and form clicking. It also describes how Ocsigen handles the progression of a Web user through a site, using sophisticated and high-level sessions mechanisms.},
+booktitle = {Proceedings of the 2006 Workshop on ML},
+pages = {84--94},
+numpages = {11},
+keywords = {web programming, objective Caml, continuations},
+location = {Portland, Oregon, USA},
+series = {ML '06}
+}
+
+@inproceedings{10.1145/2429069.2429101,
+author = {Carbone, Marco and Montesi, Fabrizio},
+title = {Deadlock-Freedom-by-Design: Multiparty Asynchronous Global Programming},
+year = {2013},
+isbn = {9781450318327},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2429069.2429101},
+doi = {10.1145/2429069.2429101},
+abstract = {Over the last decade, global descriptions have been successfully employed for the verification and implementation of communicating systems, respectively as protocol specifications and choreographies. In this work, we bring these two practices together by proposing a purely-global programming model. We show a novel interpretation of asynchrony and parallelism in a global setting and develop a typing discipline that verifies choreographies against protocol specifications, based on multiparty sessions. Exploiting the nature of global descriptions, our type system defines a new class of deadlock-free concurrent systems (deadlock-freedom-by-design), provides type inference, and supports session mobility. We give a notion of Endpoint Projection (EPP) which generates correct entity code (as pi-calculus terms) from a choreography. Finally, we evaluate our approach by providing a prototype implementation for a concrete programming language and by applying it to some examples from multicore and service-oriented programming.},
+booktitle = {Proceedings of the 40th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {263--274},
+numpages = {12},
+keywords = {types, sessions, concurrency, choreography},
+location = {Rome, Italy},
+series = {POPL '13}
+}
+
+@article{10.1145/2480359.2429101,
+  author     = {Carbone, Marco and Montesi, Fabrizio},
+  title      = {Deadlock-freedom-by-design: multiparty asynchronous global programming},
+  year       = {2013},
+  issue_date = {January 2013},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {48},
+  number     = {1},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/2480359.2429101},
+  doi        = {10.1145/2480359.2429101},
+  abstract   = {Over the last decade, global descriptions have been successfully employed for the verification and implementation of communicating systems, respectively as protocol specifications and choreographies. In this work, we bring these two practices together by proposing a purely-global programming model. We show a novel interpretation of asynchrony and parallelism in a global setting and develop a typing discipline that verifies choreographies against protocol specifications, based on multiparty sessions. Exploiting the nature of global descriptions, our type system defines a new class of deadlock-free concurrent systems (deadlock-freedom-by-design), provides type inference, and supports session mobility. We give a notion of Endpoint Projection (EPP) which generates correct entity code (as pi-calculus terms) from a choreography. Finally, we evaluate our approach by providing a prototype implementation for a concrete programming language and by applying it to some examples from multicore and service-oriented programming.},
+  journal    = {SIGPLAN Not.},
+  month      = jan,
+  pages      = {263–274},
+  numpages   = {12},
+  keywords   = {choreography, concurrency, sessions, types},
+}
+
+@inproceedings{10.1145/2676726.2677004,
+author = {Chlipala, Adam},
+title = {Ur/Web: A Simple Model for Programming the Web},
+year = {2015},
+isbn = {9781450333009},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2676726.2677004},
+doi = {10.1145/2676726.2677004},
+abstract = {The World Wide Web has evolved gradually from a document delivery platform to an architecture for distributed programming. This largely unplanned evolution is apparent in the set of interconnected languages and protocols that any Web application must manage. This paper presents Ur/Web, a domain-specific, statically typed functional programming language with a much simpler model for programming modern Web applications. Ur/Web's model is unified, where programs in a single programming language are compiled to other "Web standards" languages as needed; supports novel kinds of encapsulation of Web-specific state; and exposes simple concurrency, where programmers can reason about distributed, multithreaded applications via a mix of transactions and cooperative preemption. We give a tutorial introduction to the main features of Ur/Web and discuss the language implementation and the production Web applications that use it.},
+booktitle = {Proceedings of the 42nd Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {153--165},
+numpages = {13},
+keywords = {encapsulation, functional-reactive programming, message passing, relational databases, remote procedure calls, transactions, web programming languages},
+location = {Mumbai, India},
+series = {POPL '15}
+}
+
+@article{10.1145/2775051.2677004,
+  author     = {Chlipala, Adam},
+  title      = {Ur/Web: A Simple Model for Programming the Web},
+  year       = {2015},
+  issue_date = {January 2015},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {50},
+  number     = {1},
+  issn       = {0362-1340},
+  url        = {https://doi.org/10.1145/2775051.2677004},
+  doi        = {10.1145/2775051.2677004},
+  abstract   = {The World Wide Web has evolved gradually from a document delivery platform to an architecture for distributed programming. This largely unplanned evolution is apparent in the set of interconnected languages and protocols that any Web application must manage. This paper presents Ur/Web, a domain-specific, statically typed functional programming language with a much simpler model for programming modern Web applications. Ur/Web's model is unified, where programs in a single programming language are compiled to other "Web standards" languages as needed; supports novel kinds of encapsulation of Web-specific state; and exposes simple concurrency, where programmers can reason about distributed, multithreaded applications via a mix of transactions and cooperative preemption. We give a tutorial introduction to the main features of Ur/Web and discuss the language implementation and the production Web applications that use it.},
+  journal    = {SIGPLAN Not.},
+  month      = jan,
+  pages      = {153–165},
+  numpages   = {13},
+  keywords   = {encapsulation, functional-reactive programming, message passing, relational databases, remote procedure calls, transactions, web programming languages},
+}
+
+@inproceedings{10.1145/2951913.2951916,
+author = {Serrano, Manuel and Prunet, Vincent},
+title = {A glimpse of {Hopjs}},
+year = {2016},
+isbn = {9781450342193},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2951913.2951916},
+doi = {10.1145/2951913.2951916},
+abstract = {Hop.js is a multitier programming environment for JavaScript. It allows a single JavaScript program to describe the client-side and the server-side components of a web application. Its runtime environment ensures consistent executions of the application on the server and on the client.  This paper overviews the Hop.js design. It shows the JavaScript extensions that makes it possible to conceive web applications globally. It presents how Hop.js interacts with the outside world. It also briefly presents the Hop.js implementation. It presents the Hop.js web server implementation, the handling of server-side parallelism, and the JavaScript and HTML compilers.},
+booktitle = {Proceedings of the 21st ACM SIGPLAN International Conference on Functional Programming},
+pages = {180--192},
+numpages = {13},
+keywords = {Functional Programming, Web Programming},
+location = {Nara, Japan},
+series = {ICFP 2016}
+}
+
+@inproceedings{10.1145/3184558.3185953,
+author = {Radanne, Gabriel and Vouillon, Jérôme},
+title = {Tierless Web Programming in the Large},
+year = {2018},
+isbn = {9781450356404},
+publisher = {International World Wide Web Conferences Steering Committee},
+address = {Republic and Canton of Geneva, CHE},
+url = {https://doi.org/10.1145/3184558.3185953},
+doi = {10.1145/3184558.3185953},
+abstract = {Tierless Web programming languages allow combining client-side and server-side programming in a single program. This allows defining expressions with both client and server parts, and at the same time provides good static guarantees regarding client-server communication. However, these nice properties come at a cost: most tierless languages offer very poor support for modularity and separate compilation. To regain this modularity and offer a larger-scale notion of composition, we propose to leverage a well-known tool: ML-style modules. In modern ML languages, the module system is a layer separate from the expression language. Eliom is an extension of OCaml for tierless Web programming which provides type-safe communication and an efficient execution model. In this article, we present how the Eliom module system combines the flexibility of tierless Web programming languages with a powerful module system, thus providing good support for abstraction, modularity and separate compilation. We also show that we can provide all these advantages while providing seamless integration with OCaml and its ecosystem.},
+booktitle = {Companion Proceedings of the The Web Conference 2018},
+pages = {681--689},
+numpages = {9},
+keywords = {client/server, eliom, functional, ml, module, ocaml, separate compilation, web},
+location = {Lyon, France},
+series = {WWW '18}
+}
+
+@article{10.1145/3290341,
+author = {Fowler, Simon and Lindley, Sam and Morris, J. Garrett and Decova, Sára},
+title = {Exceptional asynchronous session types: session types without tiers},
+year = {2019},
+issue_date = {January 2019},
+publisher = {ACM},
+address = {New York, NY, USA},
+volume = {3},
+number = {POPL},
+url = {https://doi.org/10.1145/3290341},
+doi = {10.1145/3290341},
+abstract = {Session types statically guarantee that communication complies with a protocol. However, most accounts of session typing do not account for failure, which means they are of limited use in real applications---especially distributed applications---where failure is pervasive.  We present the first formal integration of asynchronous session types with exception handling in a functional programming language. We define a core calculus which satisfies preservation and progress properties, is deadlock free, confluent, and terminating.  We provide the first implementation of session types with exception handling for a fully-fledged functional programming language, by extending the Links web programming language; our implementation draws on existing work on effect handlers. We illustrate our approach through a running example of two-factor authentication, and a larger example of a session-based chat application where communication occurs over session-typed channels and disconnections are handled gracefully.},
+journal = {Proc. ACM Program. Lang.},
+month = {jan},
+articleno = {28},
+numpages = {29},
+keywords = {web programming, session types, exceptions, asynchrony}
+}
+
+@inproceedings{10.1145/3315507.3330198,
+author = {Fehrenbach, Stefan and Cheney, James},
+title = {Language-integrated provenance by trace analysis},
+year = {2019},
+isbn = {9781450367189},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3315507.3330198},
+doi = {10.1145/3315507.3330198},
+abstract = {Language-integrated provenance builds on language-integrated query techniques to make provenance information explaining query results readily available to programmers. In previous work we have explored language-integrated approaches to provenance in and . However, implementing a new form of provenance in a language-integrated way is still a major challenge. We propose a self-tracing transformation and trace analysis features that, together with existing techniques for type-directed generic programming, make it possible to define different forms of provenance as user code. We present our design as an extension to a core language for Links called TLinks, give examples showing its capabilities, and outline its metatheory and key correctness properties.},
+booktitle = {Proceedings of the 17th ACM SIGPLAN International Symposium on Database Programming Languages},
+pages = {74--84},
+numpages = {11},
+keywords = {query normalization, provenance, language-integrated query, language-integrated provenance},
+location = {Phoenix, AZ, USA},
+series = {DBPL 2019}
+}
+
+@article{10.1145/3428194,
+author = {Brachth\"{a}user, Jonathan Immanuel and Schuster, Philipp and Ostermann, Klaus},
+title = {Effects as capabilities: effect handlers and lightweight effect polymorphism},
+year = {2020},
+issue_date = {November 2020},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {4},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3428194},
+doi = {10.1145/3428194},
+abstract = {Effect handlers have recently gained popularity amongst programming language researchers. Existing type- and effect systems for effect handlers are often complicated and potentially hinder a wide-spread adoption.  We present the language Effekt with the goal to close the gap between research languages with effect handlers and languages for working programmers. The design of Effekt revolves around a different view of effects and effect types. Traditionally, effect types express which side effects a computation might have. In Effekt, effect types express which capabilities a computation requires from its context. While this new point in the design space of effect systems impedes reasoning about purity, we demonstrate that it simplifies the treatment of effect polymorphism and the related issues of effect parametricity and effect encapsulation. To guarantee effect safety, we separate functions from values and treat all functions as second-class. We define the semantics of Effekt as a translation to System Xi, a calculus in explicit capability-passing style.},
+journal = {Proc. ACM Program. Lang.},
+month = nov,
+articleno = {126},
+numpages = {30},
+keywords = {algebraic effects, effect handlers, effect polymorphism}
+}
+
+@article{10.1145/3498684,
+author = {Hirsch, Andrew K. and Garg, Deepak},
+title = {{Pirouette}: Higher-Order Typed Functional Choreographies},
+year = {2022},
+issue_date = {January 2022},
+publisher = {ACM},
+address = {New York, NY, USA},
+volume = {6},
+number = {POPL},
+url = {https://doi.org/10.1145/3498684},
+doi = {10.1145/3498684},
+abstract = {We present Pirouette, a language for typed higher-order functional choreographic programming. Pirouette offers programmers the ability to write a centralized functional program and compile it via endpoint projection into programs for each node in a distributed system. Moreover, Pirouette is defined generically over a (local) language of messages, and lifts guarantees about the message type system to its own. Message type soundness also guarantees deadlock freedom. All of our results are verified in Coq.},
+journal = {Proc. ACM Program. Lang.},
+month = {jan},
+articleno = {23},
+numpages = {27},
+keywords = {Functional Programming, Concurrency, Choreographies}
+}
+
+@inproceedings{10.1145/3564719.3568690,
+author = {Fowler, Simon and Galpin, Vashti and Cheney, James},
+title = {Language-Integrated Query for Temporal Data},
+year = {2022},
+isbn = {9781450399203},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3564719.3568690},
+doi = {10.1145/3564719.3568690},
+abstract = {Modern applications often manage time-varying data. Despite decades of research on temporal databases, which culminated in the addition of temporal data operations into the SQL:2011 standard, temporal data query and manipulation operations are unavailable in most mainstream database management systems, leaving developers with the unenviable task of implementing such functionality from scratch. In this paper, we extend language-integrated query to support writing temporal queries and updates in a uniform host language, with the language performing the required rewriting to emulate temporal capabilities automatically on any standard relational database. We introduce two core languages, λTLINQ and λVLINQ, for manipulating transaction time and valid time data respectively, and formalise existing implementation strategies by giving provably correct semantics-preserving translations into a non-temporal core language, λLINQ. We show how existing work on query normalisation supports a surprisingly simple implementation strategy for sequenced joins. We implement our approach in the Links programming language, and describe a non-trivial case study based on curating COVID-19 statistics.},
+booktitle = {Proceedings of the 21st ACM SIGPLAN International Conference on Generative Programming: Concepts and Experiences},
+pages = {5--19},
+numpages = {15},
+keywords = {domain-specific languages, language-integrated query, multi-tier programming, temporal databases},
+location = {Auckland, New Zealand},
+series = {GPCE 2022}
+}
+
+@article{10.1145/3607849,
+  author     = {Shen, Gan and Kashiwa, Shun and Kuper, Lindsey},
+  title      = {HasChor: Functional Choreographic Programming for All (Functional Pearl)},
+  year       = {2023},
+  issue_date = {August 2023},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {7},
+  number     = {ICFP},
+  url        = {https://doi.org/10.1145/3607849},
+  doi        = {10.1145/3607849},
+  abstract   = {Choreographic programming is an emerging paradigm for programming distributed systems. In choreographic programming, the programmer describes the behavior of the entire system as a single, unified program -- a choreography -- which is then compiled to individual programs that run on each node, via a compilation step called endpoint projection. We present a new model for functional choreographic programming where choreographies are expressed as computations in a monad. Our model supports cutting-edge choreographic programming features that enable modularity and code reuse: in particular, it supports higher-order choreographies, in which a choreography may be passed as an argument to another choreography, and location-polymorphic choreographies, in which a choreography can abstract over nodes. Our model is implemented in a Haskell library, HasChor, which lets programmers write choreographic programs while using the rich Haskell ecosystem at no cost, bringing choreographic programming within reach of everyday Haskellers. Moreover, thanks to Haskell's abstractions, the implementation of the HasChor library itself is concise and understandable, boiling down endpoint projection to its short and simple essence.},
+  journal    = {Proc. ACM Program. Lang.},
+  month      = aug,
+  articleno  = {207},
+  numpages   = {25},
+  keywords   = {Choreographic programming, freer monads},
+}
+
+@article{10.1145/3632398,
+  author     = {Giallorenzo, Saverio and Montesi, Fabrizio and Peressotti, Marco},
+  title      = {Choral: Object-oriented Choreographic Programming},
+  year       = {2024},
+  issue_date = {March 2024},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {46},
+  number     = {1},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/3632398},
+  doi        = {10.1145/3632398},
+  abstract   = {Choreographies are coordination plans for concurrent and distributed systems, which define the roles of the involved participants and how they are supposed to work together. In the paradigm of choreographic programming, choreographies are programs that can be compiled into executable implementations.In this article, we present Choral, the first choreographic programming language based on mainstream abstractions. The key idea in Choral is a new notion of data type, which allows for expressing that data is distributed over different roles. We use this idea to reconstruct the paradigm of choreographic programming through object-oriented abstractions. Choreographies are classes, and instances of choreographies are objects with states and behaviours implemented collaboratively by roles.Choral comes with a compiler that, given a choreography, generates an implementation for each of its roles. These implementations are libraries in pure Java, whose types are under the control of the Choral programmer. Developers can then modularly compose these libraries in their programs, to participate correctly in choreographies. Choral is the first incarnation of choreographic programming offering such modularity, which finally connects more than a decade of research on the paradigm to practical software development.The integration of choreographic and object-oriented programming yields other powerful advantages, where the features of one paradigm benefit the other in ways that go beyond the sum of the parts. On the one hand, the high-level abstractions and static checks from the world of choreographies can be used to write concurrent and distributed object-oriented software more concisely and correctly. On the other hand, we obtain a much more expressive choreographic language from object-oriented abstractions than in previous work. This expressivity allows for writing more reusable and flexible choreographies. For example, object passing makes Choral the first higher-order choreographic programming language, whereby choreographies can be parameterised over other choreographies without any need for central coordination. We also extend method overloading to a new dimension: specialisation based on data location. Together with subtyping and generics, this allows Choral to elegantly support user-defined communication mechanisms and middleware.},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = jan,
+  articleno  = {1},
+  numpages   = {59},
+  keywords   = {Choreographies, communication, higher-kinded types},
+}
+
+@inproceedings{10.1145/3678232.3678235,
+author = {Casadei, Roberto and Viroli, Mirko},
+title = {Declarative Macro-Programming of Collective Systems with Aggregate Computing: An Experience Report},
+year = {2024},
+isbn = {9798400709692},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3678232.3678235},
+doi = {10.1145/3678232.3678235},
+abstract = {Massive deployments of devices across all kinds of environments pose the need for engineering their collaborative, macro-level behaviour. To address this challenge, so-called macro-programming approaches have emerged. A prominent nature-inspired example of macro-programming is aggregate computing. In aggregate computing, macroscopic and self-organising behaviour is declared as a functional manipulation of computational fields. Fields are macro-level abstractions mapping devices to values over time, whose computation details, typically based on an execution model of asynchronous sense–compute–interact rounds, are abstracted. In more than ten years of research, multiple software engineering concerns in aggregate computing systems have been investigated, addressing aspects at the level of the language, execution dynamics, middleware, and deployment. Arguably, the enabling factor for many of such investigations and results is precisely the declarative nature of the aggregate computing paradigm. In this experience report, we analyse aggregate computing through the lenses of declarative programming, and draw significant insights and perspectives related to the engineering of complex adaptive systems.},
+booktitle = {Proceedings of the 26th International Symposium on Principles and Practice of Declarative Programming},
+articleno = {5},
+numpages = {5},
+keywords = {aggregate computing, collective adaptive systems, declarative programming, macro-programming, self-organisation},
+location = {Milano, Italy},
+series = {PPDP '24}
+}
+
+@inproceedings{10.5555/1018438.1021865,
+author = {Murphy VII, Tom and Crary, Karl and Harper, Robert and Pfenning, Frank},
+title = {A Symmetric Modal Lambda Calculus for Distributed Computing},
+year = {2004},
+isbn = {0769521924},
+publisher = {IEEE Computer Society},
+address = {USA},
+abstract = {We present a foundational language for spatially distributed programming, called Lambda 5, that addresses both mobility of code and locality of resources. In order to construct our system, we appeal to the powerful propositions-as-types interpretation of logic. Specifically, we take thepossible worlds of the intuitionistic modal logic IS5 to be nodes on a network, and the connectives and to reflect mobility and locality, respectively. We formulate a novel system of natural deduction for IS5, decomposing the introduction and elimination rules for and , thereby allowing the corresponding programs to be more direct. We then give an operational semantics to our calculus that is type-safe, logically faithful, and computationally realistic.},
+booktitle = {Proceedings of the 19th Annual IEEE Symposium on Logic in Computer Science},
+pages = {286--295},
+numpages = {10},
+series = {LICS '04}
+}
+
+@inproceedings{10.5555/1777707.1777724,
+author = {Cooper, Ezra and Lindley, Sam and Wadler, Philip and Yallop, Jeremy},
+title = {{Links}: Web Programming without Tiers},
+year = {2006},
+isbn = {3540747915},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+abstract = {Links is a programming language for web applications that generates code for all three tiers of a web application from a single source, compiling into JavaScript to run on the client and into SQL to run on the database. Links supports rich clients running in what has been dubbed 'Ajax' style, and supports concurrent processes with statically-typed message passing. Links is scalable in the sense that session state is preserved in the client rather than the server, in contrast to other approaches such as Java Servlets or PLT Scheme. Client-side concurrency in JavaScript and transfer of computation between client and server are both supported by translation into continuation-passing style.},
+booktitle = {Proceedings of the 5th International Conference on Formal Methods for Components and Objects},
+pages = {266--296},
+numpages = {31},
+location = {Amsterdam, The Netherlands},
+series = {FMCO'06}
+}
+
+@inproceedings{10.5555/1793574.1793585,
+author = {Murphy, Tom and Crary, Karl and Harper, Robert},
+title = {Type-safe distributed programming with {ML5}},
+year = {2007},
+isbn = {3540786627},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+abstract = {We present ML5, a high level programming language for spatially distributed computing. The language, a variant of ML, allows an entire distributed application to be developed and reasoned about as a unified program. The language supports transparent mobility of any kind of code or data, but its type system, based on modal logic, statically excludes programs that use mobile resources unsafely. The ML5 compiler produces code for all of the hosts that may be involved in the computation. These hosts may be heterogeneous, with different resources and even different architectures. Currently, our compiler and runtime are specialized to the particular case of web programming: a distributed computation with two sites, the web browser and the web server.},
+booktitle = {Proceedings of the 3rd Conference on Trustworthy Global Computing},
+pages = {108--123},
+numpages = {16},
+location = {Sophia-Antipolis, France},
+series = {TGC'07}
+}
+
+@article{AVDPB-TOCL2019,
+ author = {Audrito, Giorgio and Viroli, Mirko and Damiani, Ferruccio and Pianini, Danilo and Beal, Jacob},
+ title = {A Higher-Order Calculus of Computational Fields},
+ _journal = {ACM Trans. Comput. Logic},
+ journal = {ACM Transactions on Computational Logic},
+ issue_date = {January 2019},
+ volume = {20},
+ number = {1},
+ month = jan,
+ year = {2019},
+ issn = {1529-3785},
+ pages = {5:1--5:55},
+ articleno = {5},
+ numpages = {55},
+ url = {http://doi.acm.org/10.1145/3285956},
+ doi = {10.1145/3285956},
+ acmid = {3285956},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Adequacy, aggregate programming, computational field, core calculus, full abstraction, spatial computing, type inference system, type soundness},
+}
+
+@article{CASADEI2021104081,
+title = {Engineering collective intelligence at the edge with aggregate processes},
+journal = {Engineering Applications of Artificial Intelligence},
+volume = {97},
+pages = {104081},
+year = {2021},
+issn = {0952-1976},
+doi = {https://doi.org/10.1016/j.engappai.2020.104081},
+url = {https://www.sciencedirect.com/science/article/pii/S0952197620303389},
+author = {Roberto Casadei and Mirko Viroli and Giorgio Audrito and Danilo Pianini and Ferruccio Damiani},
+keywords = {Computational collective intelligence, Self-organisation, Distributed computing, Aggregate programming, Computational fields, Multi-agent systems},
+abstract = {Edge computing promotes the execution of complex computational processes without the cloud, i.e., on top of the heterogeneous, articulated, and possibly mobile systems composed of IoT and edge devices. Such a pervasive smart fabric augments our environment with computing and networking capabilities. This leads to a complex and dynamic ecosystem of devices that should not only exhibit individual intelligence but also collective intelligence—the ability to take group decisions or process knowledge among autonomous units of a distributed environment. Self-adaptation and self-organisation mechanisms are also typically required to ensure continuous and inherent toleration of changes of various kinds, to distribution of devices, energy available, computational load, as well as faults. To achieve this behaviour in a massively distributed setting like edge computing demands, we seek for identifying proper abstractions, and engineering tools therefore, to smoothly capture collective behaviour, adaptivity, and dynamic injection and execution of concurrent distributed activities. Accordingly, we elaborate on a notion of “aggregate process” as a concurrent collective computation whose execution and interactions are sustained by a dynamic team of devices, whose spatial region can opportunistically vary over time. We ground this notion by extending the aggregate computing model and toolchain with new constructs to instantiate aggregate processes and regulate key aspects of their lifecycle. By virtue of an open-source implementation in the ScaFi framework, we show basic programming examples as well as case studies of edge computing, evaluated by simulation in realistic settings.}
+}
+
+@article{CHOI2020102499,
+title = {A Polymorphic {RPC} Calculus},
+journal = {Science of Computer Programming},
+volume = {197},
+pages = {102499},
+year = {2020},
+issn = {0167-6423},
+doi = {https://doi.org/10.1016/j.scico.2020.102499},
+url = {https://www.sciencedirect.com/science/article/pii/S0167642320301088},
+author = {Kwanghoon Choi and James Cheney and Simon Fowler and Sam Lindley},
+keywords = {Multi-tier programming, Location polymorphism, Remote procedure call, Client-server model},
+abstract = {The RPC calculus is a simple semantic foundation for multi-tier programming languages such as Links in which located functions can be written for the client-server model. Subsequently, the typed RPC calculus is designed to capture the location information of functions by types and to drive location type-directed slicing compilations. However, the use of locations is currently limited to monomorphic ones, which is one of the gaps to overcome to put into practice the theory of RPC calculi for client-server model. This paper proposes a polymorphic RPC calculus to allow programmers to write succinct multi-tier programs using polymorphic location constructs. Then the polymorphic multi-tier programs can be automatically translated into programs only containing location constants amenable to the existing slicing compilation methods. We formulate a type system for the polymorphic RPC calculus, and prove its type soundness. Also, we design a monomorphization translation together with proofs on its type and semantic correctness for the translation.}
+}
+
+@online{Coq,
+  author = {{Coq Development Team}},
+  title = {The {Coq} Proof Assistant, version 8.11.0},
+  year = {2016},
+  url = {http://coq.inria.fr/},
+  urldate = {2020-04-01}
+}
+
+@inbook{CruzFilipe2016,
+  title     = {Choreographies in Practice},
+  isbn      = {9783319395708},
+  issn      = {1611-3349},
+  url       = {http://dx.doi.org/10.1007/978-3-319-39570-8_8},
+  doi       = {10.1007/978-3-319-39570-8_8},
+  booktitle = {Formal Techniques for Distributed Objects,  Components,  and Systems},
+  publisher = {Springer International Publishing},
+  author    = {Cruz-Filipe,  Luís and Montesi,  Fabrizio},
+  year      = {2016},
+  pages     = {114–123},
+}
+
+@inbook{CruzFilipe2017,
+  title     = {Procedural Choreographic Programming},
+  isbn      = {9783319602257},
+  issn      = {1611-3349},
+  url       = {http://dx.doi.org/10.1007/978-3-319-60225-7_7},
+  doi       = {10.1007/978-3-319-60225-7_7},
+  booktitle = {Formal Techniques for Distributed Objects,  Components,  and Systems},
+  publisher = {Springer International Publishing},
+  author    = {Cruz-Filipe,  Luís and Montesi,  Fabrizio},
+  year      = {2017},
+  pages     = {92–107},
+}
+
+@inproceedings{CruzFilipe:2016,
+  author = {Cruz-Filipe, Luís and Montesi, Fabrizio},
+  title = {Choreographies in Practice},
+  editor = {Albert, Elvira and Lanese, Ivan},
+  booktitle = {Proceedings of the 36th IFIP International Conference on Formal Techniques for Distributed Objects, Components, and Systems},
+  year = {2016},
+  publisher = {Springer-Verlag},
+  address = {Berlin, Heidelberg},
+  pages = {114--123},
+  isbn = {978-3-319-39569-2},
+  series = {FORTE '16},
+  location = {Heraklion, Greece},
+  doi = {10.1007/978-3-319-39570-8_8}
+}
+
+@incollection{DBLP:books/sp/wsf14/MontesiGZ14,
+  author    = {Fabrizio Montesi and
+               Claudio Guidi and
+               Gianluigi Zavattaro},
+  editor    = {Athman Bouguettaya and
+               Quan Z. Sheng and
+               Florian Daniel},
+  title     = {Service-Oriented Programming with Jolie},
+  booktitle = {Web Services Foundations},
+  pages     = {81--107},
+  publisher = {Springer},
+  year      = {2014},
+  url       = {https://doi.org/10.1007/978-1-4614-7518-7\_4},
+  doi       = {10.1007/978-1-4614-7518-7\_4},
+  timestamp = {Sat, 19 Oct 2019 19:02:56 +0200},
+  biburl    = {https://dblp.org/rec/books/sp/wsf14/MontesiGZ14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@inproceedings{DBLP:conf/acsos/FarabegoliVC24,
+  author       = {Nicolas Farabegoli and
+                  Mirko Viroli and
+                  Roberto Casadei},
+  title        = {Flexible Self-organisation for the Cloud-Edge Continuum: a Macro-programming
+                  Approach},
+  booktitle    = {{IEEE} International Conference on Autonomic Computing and Self-Organizing
+                  Systems, {ACSOS} 2024, Aarhus, Denmark, September 16-20, 2024},
+  pages        = {21--30},
+  publisher    = {{IEEE}},
+  year         = {2024},
+  url          = {https://doi.org/10.1109/ACSOS61780.2024.00020},
+  doi          = {10.1109/ACSOS61780.2024.00020},
+  timestamp    = {Fri, 13 Dec 2024 14:18:41 +0100},
+  biburl       = {https://dblp.org/rec/conf/acsos/FarabegoliVC24.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:conf/fmco/CooperLWY06,
+  author    = {Ezra Cooper and
+               Sam Lindley and
+               Philip Wadler and
+               Jeremy Yallop},
+  editor    = {Frank S. de Boer and
+               Marcello M. Bonsangue and
+               Susanne Graf and
+               Willem P. de Roever},
+  title     = {Links: Web Programming Without Tiers},
+  booktitle = {Formal Methods for Components and Objects, 5th International Symposium,
+               {FMCO} 2006, Amsterdam, The Netherlands, November 7-10, 2006, Revised
+               Lectures},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {4709},
+  pages     = {266--296},
+  publisher = {Springer},
+  year      = {2006},
+  url       = {https://doi.org/10.1007/978-3-540-74792-5\_12},
+  doi       = {10.1007/978-3-540-74792-5\_12},
+  timestamp = {Tue, 14 May 2019 10:00:53 +0200},
+  biburl    = {https://dblp.org/rec/conf/fmco/CooperLWY06.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@inproceedings{DBLP:conf/fois/MasoloVFBP20,
+  author       = {Claudio Masolo and
+                  Laure Vieu and
+                  Roberta Ferrario and
+                  Stefano Borgo and
+                  Daniele Porello},
+  _editor       = {Boyan Brodaric and
+                  Fabian Neuhaus},
+  title        = {Pluralities, Collectives, and Composites},
+  booktitle    = {11th Int. 
+                  Conf. on Formal Ontology in Information Systems},
+  _removed= {, {FOIS}'20, Proceedings},
+  _series       = {FAIA},
+  _series ={Frontiers in Artificial Intelligence and Applications},
+  volume       = {330},
+  pages        = {186--200},
+  publisher    = {{IOS} Press},
+  year         = {2020},
+  _url          = {https://doi.org/10.3233/FAIA200671},
+  doi          = {10.3233/FAIA200671},
+  timestamp    = {Sat, 09 Apr 2022 12:42:57 +0200},
+  biburl       = {https://dblp.org/rec/conf/fois/MasoloVFBP20.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:conf/icdcit/HondaMBCY11,
+  author    = {Kohei Honda and
+               Aybek Mukhamedov and
+               Gary Brown and
+               Tzu{-}Chun Chen and
+               Nobuko Yoshida},
+  editor    = {Raja Natarajan and
+               Adegboyega K. Ojo},
+  title     = {Scribbling Interactions with a Formal Foundation},
+  booktitle = {Distributed Computing and Internet Technology - 7th International
+               Conference, {ICDCIT} 2011, Bhubaneshwar, India, February 9-12, 2011.
+               Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {6536},
+  pages     = {55--75},
+  publisher = {Springer},
+  year      = {2011},
+  url       = {https://doi.org/10.1007/978-3-642-19056-8\_4},
+  doi       = {10.1007/978-3-642-19056-8\_4},
+  timestamp = {Sun, 15 Jan 2023 14:30:24 +0100},
+  biburl    = {https://dblp.org/rec/conf/icdcit/HondaMBCY11.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@inproceedings{DBLP:conf/iros/YiDLD0WY20,
+  author       = {Wei Yi and
+                  Bin Di and
+                  Ruihao Li and
+                  Huadong Dai and
+                  Xiaodong Yi and
+                  Yanzhen Wang and
+                  Xuejun Yang},
+  title        = {An Actor-based Programming Framework for Swarm Robotic Systems},
+  booktitle    = {{IEEE/RSJ} International Conference on Intelligent Robots and Systems,
+                  {IROS} 2020, Las Vegas, NV, USA, October 24, 2020 - January 24, 2021},
+  pages        = {8012--8019},
+  publisher    = {{IEEE}},
+  year         = {2020},
+  _url          = {https://doi.org/10.1109/IROS45743.2020.9341198},
+  doi          = {10.1109/IROS45743.2020.9341198},
+  timestamp    = {Thu, 17 Jun 2021 15:35:21 +0200},
+  biburl       = {https://dblp.org/rec/conf/iros/YiDLD0WY20.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DBLP:conf/oopsla/SerranoGL06,
+  author    = {Manuel Serrano and
+               Erick Gallesio and
+               Florian Loitsch},
+  editor    = {Peri L. Tarr and
+               William R. Cook},
+  title     = {Hop: a language for programming the web 2.0},
+  booktitle = {Companion to the 21th Annual {ACM} {SIGPLAN} Conference on Object-Oriented
+               Programming, Systems, Languages, and Applications, {OOPSLA} 2006,
+               October 22-26, 2006, Portland, Oregon, {USA}},
+  pages     = {975--985},
+  publisher = {{ACM}},
+  year      = {2006},
+  url       = {https://doi.org/10.1145/1176617.1176756},
+  doi       = {10.1145/1176617.1176756},
+  timestamp = {Sat, 31 Jul 2021 17:22:24 +0200},
+  biburl    = {https://dblp.org/rec/conf/oopsla/SerranoGL06.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@inproceedings{DBLP:conf/pepm/IonescuR26,
+  author    = {Alex Ionescu and
+               Alejandro Russo},
+  editor    = {Yukiyoshi Kameyama and
+               Ningning Xie},
+  title     = {Towards Lightweight and Efficient Choreographic Cloud Services},
+  booktitle = {Proceedings of the 2026 {ACM} {SIGPLAN} International Workshop on
+               Partial Evaluation and Program Manipulation, {PEPM} 2026, Rennes,
+               France, January 11-17, 2026},
+  pages     = {45--60},
+  publisher = {{ACM}},
+  year      = {2026},
+  url       = {https://doi.org/10.1145/3779209.3779537},
+  doi       = {10.1145/3779209.3779537},
+  timestamp = {Tue, 03 Feb 2026 08:27:35 +0100},
+  biburl    = {https://dblp.org/rec/conf/pepm/IonescuR26.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@article{DBLP:journals/csur/Casadei23,
+  author       = {Roberto Casadei},
+  title        = {Macroprogramming: Concepts, State of the Art, and Opportunities of
+                  Macroscopic Behaviour Modelling},
+  journal      = {{ACM} Comput. Surv.},
+  volume       = {55},
+  number       = {13s},
+  pages        = {275:1--275:37},
+  year         = {2023},
+  url          = {https://doi.org/10.1145/3579353},
+  doi          = {10.1145/3579353},
+  timestamp    = {Wed, 24 Jan 2024 17:49:04 +0100},
+  biburl       = {https://dblp.org/rec/journals/csur/Casadei23.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/csur/WeisenburgerWS20,
+  author       = {Pascal Weisenburger and
+                  Johannes Wirth and
+                  Guido Salvaneschi},
+  title        = {A Survey of Multitier Programming},
+  journal      = {{ACM} Comput. Surv.},
+  volume       = {53},
+  number       = {4},
+  pages        = {81:1--81:35},
+  year         = {2021},
+  _url          = {https://doi.org/10.1145/3397495},
+  doi          = {10.1145/3397495},
+  timestamp    = {Wed, 23 Nov 2022 16:16:46 +0100},
+  biburl       = {https://dblp.org/rec/journals/csur/WeisenburgerWS20.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/fgcs/FarabegoliPCV24,
+  author       = {Nicolas Farabegoli and
+                  Danilo Pianini and
+                  Roberto Casadei and
+                  Mirko Viroli},
+  title        = {Scalability through Pulverisation: Declarative deployment reconfiguration
+                  at runtime},
+  journal      = {Future Gener. Comput. Syst.},
+  volume       = {161},
+  pages        = {545--558},
+  year         = {2024},
+  url          = {https://doi.org/10.1016/j.future.2024.07.042},
+  doi          = {10.1016/J.FUTURE.2024.07.042},
+  timestamp    = {Sun, 08 Sep 2024 16:07:36 +0200},
+  biburl       = {https://dblp.org/rec/journals/fgcs/FarabegoliPCV24.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/iot/DominiFAVE26,
+  author       = {Davide Domini and
+                  Nicolas Farabegoli and
+                  Gianluca Aguzzi and
+                  Mirko Viroli and
+                  Lukas Esterle},
+  title        = {Decentralized proximity-aware clustering for collective self-federated
+                  learning},
+  journal      = {Internet Things},
+  volume       = {35},
+  pages        = {101841},
+  year         = {2026},
+  url          = {https://doi.org/10.1016/j.iot.2025.101841},
+  doi          = {10.1016/J.IOT.2025.101841},
+  timestamp    = {Sun, 01 Feb 2026 13:40:17 +0100},
+  biburl       = {https://dblp.org/rec/journals/iot/DominiFAVE26.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/iot/FarabegoliPCV24,
+  author       = {Nicolas Farabegoli and
+                  Danilo Pianini and
+                  Roberto Casadei and
+                  Mirko Viroli},
+  title        = {Dynamic IoT deployment reconfiguration: {A} global-level self-organisation
+                  approach},
+  journal      = {Internet Things},
+  volume       = {28},
+  pages        = {101412},
+  year         = {2024},
+  url          = {https://doi.org/10.1016/j.iot.2024.101412},
+  doi          = {10.1016/J.IOT.2024.101412},
+  timestamp    = {Mon, 09 Dec 2024 00:00:00 +0100},
+  biburl       = {https://dblp.org/rec/journals/iot/FarabegoliPCV24.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/iotj/CasadeiFPPSV22,
+  author       = {Roberto Casadei and
+                  Giancarlo Fortino and
+                  Danilo Pianini and
+                  Andrea Placuzzi and
+                  Claudio Savaglio and
+                  Mirko Viroli},
+  title        = {A Methodology and Simulation-Based Toolchain for Estimating Deployment
+                  Performance of Smart Collective Services at the Edge},
+  journal      = {{IEEE} Internet Things J.},
+  volume       = {9},
+  number       = {20},
+  pages        = {20136--20148},
+  year         = {2022},
+  _url          = {https://doi.org/10.1109/JIOT.2022.3172470},
+  doi          = {10.1109/JIOT.2022.3172470},
+  timestamp    = {Thu, 27 Jul 2023 08:17:54 +0200},
+  biburl       = {https://dblp.org/rec/journals/iotj/CasadeiFPPSV22.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/jnca/LiuASGBQ15,
+  author       = {Jie{-}yao Liu and
+                  Ejaz Ahmed and
+                  Muhammad Shiraz and
+                  Abdullah Gani and
+                  Rajkumar Buyya and
+                  Ahsan Qureshi},
+  title        = {Application partitioning algorithms in mobile cloud computing: Taxonomy,
+                  review and future directions},
+  journal      = {J. Netw. Comput. Appl.},
+  volume       = {48},
+  pages        = {99--117},
+  year         = {2015},
+  _url          = {https://doi.org/10.1016/j.jnca.2014.09.009},
+  doi          = {10.1016/j.jnca.2014.09.009},
+  timestamp    = {Thu, 05 Mar 2020 12:59:39 +0100},
+  biburl       = {https://dblp.org/rec/journals/jnca/LiuASGBQ15.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/jossw/AndradeFS23,
+  author       = {Emerson Martins de Andrade and
+                  Antonio Carlos Fernandes and
+                  Joel Sena Sales},
+  title        = {{PySwarming}: a research toolkit for Swarm Robotics},
+  journal      = {J. Open Source Softw.},
+  volume       = {8},
+  number       = {90},
+  pages        = {5647},
+  year         = {2023},
+  _url          = {https://doi.org/10.21105/joss.05647},
+  doi          = {10.21105/JOSS.05647},
+  timestamp    = {Sat, 14 Oct 2023 20:14:21 +0200},
+  biburl       = {https://dblp.org/rec/journals/jossw/AndradeFS23.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/jss/ArcangeliBL15,
+  author       = {Jean{-}Paul Arcangeli and
+                  Raja Boujbel and
+                  S{\'{e}}bastien Leriche},
+  title        = {Automatic deployment of distributed software systems: Definitions
+                  and state of the art},
+  journal      = {J. Syst. Softw.},
+  volume       = {103},
+  pages        = {198--218},
+  year         = {2015},
+  _url          = {https://doi.org/10.1016/j.jss.2015.01.040},
+  doi          = {10.1016/j.jss.2015.01.040},
+  timestamp    = {Mon, 24 Feb 2020 15:59:12 +0100},
+  biburl       = {https://dblp.org/rec/journals/jss/ArcangeliBL15.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/jss/AudritoCDSV24,
+  author       = {Giorgio Audrito and
+                  Roberto Casadei and
+                  Ferruccio Damiani and
+                  Guido Salvaneschi and
+                  Mirko Viroli},
+  title        = {The eXchange Calculus {(XC):} {A} functional programming language
+                  design for distributed collective systems},
+  journal      = {J. Syst. Softw.},
+  volume       = {210},
+  pages        = {111976},
+  year         = {2024},
+  url          = {https://doi.org/10.1016/j.jss.2024.111976},
+  doi          = {10.1016/J.JSS.2024.111976},
+  timestamp    = {Sun, 19 Jan 2025 14:04:08 +0100},
+  biburl       = {https://dblp.org/rec/journals/jss/AudritoCDSV24.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/lmcs/PianiniCVMZ21,
+  author       = {Danilo Pianini and
+                  Roberto Casadei and
+                  Mirko Viroli and
+                  Stefano Mariani and
+                  Franco Zambonelli},
+  title        = {Time-Fluid Field-Based Coordination through Programmable Distributed
+                  Schedulers},
+  journal      = {Log. Methods Comput. Sci.},
+  volume       = {17},
+  number       = {4},
+  year         = {2021},
+  _url          = {https://doi.org/10.46298/lmcs-17(4:13)2021},
+  doi          = {10.46298/LMCS-17(4:13)2021},
+  timestamp    = {Tue, 24 Jan 2023 10:48:24 +0100},
+  biburl       = {https://dblp.org/rec/journals/lmcs/PianiniCVMZ21.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/pacmpl/BatesKJSKN25,
+  author       = {Mako Bates and
+                  Shun Kashiwa and
+                  Syed Jafri and
+                  Gan Shen and
+                  Lindsey Kuper and
+                  Joseph P. Near},
+  title        = {Efficient, Portable, Census-Polymorphic Choreographic Programming},
+  journal      = {Proc. {ACM} Program. Lang.},
+  volume       = {9},
+  number       = {{PLDI}},
+  pages        = {1143--1166},
+  year         = {2025},
+  url          = {https://doi.org/10.1145/3729296},
+  doi          = {10.1145/3729296},
+  timestamp    = {Thu, 11 Sep 2025 20:24:03 +0200},
+  biburl       = {https://dblp.org/rec/journals/pacmpl/BatesKJSKN25.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/pacmpl/WeisenburgerKS18,
+  author       = {Pascal Weisenburger and
+                  Mirko K{\"{o}}hler and
+                  Guido Salvaneschi},
+  title        = {Distributed system development with ScalaLoci},
+  journal      = {Proc. {ACM} Program. Lang.},
+  volume       = {2},
+  number       = {{OOPSLA}},
+  pages        = {129:1--129:30},
+  year         = {2018},
+  url          = {https://doi.org/10.1145/3276499},
+  doi          = {10.1145/3276499},
+  timestamp    = {Sun, 06 Aug 2023 20:51:02 +0200},
+  biburl       = {https://dblp.org/rec/journals/pacmpl/WeisenburgerKS18.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/pacmpl/XuBO24,
+  author       = {Yichen Xu and
+                  Aleksander Boruch{-}Gruszecki and
+                  Martin Odersky},
+  title        = {Degrees of Separation: {A} Flexible Type System for Safe Concurrency},
+  journal      = {Proc. {ACM} Program. Lang.},
+  volume       = {8},
+  number       = {{OOPSLA1}},
+  pages        = {1181--1207},
+  year         = {2024},
+  url          = {https://doi.org/10.1145/3649853},
+  doi          = {10.1145/3649853},
+  timestamp    = {Sun, 04 Aug 2024 19:49:28 +0200},
+  biburl       = {https://dblp.org/rec/journals/pacmpl/XuBO24.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/scp/AudritoT24,
+    author       = {Giorgio Audrito and
+                  Gianluca Torta},
+    title        = {{FCPP} to aggregate them all},
+    journal      = {Sci. Comput. Program.},
+    volume       = {231},
+    pages        = {103026},
+    year         = {2024},
+    url          = {https://doi.org/10.1016/j.scico.2023.103026},
+    doi          = {10.1016/J.SCICO.2023.103026},
+    timestamp    = {Fri, 27 Oct 2023 20:40:12 +0200},
+    biburl       = {https://dblp.org/rec/journals/scp/AudritoT24.bib},
+    bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/sensors/DiasSFVCP21,
+  author       = {Pollyanna G. Faria Dias and
+                  Mateus C. Silva and
+                  Geraldo P. Rocha Filho and
+                  Patr{\'{\i}}cia A. Vargas and
+                  Luciano Perdig{\~{a}}o Cota and
+                  Gustavo Pessin},
+  title        = {Swarm Robotics: {A} Perspective on the Latest Reviewed Concepts and
+                  Applications},
+  journal      = {Sensors},
+  volume       = {21},
+  number       = {6},
+  pages        = {2062},
+  year         = {2021},
+  _url          = {https://doi.org/10.3390/s21062062},
+  doi          = {10.3390/S21062062},
+  timestamp    = {Thu, 29 Apr 2021 15:14:44 +0200},
+  biburl       = {https://dblp.org/rec/journals/sensors/DiasSFVCP21.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/sttt/NicolaJW20,
+  author       = {Rocco De Nicola and
+                  Stefan J{\"{a}}hnichen and
+                  Martin Wirsing},
+  title        = {Rigorous engineering of collective adaptive systems: special section},
+  journal      = {Int. J. Softw. Tools Technol. Transf.},
+  volume       = {22},
+  number       = {4},
+  pages        = {389--397},
+  year         = {2020},
+  _url          = {https://doi.org/10.1007/s10009-020-00565-0},
+  doi          = {10.1007/s10009-020-00565-0},
+  timestamp    = {Sat, 09 Apr 2022 12:29:47 +0200},
+  biburl       = {https://dblp.org/rec/journals/sttt/NicolaJW20.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/sttt/NicolaMS20,
+  author       = {Rocco De Nicola and
+                  Alessandro Maggi and
+                  Joseph Sifakis},
+  title        = {The {DReAM} framework for dynamic reconfigurable architecture modelling:
+                  theory and applications},
+  journal      = {Int. J. Softw. Tools Technol. Transf.},
+  volume       = {22},
+  number       = {4},
+  pages        = {437--455},
+  year         = {2020},
+  _url          = {https://doi.org/10.1007/s10009-020-00555-2},
+  doi          = {10.1007/S10009-020-00555-2},
+  timestamp    = {Sat, 09 Apr 2022 12:29:47 +0200},
+  biburl       = {https://dblp.org/rec/journals/sttt/NicolaMS20.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/toplas/BoruchGruszeckiOLLB23,
+  author       = {Aleksander Boruch{-}Gruszecki and
+                  Martin Odersky and
+                  Edward Lee and
+                  Ondrej Lhot{\'{a}}k and
+                  Jonathan Immanuel Brachth{\"{a}}user},
+  title        = {Capturing Types},
+  journal      = {{ACM} Trans. Program. Lang. Syst.},
+  volume       = {45},
+  number       = {4},
+  pages        = {21:1--21:52},
+  year         = {2023},
+  url          = {https://doi.org/10.1145/3618003},
+  doi          = {10.1145/3618003},
+  timestamp    = {Sat, 06 Sep 2025 20:29:41 +0200},
+  biburl       = {https://dblp.org/rec/journals/toplas/BoruchGruszeckiOLLB23.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/tse/CrnkovicSVC11,
+  author       = {Ivica Crnkovic and
+                  S{\'{e}}verine Sentilles and
+                  Aneta Vulgarakis and
+                  Michel R. V. Chaudron},
+  title        = {A Classification Framework for Software Component Models},
+  journal      = {{IEEE} Trans. Software Eng.},
+  volume       = {37},
+  number       = {5},
+  pages        = {593--615},
+  year         = {2011},
+  _url          = {https://doi.org/10.1109/TSE.2010.83},
+  doi          = {10.1109/TSE.2010.83},
+  timestamp    = {Thu, 14 Oct 2021 09:40:48 +0200},
+  biburl       = {https://dblp.org/rec/journals/tse/CrnkovicSVC11.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{GRAVERSEN_HIRSCH_MONTESI_2024,
+title={Alice or Bob?: Process polymorphism in choreographies},
+volume={34},
+DOI={10.1017/S0956796823000114},
+journal={Journal of Functional Programming},
+author={Graversen, Eva and Hirsch, Andrew K. and Montesi, Fabrizio},
+year={2024}}
+
+@inproceedings{Hillerström:2017,
+author = {Hillerström, Daniel and Lindley, Sam and Atkey, Robert and Sivaramakrishnan, KC},
+title = {Continuation Passing Style for Effect Handlers},
+booktitle = {Proceedings of the 2nd International Conference on Formal Structures for Computation and Deduction (FSCD '17)},
+articleno = {18},
+numpages = {19},
+pages = {18:1--18:19},
+series = {Leibniz International Proceedings in Informatics (LIPIcs)},
+isbn = {978-3-95977-047-7},
+issn = {1868-8969},
+year = {2017},
+volume = {84},
+editor = {Miller, Dale},
+publisher = {Schloss Dagstuhl -- Leibniz-Zentrum für Informatik},
+address = {Dagstuhl, Germany},
+url = {http://drops.dagstuhl.de/opus/volltexte/2017/7739},
+urldate = {2020-04-01},
+urn = {urn:nbn:de:0030-drops-77394},
+location = {Oxford, UK},
+doi = {10.4230/LIPIcs.FSCD.2017.18}
+}
+
+@article{IEEE-IoTJ-pulverization-simulation,
+  author    = {Roberto Casadei and
+               Giancarlo Fortino and
+               Danilo Pianini and
+               Andrea Placuzzi and
+               Claudio Savaglio and
+               Mirko Viroli},
+  title     = {A Methodology and Simulation-Based Toolchain for Estimating Deployment
+               Performance of Smart Collective Services at the Edge},
+  journal   = {{IEEE} Internet Things J.},
+  volume    = {9},
+  number    = {20},
+  pages     = {20136--20148},
+  year      = {2022},
+  _url       = {https://doi.org/10.1109/JIOT.2022.3172470},
+  doi       = {10.1109/JIOT.2022.3172470},
+  timestamp = {Sun, 13 Nov 2022 17:52:42 +0100},
+  biburl    = {https://dblp.org/rec/journals/iotj/CasadeiFPPSV22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@incollection{Lindley:2017,
+author = {Lindley, Sam and Morris, J. Garrett},
+title = {Lightweight Functional Session Types},
+booktitle = {Behavioural Types: From Theory to Tools},
+chapter = {12},
+numpages = {265},
+year = {2017},
+editor = {Gay, Simon and Ravara, António},
+isbn = {978-87-93519-82-4},
+doi = {10.13052/rp-9788793519817},
+publisher = {River Publishers}
+}
+
+@inbook{Lluch:2015,
+author = {Lluch Lafuente, Alberto and Nielson, Flemming and Nielson, Hanne Riis},
+editor = {Martí-Oliet, Narciso and Ölveczky, Peter Csaba and Talcott, Carolyn},
+title = {Discretionary Information Flow Control for Interaction-Oriented Specifications},
+booktitle = {Logic, Rewriting, and Concurrency},
+series = {Lecture Notes in Computer Science},
+year = {2015},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+pages = {427--450},
+isbn = {978-3-319-23164-8},
+volume = {9200},
+doi = {10.1007/978-3-319-23165-5_20}
+}
+
+@article{Michel2004,
+  title = {Cyberbotics Ltd. Webots™: Professional Mobile Robot Simulation},
+  volume = {1},
+  ISSN = {1729-8814},
+  _url = {http://dx.doi.org/10.5772/5618},
+  DOI = {10.5772/5618},
+  number = {1},
+  journal = {International Journal of Advanced Robotic Systems},
+  publisher = {SAGE Publications},
+  author = {Michel,  Olivier},
+  year = {2004},
+  month = mar 
+}
+
+@book{Montesi2023chor,
+  title = {Introduction to Choreographies},
+  ISBN = {9781108833769},
+  __url = {http://dx.doi.org/10.1017/9781108981491},
+  DOI = {10.1017/9781108981491},
+  publisher={CUP},
+  _publisher = {Cambridge University Press},
+  author = {Montesi,  Fabrizio},
+  year = {2023},
+  _month = apr 
+}
+
+@inproceedings{Montesi:2014,
+author = {Montesi, Fabrizio},
+title = {Kickstarting Choreographic Programming},
+year = {2014},
+isbn = {978-3-319-33611-4},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+editor = {Hildebrandt, Thomas and Ravara, António and van der Werf, Jan Martijn and Weidlich, Matthias},
+booktitle = {Proceedings of the 13th International Workshop on Web Services and Formal Methods},
+pages = {3--10},
+numpages = {8},
+doi = {10.1007/978-3-319-33612-1_1},
+location = {Eindhoven, Netherlands},
+series = {WS-FM '14}
+}
+
+@article{Philips:2018,
+author = {Philips, Laure and De Koster, Joeri and De Meuter, Wolfgang and De Roover, Coen},
+title = {Search-based Tier Assignment for Optimising Offline Availability in Multi-tier Web Applications},
+journal = {The Art, Science, and Engineering of Programming},
+volume = {2},
+number = {2},
+articleno = {3},
+numpages = {29},
+pages = {3:1--3:29},
+year = {2018},
+issn = {2473-7321},
+month = dec,
+publisher = {AOSA, Inc},
+doi = {10.22152/programming-journal.org/2018/2/3},
+}
+
+@article{Preda:2017,
+author = {Preda, Mila Dalla and Gabbrielli, Maurizio and Giallorenzo, Saverio and Lanese, Ivan and Mauro, Jacopo},
+title = {Dynamic Choreographies: Theory And Implementation},
+journal = {Logical Methods in Computer Science},
+volume = {13},
+number = {2},
+year = {2017},
+month = apr,
+numpages = {57},
+doi = {10.23638/LMCS-13(2:1)2017},
+}
+
+@inproceedings{Radanne:2016,
+author = {Radanne, Gabriel and Vouillon, Jérôme and Balat, Vincent},
+title = {{Eliom}: A core {ML} language for Tierless Web Programming},
+editor = {Igarashi, Atsushi},
+booktitle = {Proceedings of the 14th Asian Symposium on Programming Languages and Systems},
+month = nov,
+year = {2016},
+isbn = {978-3-319-47957-6},
+doi = {10.1007/978-3-319-47958-3_20},
+pages = {377--397},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+series = {APLAS '16},
+location = {Hanoi, Vietnam}
+}
+
+@inproceedings{Serrano:2006,
+author = {Serrano, Manuel and Gallesio, Erick and Loitsch, Florian},
+title = {{Hop}, A Language for Programming the Web 2.0},
+year = {2006},
+booktitle = {Companion to the 21th ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications},
+series = {OOPSLA Companion '06},
+location = {Portland, OR, USA},
+publisher = {ACM},
+address = {New York, NY, USA}
+}
+
+@phdthesis{Sim94,
+title = {The Proof Theory and Semantics of Intuitionistic Modal Logic},
+author = {Simpson, Alex K.},
+year = {1994},
+institution = {University of Edinburgh. College of Science and Engineering. School of Informatics.},
+url = {http://hdl.handle.net/1842/407},
+}
+
+@inproceedings{Torgersen:2007,
+author = {Torgersen, Mads},
+title = {Querying in {C\#}: How Language Integrated Query ({LINQ}) Works},
+year = {2007},
+isbn = {978-1-59593-865-7},
+publisher = {ACM},
+address = {New York, NY, USA},
+doi = {10.1145/1297846.1297922},
+booktitle = {Companion to the 22nd ACM SIGPLAN Conference on Object-Oriented Programming Systems and Applications Companion},
+pages = {852--853},
+numpages = {2},
+keywords = {impedance mismatch, query language, language-integrated query, strongly typed querying, query syntax, query comprehensions},
+location = {Montreal, QC, Canada},
+series = {OOPSLA Companion '07}
+}
+
+@article{VIROLI2019100486,
+title = {From distributed coordination to field calculus and aggregate computing},
+journal = {Journal of Logical and Algebraic Methods in Programming},
+volume = {109},
+pages = {100486},
+year = {2019},
+issn = {2352-2208},
+doi = {https://doi.org/10.1016/j.jlamp.2019.100486},
+url = {https://www.sciencedirect.com/science/article/pii/S235222081930032X},
+author = {Mirko Viroli and Jacob Beal and Ferruccio Damiani and Giorgio Audrito and Roberto Casadei and Danilo Pianini},
+keywords = {Distributed systems, Aggregate computing, Field calculus, Spatial computing},
+abstract = {Aggregate computing is an emerging approach to the engineering of complex coordination for distributed systems, based on viewing system interactions in terms of information propagating through collectives of devices, rather than in terms of individual devices and their interaction with their peers and environment. The foundation of this approach is the distillation of a number of prior approaches, both formal and pragmatic, proposed under the umbrella of field-based coordination, and culminating into the field calculus, a universal functional programming model for the specification and composition of collective behaviours with equivalent local and aggregate semantics. This foundation has been elaborated into a layered approach to engineering coordination of complex distributed systems, building up to pragmatic applications through intermediate layers encompassing reusable libraries of program components. Furthermore, some of these components are formally shown to satisfy formal properties like self-stabilisation, which transfer to whole application services by functional composition. In this survey, we trace the development and antecedents of field calculus, review the field calculus itself and the current state of aggregate computing theory and practice, and discuss a roadmap of current research directions with implications for the development of a broad range of distributed systems.}
+}
+
+@online{WSCDL,
+author = {{W3C WS-CDL Working Group}},
+title = {Web Services Choreography Description Language Version 1.0},
+year = {2005},
+url = {http://www.w3.org/TR/ws-cdl-10/},
+urldate = {2020-04-01}
+}
+
+@inproceedings{Weisenburger:2019:Multitier,
+author = {Weisenburger, Pascal and Salvaneschi, Guido},
+title = {Multitier Modules},
+booktitle = {Proceedings of the 33rd European Conference on Object-Oriented Programming (ECOOP '19)},
+series = {Leibniz International Proceedings in Informatics (LIPIcs)},
+year = {2019},
+month = jul,
+volume = {134},
+articleno = {3},
+numpages = {29},
+pages = {3:1--3:29},
+editor = {Donaldson, Alastair F.},
+location = {London, UK},
+publisher = {Schloss Dagstuhl -- Leibniz-Zentrum für Informatik},
+address = {Dagstuhl, Germany},
+isbn = {978-3-95977-111-5},
+issn = {1868-8969},
+doi = {10.4230/LIPIcs.ECOOP.2019.3},
+url = {http://drops.dagstuhl.de/opus/volltexte/2019/10795},
+urn = {urn:nbn:de:0030-drops-107957},
+keywords = {Distributed Programming, Multitier Programming, Abstract Peer Types, Placement Types, Module Systems, Scala},
+abstract = {Multitier programming languages address the complexity of developing distributed systems abstracting over low level implementation details such as data representation, serialization and network protocols. Since the functionalities of different peers can be defined in the same compilation unit, multitier languages do not force developers to modularize software along network boundaries. Unfortunately, combining the code for all tiers into the same compilation unit poses a scalability challenge or forces developers to resort to traditional modularization abstractions that are agnostic to the multitier nature of the language.\par In this paper, we address this issue with a module system for multitier languages. Our module system supports encapsulating each (cross-peer) functionality and defining it over abstract peer types. As a result, we disentangle modularization and distribution and we enable the definition of a distributed system as a composition of multitier modules, each representing a subsystem. Our case studies on distributed algorithms, distributed data structures, as well as on the Apache Flink task distribution system, show that multitier modules allow the definition of reusable (abstract) patterns of interaction in distributed software and enable separating the modularization and distribution concerns, properly separating functionalities in distributed systems.},
+}
+
+@article{Zakhour:2023:TypeSafe,
+author = {Zakhour, George and Weisenburger, Pascal and Salvaneschi, Guido},
+title = {Type-Safe Dynamic Placement with First-Class Placed Values},
+year = {2023},
+month = oct,
+issue_date = {October 2023},
+journal = {Proceedings of the ACM on Programming Languages},
+volume = {7},
+number = {OOPSLA2},
+articleno = {297},
+numpages = {29},
+pages = {297:1--297:29},
+location = {Cascais, Portugal},
+publisher = {ACM},
+address = {New York, NY, USA},
+issn = {2475-1421},
+doi = {10.1145/3622873},
+keywords = {Distributed Programming, Multitier Programming, Placement Types, Scala, Dynamic Placement, Union Types},
+abstract = {Several distributed programming language solutions have been proposed to reason about the placement of data, computations, and peers interaction. Such solutions include, among the others, multitier programming, choreographic programming and various approaches based on behavioral types. These methods statically ensure safety properties thanks to a complete knowledge about placement of data and computation at compile time. In distributed systems, however, dynamic placement of computation and data is crucial to enable performance optimizations, e.g., driven by data locality or in presence of a number of other constraints such as security and compliance regarding data storage location. Unfortunately, in existing programming languages, dynamic placement conflicts with static reasoning about distributed programs: the flexibility required by dynamic placement hinders statically tracking the location of data and computation.\par In this paper we present Dyno, a programming language that enables static reasoning about dynamic placement. Dyno features a type system where values are explicitly placed, but in contrast to existing approaches, placed values are also first class, ensuring that they can be passed around and referred to from other locations. Building on top of this mechanism, we provide a novel interpretation of dynamic placement as unions of placement types. We formalize type soundness, placement correctness (as part of type soundness) and architecture conformance. In case studies and benchmarks, our evaluation shows that Dyno enables static reasoning about programs even in presence of dynamic placement, ensuring type safety and placement correctness of programs at negligible performance cost. We reimplement an Android app with 7K LOC in Dyno, find a bug in the existing implementation, and show that the app's approach is representative of a common way to implement dynamic placement found in over 100 apps in a large open-source app store.},
+}
+
+@inproceedings{aguzzi2022towards,
+  title={Towards reinforcement learning-based aggregate computing},
+  author={Aguzzi, Gianluca and Casadei, Roberto and Viroli, Mirko},
+  booktitle={International Conference on Coordination Languages and Models},
+  pages={72--91},
+  year={2022},
+  organization={Springer}
+}
+
+@inproceedings{brachthaeuser2020effekt,
+  author    = {Jonathan Immanuel Brachth{\"a}user and Philipp Schuster and Klaus Ostermann},
+  title     = {Effekt: Capability-Passing Style for Effect Safety},
+  booktitle = {Proceedings of the 35th European Conference on Object-Oriented Programming (ECOOP)},
+  year      = {2021},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik}
+}
+
+@article{buzz-robot,
+  author    = {Carlo Pinciroli and
+               Giovanni Beltrame},
+  title     = {Buzz: {A} Programming Language for Robot Swarms},
+  journal   = {{IEEE} Softw.},
+  volume    = {33},
+  number    = {4},
+  pages     = {97--100},
+  year      = {2016},
+  _url       = {https://doi.org/10.1109/MS.2016.95},
+  doi       = {10.1109/MS.2016.95},
+  timestamp = {Mon, 08 Jun 2020 22:32:38 +0200},
+  _biburl    = {https://dblp.org/rec/journals/software/PinciroliB16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{casadei2022scafi,
+  title={Scafi: A scala DSL and toolkit for aggregate programming},
+  author={Casadei, Roberto and Viroli, Mirko and Aguzzi, Gianluca and Pianini, Danilo},
+  journal={SoftwareX},
+  volume={20},
+  pages={101248},
+  year={2022},
+  publisher={Elsevier}
+}
+
+@inproceedings{chen_et_al:LIPIcs.ECOOP.2022.22,
+  author    = {Chen, Ruo Fei and Balzer, Stephanie and Toninho, Bernardo},
+  title     = {{Ferrite: A Judgmental Embedding of Session Types in Rust}},
+  booktitle = {36th European Conference on Object-Oriented Programming (ECOOP 2022)},
+  pages     = {22:1--22:28},
+  series    = {Leibniz International Proceedings in Informatics (LIPIcs)},
+  isbn      = {978-3-95977-225-9},
+  issn      = {1868-8969},
+  year      = {2022},
+  volume    = {222},
+  editor    = {Ali, Karim and Vitek, Jan},
+  publisher = {Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address   = {Dagstuhl, Germany},
+  url       = {https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2022.22},
+  urn       = {urn:nbn:de:0030-drops-162501},
+  doi       = {10.4230/LIPIcs.ECOOP.2022.22},
+  annote    = {Keywords: Session Types, Rust, DSL},
+}
+
+@article{dalla2017dynamic,
+  title     = {Dynamic choreographies: Theory and implementation},
+  author    = {Dalla Preda, Mila and Gabbrielli, Maurizio and Giallorenzo, Saverio and Lanese, Ivan and Mauro, Jacopo},
+  journal   = {Logical Methods in Computer Science},
+  volume    = {13},
+  year      = {2017},
+  publisher = {Episciences. org},
+}
+
+@article{kashiwa2024chorus,
+  title   = {ChoRus: Library-Level Choreographic Programming in Rust},
+  author  = {Kashiwa, Shun and Kuper, Lindsey},
+  journal = {Choreographic Programming (CP). Available at https://users. soe. ucsc. edu/\~{} lkuper/papers/chorus-cp24. pdf},
+  year    = {2024},
+}
+
+@inproceedings{lucassen1988polymorphic,
+  author    = {John M. Lucassen and David K. Gifford},
+  title     = {Polymorphic Effect Systems},
+  booktitle = {Proceedings of the 15th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL)},
+  year      = {1988},
+  pages     = {47--57},
+  publisher = {ACM}
+}
+
+@inproceedings{meld-robot,
+  author    = {Michael P. Ashley{-}Rollman and
+               Seth Copen Goldstein and
+               Peter Lee and
+               Todd C. Mowry and
+               Padmanabhan Pillai},
+  title     = {Meld: {A} declarative approach to programming ensembles},
+  booktitle = {2007 {IEEE/RSJ} International Conference on Intelligent Robots and
+               Systems},
+  pages     = {2794--2800},
+  publisher = {{IEEE}},
+  year      = {2007},
+  _url       = {https://doi.org/10.1109/IROS.2007.4399480},
+  doi       = {10.1109/IROS.2007.4399480},
+  timestamp = {Wed, 16 Oct 2019 14:14:51 +0200},
+  _biburl    = {https://dblp.org/rec/conf/iros/Ashley-RollmanGLMP07.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@book{miller2003capability,
+  author    = {Mark S. Miller},
+  title     = {Robust Composition: Towards a Unified Approach to Access Control and Concurrency Control},
+  year      = {2006},
+  publisher = {Johns Hopkins University},
+  note      = {PhD Thesis}
+}
+
+@misc{odersky2021scala3,
+  author = {Martin Odersky et al.},
+  title  = {Scala 3 Reference},
+  year   = {2021},
+  note   = {\url{https://docs.scala-lang.org/scala3/reference/}}
+}
+
+@article{parker1998alliance,
+  title={{ALLIANCE}: An architecture for fault tolerant multirobot cooperation},
+  author={Parker, Lynne E},
+  journal={IEEE transactions on robotics and automation},
+  volume={14},
+  number={2},
+  pages={220--240},
+  year={1998},
+  publisher={IEEE},
+  doi={10.1109/70.681242}
+}
+
+@inproceedings{pianini2015protelis,
+  title={Protelis: practical aggregate programming},
+  author={Pianini, Danilo and Viroli, Mirko and Beal, Jacob},
+  booktitle={Proceedings of the 30th Annual ACM Symposium on Applied Computing},
+  pages={1846--1853},
+  year={2015}
+}
+
+@article{pinciroli2012argos,
+  title={{ARGoS}: a modular, parallel, multi-engine simulator for multi-robot systems},
+  author={Pinciroli, Carlo and Trianni, Vito and O’Grady, Rehan and Pini, Giovanni and Brutschy, Arne and Brambilla, Manuele and Mathews, Nithin and Ferrante, Eliseo and Di Caro, Gianni and Ducatelle, Frederick and others},
+  journal={Swarm intelligence},
+  volume={6},
+  pages={271--295},
+  year={2012},
+  publisher={Springer},
+  doi={10.1007/s11721-012-0072-5}
+}
+
+@article{plotkin2003algebraic,
+  author  = {Gordon D. Plotkin and John Power},
+  title   = {Algebraic Operations and Generic Effects},
+  journal = {Applied Categorical Structures},
+  volume  = {11},
+  number  = {1},
+  pages   = {69--94},
+  year    = {2003}
+}
+
+@inproceedings{plotkin2009handlers,
+  author    = {Gordon D. Plotkin and Matija Pretnar},
+  title     = {Handlers of Algebraic Effects},
+  booktitle = {Proceedings of the 18th European Symposium on Programming (ESOP)},
+  year      = {2009},
+  pages     = {80--94},
+  publisher = {Springer}
+}
+
+@misc{rosMicros_swarm_frameworkWiki,
+	author = {},
+	title = {micros\_swarm\_framework - {R}{O}{S} {W}iki --- wiki.ros.org},
+	howpublished = {\url{https://wiki.ros.org/micros_swarm_framework}},
+	year = {},
+	note = {[Accessed 15-04-2025]},
+}
+
+@article{valentini2018kilogrid,
+  title={Kilogrid: a novel experimental environment for the {K}ilobot robot},
+  author={Valentini, Gabriele and Antoun, Anthony and Trabattoni, Marco and Wiandt, Bern{\'a}t and Tamura, Yasumasa and Hocquard, Etienne and Trianni, Vito and Dorigo, Marco},
+  journal={Swarm Intelligence},
+  volume={12},
+  pages={245--266},
+  year={2018},
+  publisher={Springer},
+  doi={10.1007/s11721-018-0155-z}
+}
+
+@inproceedings{voltron-robot,
+  author    = {Luca Mottola and
+               Mattia Moretta and
+               Kamin Whitehouse and
+               Carlo Ghezzi},
+  _editor    = {{\'{A}}kos L{\'{e}}deczi and
+               Prabal Dutta and
+               Chenyang Lu},
+  title     = {Team-level programming of drone sensor networks},
+  booktitle = {Proceedings of the 12th {ACM} Conference on Embedded Network Sensor Systems (SenSys'14)},
+  pages     = {177--190},
+  publisher = {{ACM}},
+  year      = {2014},
+  _url       = {https://doi.org/10.1145/2668332.2668353},
+  doi       = {10.1145/2668332.2668353},
+  timestamp = {Tue, 05 Nov 2019 12:22:56 +0100},
+  _biburl    = {https://dblp.org/rec/conf/sensys/MottolaMWG14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+

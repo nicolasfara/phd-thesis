@@ -445,3 +445,50 @@ They are divided in directly related, i.e., papers directly cited in the papers 
   - _Authors_: Danilo Pianini, Roberto Casadei, Mirko Viroli, Stefano Mariani, Franco Zambonelli
   - _Year_: 2021
 
+## Thesis Structure
+The thesis is structured in four main chapters, each corresponding to a specific aspect of the research conducted. The chapters are as follows:
+  - Part I: Background
+  - Part II: (Macro-)Programming Languages for large-scale Distributed Systems
+  - Part III: Platforms and Deployments for Collective Systems in the Edge-Cloud Continuum
+  - Part IV: Dynamic Reconfiguration in Collective-Adaptive Systems
+
+## Chapter 1 -- Introduction and Contributions
+  - Problem statement
+  - Research questions (?)
+  - Contributions
+  - Thesis structure
+
+## Part I -- Background
+
+### Chapter 2 -- Programming Models for Large-scale Distributed Systems
+  - Introduction to Macroprogramming
+    - The shift from node-centric to global-centric programming.
+    - Relevance for engineering large-scale distributed systems.
+  - Foundational Macroprogramming Paradigms
+    - Aggregate Computing: Core concepts, Field/XC Calculus.
+    - Choreographic Programming: Global viewpoints, interaction descriptions, and endpoint projection.
+    - Multitier Programming: placed computation, architecture conformance, cross-tier communication.
+  - Advanced Linguistic Abstractions for Coordination
+    - Monads, Effects, and Capabilities.
+  - Large Language Models in Software Engineering
+    - Brief overview of LLMs applied to code generation and DSLs.
+
+### Chapter 3 -- Architectures and Platforms in the Edge-Cloud Continuum
+  - The Edge-Cloud Continuum
+    - Definition, topology, characteristics, and challenges (heterogeneity, network partitions).
+  - Target Environments: Cyber-Physical Systems & Swarms
+    - IoT ecosystems and Swarm Robotics.
+  - Architectural Paradigms for Pervasive Systems
+    - From Microservices to finer-grained models.
+    - The Pulverisation Approach: Conceptual background on breaking down software into logical, deployable units.
+  - Collective Adaptive Systems (CAS)
+    - Principles of self-organisation and collective intelligence in platforms.
+
+### Chapter 4 -- Dynamic Reconfiguration and Intelligent Offloading
+  - The Deployment Problem
+    - Static vs. dynamic deployment and the challenges of runtime reconfiguration.
+  - Declarative and Green Deployment Planning
+    - Optimization strategies and declarative constraints for mapping logical components to physical edge/cloud nodes.
+  - Machine Learning for Distributed Network Topologies
+    - Reinforcement Learning & Deep Q-Learning: Basics of agent-based learning in changing environments.
+    - Graph Neural Networks (GNNs): How GNNs can represent and analyze edge-cloud topologies.

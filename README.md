@@ -1,10 +1,17 @@
 # Engineering Collective Systems in the Wearable Edge-Cloud Continuum: Models and Platform
 
-## Papers
+## Publications
 
-As following, the list of papers relevant to the thesis divided in hypothetical chapters.
+The thesis is organized around two main contributions, and the publications below follow the same narrative flow.
 
-### Languages
+### Model
+
+This first contribution covers the pulverization model, language support with LLMs, and the demonstrator that ties the model to a concrete use case.
+
+- **Scalability through Pulverisation: Declarative deployment reconfiguration at runtime**
+  - _Authors_: Nicolas Farabegoli, Danilo Pianini, Roberto Casadei, Mirko Viroli
+  - _DOI_: [10.1016/j.future.2024.07.042](https://doi.org/10.1016/j.future.2024.07.042)
+  - _Year_: 2024
 
 - **A Language-based Approach to Macroprogramming for IoT Systems through Large Language Models**
   - _Authors_: Gianluca Aguzzi, Nicolas Farabegoli, Mirko Viroli
@@ -20,25 +27,25 @@ As following, the list of papers relevant to the thesis divided in hypothetical 
   - _Authors_: Nicolas Farabegoli, Luca Tassinari, Gianluca Aguzzi, Mirko Viroli
   - _DOI_: Accepted at [COORDINATION 2026](http://www.discotec.org/2026/coordination.html).
   - _Year_: 2026
-  
-### Platforms/Deployments
-
-- **Flexible Self-organisation for the Cloud-Edge Continuum: a Macro-programming Approach**
-  - _Authors_: Nicolas Farabegoli, Mirko Viroli, Roberto Casadei
-  - _DOI_: [10.1109/acsos61780.2024.00020](https://doi.org/10.1109/acsos61780.2024.00020)
-  - _Year_: 2024
-
-- **Scalability through Pulverisation: Declarative deployment reconfiguration at runtime**
-  - _Authors_: Nicolas Farabegoli, Danilo Pianini, Roberto Casadei, Mirko Viroli
-  - _DOI_: [10.1016/j.future.2024.07.042](https://doi.org/10.1016/j.future.2024.07.042)
-  - _Year_: 2024
 
 - **A Demonstrator for Self-organizing Robot Teams**
   - _Authors_: Gianluca Aguzzi, Lorenzo Bacchini, Martina Baiardi, Roberto Casadei, Angela Cortecchia, Davide Domini, Nicolas Farabegoli, Danilo Pianini, Mirko Viroli
   - _DOI_: [10.1007/978-3-031-95589-1_12](https://doi.org/10.1007/978-3-031-95589-1_12)
   - _Year_: 2025
 
-### Dynamic Reconfiguration
+### Deployments and Reconfiguration
+
+This second contribution focuses on deployment-level concerns, runtime reconfiguration, and intelligent offloading in the edge-cloud continuum.
+
+- **Flexible Self-organisation for the Cloud-Edge Continuum: a Macro-programming Approach**
+  - _Authors_: Nicolas Farabegoli, Mirko Viroli, Roberto Casadei
+  - _DOI_: [10.1109/acsos61780.2024.00020](https://doi.org/10.1109/acsos61780.2024.00020)
+  - _Year_: 2024
+
+- **Dynamic IoT deployment reconfiguration: A global-level self-organisation approach**
+  - _Authors_: Nicolas Farabegoli, Danilo Pianini, Roberto Casadei, Mirko Viroli
+  - _DOI_: [10.1016/j.iot.2024.101412](https://doi.org/10.1016/j.iot.2024.101412)
+  - _Year_: 2024
 
 - **Heterogeneous GNN for collective-task offloading in cloud-edge via deep Q-learning**
   - _Authors_: Nicolas Farabegoli, Davide Domini, Gianluca Aguzzi, Mirko Viroli
@@ -49,11 +56,6 @@ As following, the list of papers relevant to the thesis divided in hypothetical 
   - _Authors_: Antonio Brogi, Roberto Casadei, Nicolas Farabegoli, Stefano Forti, Mirko Viroli
   - _DOI_: [10.1007/978-3-031-95589-1_6](https://doi.org/10.1007/978-3-031-95589-1_6)
   - _Year_: 2025
-
-- **Dynamic IoT deployment reconfiguration: A global-level self-organisation approach**
-  - _Authors_: Nicolas Farabegoli, Danilo Pianini, Roberto Casadei, Mirko Viroli
-  - _DOI_: [10.1016/j.iot.2024.101412](https://doi.org/10.1016/j.iot.2024.101412)
-  - _Year_: 2024
 
 ## Background
 
@@ -446,19 +448,14 @@ They are divided in directly related, i.e., papers directly cited in the papers 
   - _Year_: 2021
 
 ## Thesis Structure
-The thesis is structured in four main chapters, each corresponding to a specific aspect of the research conducted. The chapters are as follows:
+The thesis can be read as a three-part flow: background foundations, the model contribution, and the deployment/reconfiguration contribution.
   - Part I: Background
-  - Part II: (Macro-)Programming Languages for large-scale Distributed Systems
-  - Part III: Platforms and Deployments for Collective Systems in the Edge-Cloud Continuum
-  - Part IV: Dynamic Reconfiguration in Collective-Adaptive Systems
-
-## Chapter 1 -- Introduction and Contributions
-  - Problem statement
-  - Research questions (?)
-  - Contributions
-  - Thesis structure
+  - Part II: Model
+  - Part III: Deployments and Reconfiguration
 
 ## Part I -- Background
+
+This part gathers the background needed to read both contributions.
 
 ### Chapter 2 -- Programming Models for Large-scale Distributed Systems
   - Introduction to Macroprogramming
@@ -492,3 +489,70 @@ The thesis is structured in four main chapters, each corresponding to a specific
   - Machine Learning for Distributed Network Topologies
     - Reinforcement Learning & Deep Q-Learning: Basics of agent-based learning in changing environments.
     - Graph Neural Networks (GNNs): How GNNs can represent and analyze edge-cloud topologies.
+
+## Part II -- Model
+
+This part follows the model-related publications, moving from pulverization to language and coordination support, and ending with the demonstrator that validates the approach.
+
+### Chapter 5 -- The Pulverization Model
+  - Motivation and design goals
+    - Why coarse-grained distributed systems need a finer deployment model.
+  - Core abstractions
+    - Logical vs. physical decomposition.
+    - Deployable units, placement, and runtime remapping.
+  - Semantics and guarantees
+    - What properties the model preserves during partitioning and execution.
+
+### Chapter 6 -- Language and Coordination Support for Collective Systems
+  - A Language-based Approach to Macroprogramming for IoT Systems through Large Language Models
+    - How LLMs support macroprogramming for collective IoT systems.
+  - Capabilities to Catch 'em All: Unify Choreography, Multitier and Aggregate Computing
+    - How the language unifies the main coordination paradigms used in the thesis.
+  - ScalaTropy: Multiparty Coordination with Monadic Communication Primitives
+    - How monadic communication primitives support multiparty coordination.
+
+### Chapter 7 -- A Demonstrator for Self-organizing Robot Teams
+  - Demonstrator architecture
+    - How the demonstrator connects the model and language results to a real system.
+  - Self-organizing robot team workflow
+    - End-to-end flow from specification to execution in the swarm setting.
+  - Evaluation and lessons learned
+    - Evidence that the combined approach works in practice.
+
+## Part III -- Deployments and Reconfiguration
+
+This part follows the deployment papers in publication order, from macro-programming for the cloud-edge continuum to runtime reconfiguration, deployment planning, and learning-based offloading.
+
+### Chapter 8 -- Flexible Self-organisation for the Cloud-Edge Continuum: a Macro-programming Approach
+  - Macro-programming for the continuum
+    - How collective systems are described across edge and cloud resources.
+  - Self-organisation as deployment control
+    - How the system adapts placement decisions without centralised orchestration.
+  - Early deployment abstractions
+    - The first paper-level bridge between the model and deployment layers.
+
+### Chapter 9 -- Dynamic IoT deployment reconfiguration: A global-level self-organisation approach
+  - Global-level adaptation
+    - How deployment decisions are coordinated from a system-wide perspective.
+  - Runtime reconfiguration
+    - How IoT deployments evolve while the system remains operational.
+  - Self-organisation policies
+    - How local behaviours and global goals are aligned during reconfiguration.
+
+### Chapter 10 -- Declarative Deployment Planning for Green Pulverised Collective Computational Systems
+  - Declarative planning
+    - How deployment plans are expressed as constraints and objectives.
+  - Green deployment goals
+    - How energy-aware and resource-aware criteria influence placement.
+  - Pulverised collective systems
+    - How the planner targets the deployable units introduced by the pulverisation line of work.
+
+### Chapter 11 -- Heterogeneous GNN for collective-task offloading in cloud-edge via deep Q-learning
+  - Offloading as a learning problem
+    - Why task placement in the cloud-edge continuum needs data-driven decision support.
+  - Heterogeneous topology representation
+    - How the network structure and device diversity are encoded for the learner.
+  - Deep Q-learning for collective tasks
+    - How the model selects offloading actions under changing conditions.
+  - Experimental validation
+    - How the approach is assessed on realistic collective-task scenarios.

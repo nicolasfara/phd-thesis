@@ -55,7 +55,7 @@ def remove_duplicates(bib)
 end
 
 # Load BibTeX file
-bibfile = "phd-thesis.bib"
+bibfile = "bibliography.bib"
 bib = BibTeX.open(bibfile)
 
 # Separate acronym definitions from actual references

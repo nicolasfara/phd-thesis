@@ -1,57 +1,46 @@
-@InProceedings{10.1007/978-3-030-72019-3_21,
-author = {Ricciotti, Wilmer and Cheney, James},
-editor = {Yoshida, Nobuko},
-title = {Query Lifting: Language-integrated query for heterogeneous nested collections},
-booktitle = {Programming Languages and Systems},
-year = {2021},
-publisher = {Springer International Publishing},
-address = {Cham},
-pages = {579--606},
-abstract = {Language-integrated query based on comprehension syntax is a powerful technique for safe database programming, and provides a basis for advanced techniques such as query shredding or query flattening that allow efficient programming with complex nested collections. However, the foundations of these techniques are lacking: although SQL, the most widely-used database query language, supports heterogeneous queries that mix set and multiset semantics, these important capabilities are not supported by known correctness results or implementations that assume homogeneous collections. In this paper we study language-integrated query for a heterogeneous query language {\$}{\$}{\backslash}mathcal {\{}NRC{\}}{\_}{\{}{\backslash}lambda {\}}( Set,Bag ){\$}{\$}NRC$\lambda$(Set,Bag)that combines set and multiset constructs. We show how to normalize and translate queries to SQL, and develop a novel approach to querying heterogeneous nested collections, based on the insight that ``local'' query subexpressions that calculate nested subcollections can be ``lifted'' to the top level analogously to lambda-lifting for local function definitions.},
-isbn = {978-3-030-72019-3},
-series = {Lecture Notes in Computer Science},
-volume = {12648},
-doi = {10.1007/978-3-030-72019-3_21}
+@inproceedings{10.1007/978-3-030-72019-3_21,
+  author       = {Wilmer Ricciotti and
+                  James Cheney},
+  title        = {Query Lifting - Language-integrated query for heterogeneous nested
+                  collections},
+  booktitle    = {{ESOP}},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {12648},
+  pages        = {579--606},
+  publisher    = {Springer},
+  year         = {2021}
 }
 
-@InProceedings{10.1007/978-3-031-17715-6_15,
-author="Cruz-Filipe, Luís
-and Graversen, Eva
-and Lugović, Lovro
-and Montesi, Fabrizio
-and Peressotti, Marco",
-editor="Seidl, Helmut
-and Liu, Zhiming
-and Pasareanu, Corina S.",
-title="Functional Choreographic Programming",
-booktitle="Theoretical Aspects of Computing -- ICTAC 2022",
-year="2022",
-publisher="Springer International Publishing",
-address="Cham",
-pages="212--237",
-abstract="Choreographic programming is an emerging programming paradigm for concurrent and distributed systems, where developers write the communications that should be enacted and a compiler then automatically generates a distributed implementation.",
-isbn="978-3-031-17715-6"
+
+
+@inproceedings{10.1007/978-3-031-17715-6_15,
+  author       = {Lu{\'{\i}}s Cruz{-}Filipe and
+                  Eva Graversen and
+                  Lovro Lugovic and
+                  Fabrizio Montesi and
+                  Marco Peressotti},
+  title        = {Functional Choreographic Programming},
+  booktitle    = {{ICTAC}},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {13572},
+  pages        = {212--237},
+  publisher    = {Springer},
+  year         = {2022}
 }
+
+
 
 @article{10.1016/j.tcs.2004.07.036,
-author = {Baeten, J. C. M.},
-title = {A Brief History of Process Algebra},
-year = {2005},
-issue_date = {23 May 2005},
-publisher = {Elsevier Science Publishers Ltd.},
-address = {GBR},
-volume = {335},
-number = {2--3},
-issn = {0304-3975},
-url = {https://doi.org/10.1016/j.tcs.2004.07.036},
-doi = {10.1016/j.tcs.2004.07.036},
-abstract = {This note addresses the history of process algebra as an area of research in concurrency theory, the theory of parallel and distributed systems in computer science. Origins are traced back to the early seventies of the twentieth century, and developments since that time are sketched. The author gives his personal views on these matters. He also considers the present situation, and states some challenges for the future.},
-journal = {Theor. Comput. Sci.},
-month = {may},
-pages = {131--146},
-numpages = {16},
-keywords = {history, process algebra}
+  author       = {Jos C. M. Baeten},
+  title        = {A brief history of process algebra},
+  journal      = {Theor. Comput. Sci.},
+  volume       = {335},
+  number       = {2-3},
+  pages        = {131--146},
+  year         = {2005}
 }
+
+
 
 @inproceedings{10.1109/SEFM.2008.11,
 author = {Lanese, Ivan and Guidi, Claudio and Montesi, Fabrizio and Zavattaro, Gianluigi},
@@ -1426,13 +1415,6 @@ abstract = {Several distributed programming language solutions have been propose
   note      = {PhD Thesis}
 }
 
-@misc{odersky2021scala3,
-  author = {Martin Odersky et al.},
-  title  = {Scala 3 Reference},
-  year   = {2021},
-  note   = {\url{https://docs.scala-lang.org/scala3/reference/}}
-}
-
 @article{parker1998alliance,
   title={{ALLIANCE}: An architecture for fault tolerant multirobot cooperation},
   author={Parker, Lynne E},
@@ -1522,3 +1504,23 @@ abstract = {Several distributed programming language solutions have been propose
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
+
+
+@inproceedings{wong2000kleisli,
+  title={Kleisli, a functional query system},
+  author={Wong, Limsoon},
+  booktitle={Journal of Functional Programming},
+  volume={10},
+  number={1},
+  pages={19--56},
+  year={2000},
+  publisher={Cambridge University Press}
+}
+
+@misc{odersky2021scala3,
+  title={Scala 3 Reference},
+  author={Odersky, Martin and others},
+  year={2021},
+  howpublished={\url{https://docs.scala-lang.org/scala3/reference/}},
+  note={Accessed: 2024-07-07}
+}

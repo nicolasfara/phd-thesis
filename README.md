@@ -455,7 +455,7 @@ The thesis can be read as a three-part flow: background foundations, the model c
 
 ## Part I -- Background
 
-This part gathers the background needed to read both contributions.
+This part gathers all the state of the art and background material relevant to the thesis.
 
 ### Chapter 2 -- Programming Models for Large-scale Distributed Systems
   - Introduction to Macroprogramming

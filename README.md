@@ -64,7 +64,7 @@ The thesis can be read as a three-part flow: background foundations, the model c
   - Part III: Deployments and Reconfiguration
   
 <div class="center">
-  <img src="figures/phd_thesis_infographic.png" alt="Thesis Infographic"/>
+  <img src="figures/phd_thesis_infographic_bg.png" alt="Thesis Infographic"/>
 </div>
 
 ## Part I -- Background

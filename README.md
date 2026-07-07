@@ -496,7 +496,7 @@ This part gathers all the state of the art and background material relevant to t
 
 ## Part II -- Model
 
-This part follows the model-related publications, moving from pulverization to language and coordination support, and ending with the demonstrator that validates the approach.
+This part follows the model-related publications, moving from pulverization to language and coordination support.
 
 ### Chapter 5 -- The Pulverization Model
   - Motivation and design goals
@@ -515,43 +515,16 @@ This part follows the model-related publications, moving from pulverization to l
   - ScalaTropy: Multiparty Coordination with Monadic Communication Primitives
     - How monadic communication primitives support multiparty coordination.
 
-### Chapter 7 -- A Demonstrator for Self-organizing Robot Teams
-  - Demonstrator architecture
-    - How the demonstrator connects the model and language results to a real system.
-  - Self-organizing robot team workflow
-    - End-to-end flow from specification to execution in the swarm setting.
-  - Evaluation and lessons learned
-    - Evidence that the combined approach works in practice.
-
 ## Part III -- Deployments and Reconfiguration
 
-This part follows the deployment papers in publication order, from macro-programming for the cloud-edge continuum to runtime reconfiguration, deployment planning, and learning-based offloading.
+This part explores practical deployment strategies, evolving from foundational reconfiguration policies and declarative planning toward a deep reinforcement learning approach for offloading, and concludes with an end-to-end demonstrator.
 
-### Chapter 8 -- Flexible Self-organisation for the Cloud-Edge Continuum: a Macro-programming Approach
-  - Macro-programming for the continuum
-    - How collective systems are described across edge and cloud resources.
-  - Self-organisation as deployment control
-    - How the system adapts placement decisions without centralised orchestration.
-  - Early deployment abstractions
-    - The first paper-level bridge between the model and deployment layers.
+### Chapter 7 -- Evolution of Deployment and Reconfiguration Strategies
+  - Macro-programming for the continuum and self-organisation as deployment control
+  - Dynamic IoT deployment reconfiguration and global-level adaptation
+  - Declarative deployment planning for green pulverised collective systems
 
-### Chapter 9 -- Dynamic IoT deployment reconfiguration: A global-level self-organisation approach
-  - Global-level adaptation
-    - How deployment decisions are coordinated from a system-wide perspective.
-  - Runtime reconfiguration
-    - How IoT deployments evolve while the system remains operational.
-  - Self-organisation policies
-    - How local behaviours and global goals are aligned during reconfiguration.
-
-### Chapter 10 -- Declarative Deployment Planning for Green Pulverised Collective Computational Systems
-  - Declarative planning
-    - How deployment plans are expressed as constraints and objectives.
-  - Green deployment goals
-    - How energy-aware and resource-aware criteria influence placement.
-  - Pulverised collective systems
-    - How the planner targets the deployable units introduced by the pulverisation line of work.
-
-### Chapter 11 -- Heterogeneous GNN for collective-task offloading in cloud-edge via deep Q-learning
+### Chapter 8 -- Heterogeneous GNN for collective-task offloading in cloud-edge via deep Q-learning
   - Offloading as a learning problem
     - Why task placement in the cloud-edge continuum needs data-driven decision support.
   - Heterogeneous topology representation
@@ -560,3 +533,11 @@ This part follows the deployment papers in publication order, from macro-program
     - How the model selects offloading actions under changing conditions.
   - Experimental validation
     - How the approach is assessed on realistic collective-task scenarios.
+
+### Chapter 9 -- A Demonstrator for Self-organizing Robot Teams
+  - Demonstrator architecture
+    - How the demonstrator connects the pulverization model, language results, and deployment strategies to a real system.
+  - Self-organizing robot team workflow
+    - End-to-end flow from specification to execution in the swarm setting.
+  - Evaluation and lessons learned
+    - Evidence that the approach works in practice.

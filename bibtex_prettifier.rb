@@ -66,7 +66,7 @@ references = remove_duplicates(references)
 remove_redundant_url(references)
 
 # Overwrite the original file with acronyms followed by cleaned references
-output_file = "phd-thesis.bib"
+output_file = "bibliography.bib"
 File.open(output_file, 'w') do |f|
   f.write(acronyms.to_s)     # Write the acronym definitions first
   f.write(references.to_s)   # Write the cleaned references

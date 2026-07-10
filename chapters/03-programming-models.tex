@@ -16,7 +16,8 @@
 \subsection{Aggregate Computing}
 \label{subsec:aggregate-computing}
 
-\lipsum[1]
+% TODO(canovaccio): expand into full prose.
+Field-based coordination provides the theoretical backbone for much of this thesis' treatment of self-organisation: system state and behaviour are expressed as \emph{computational fields} -- functions mapping devices, over time, to values -- and collective behaviour emerges from the local computation and propagation of such fields. The field calculus distils this idea into a minimal, universal functional model with equivalent local and aggregate semantics~\cite{VIROLI2019100486}, later extended to a higher-order calculus that supports passing fields (including field-producing programs) as first-class values~\cite{AVDPB-TOCL2019}. These foundations make it possible to prove properties such as self-stabilisation once, at the level of reusable language constructs, and have them transfer by composition to whole applications.
 
 \subsection{Choreographic Programming}
 \label{subsec:choreographic-programming}
@@ -27,6 +28,12 @@
 \label{subsec:multitier-programming}
 
 \lipsum[1]
+
+\subsection{Platforms and Toolchains for Collective Intelligence}
+\label{subsec:cas-platforms}
+
+% TODO(canovaccio): expand into full prose.
+Several toolchains turn the principles of Section~\ref{subsec:aggregate-computing} into engineering practice. ScaFi embeds aggregate computing as a Scala DSL with a companion runtime~\cite{casadei2022scafi}, Protelis offers a dedicated, practical aggregate-programming language~\cite{pianini2015protelis}, and FCPP targets resource-constrained settings with a C++-based implementation~\cite{DBLP:journals/scp/AudritoT24}. The eXchange Calculus (XC) revisits the design of the underlying language itself, aiming for a smaller, more composable core for distributed collective systems~\cite{DBLP:journals/jss/AudritoCDSV24}. Experience reports on declarative macro-programming with aggregate computing distil lessons learned from applying these tools in practice~\cite{10.1145/3678232.3678235}, while more recent work explores augmenting aggregate computing with reinforcement learning~\cite{aguzzi2022towards} and applies collective self-organisation to concrete edge scenarios such as aggregate processes~\cite{CASADEI2021104081} and proximity-aware, self-federated learning~\cite{DBLP:journals/iot/DominiFAVE26}. Together, these platforms constitute the closest prior art to the deployment and coordination model developed later in the thesis.
 
 \section{Advanced Linguistic Abstractions for Coordination}
 \label{sec:advanced-linguistic-abstractions}

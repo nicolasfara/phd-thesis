@@ -5,6 +5,7 @@
 \usepackage{notes}
 \usepackage{shortcuts}
 \usepackage{lipsum}
+\usepackage{bookmark}
 \usepackage{cleveref}
 
 \mainlinespacing{1.241} % line spacing in mainmatter, comment to default (1)
@@ -61,6 +62,12 @@ Optional. Max 1 page.
 
 \include{chapters/10-demonstrator}
 
+% Detach the conclusions from Part III: top-level PDF bookmark, without
+% introducing a dedicated \part (the ToC gap is added inside the chapter file,
+% where the write order relative to the chapter entry is guaranteed).
+\bookmarksetup{startatroot}
+\include{chapters/11-conclusions}
+
 %----------------------------------------------------------------------------------------
 % BIBLIOGRAPHY
 %----------------------------------------------------------------------------------------
@@ -68,6 +75,8 @@ Optional. Max 1 page.
 \backmatter
 
 \nocite{*} % comment this to only show the referenced entries from the .bib file
+% TODO(canovaccio): remove \nocite{*} before the final version, so the
+% bibliography only lists actually cited entries.
 \bibliographystyle{alpha}
 \bibliography{bibliography,background}
 

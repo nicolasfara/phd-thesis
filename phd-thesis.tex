@@ -8,6 +8,10 @@
 \usepackage{bookmark}
 \usepackage{import}
 \usepackage{cleveref}
+% nohyperlinks: no acronym-list page exists (yet), so \ac must not emit links.
+% Drop the option if a list of acronyms is added to the front matter.
+\usepackage[nohyperlinks]{acronym}
+\input{acronyms}
 
 \graphicspath{{figures/}}
 

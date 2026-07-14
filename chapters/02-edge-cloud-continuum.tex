@@ -43,7 +43,7 @@ virtualised infrastructure between mobile devices and the cloud,
 trading the latency of a wide-area link for that of a local one~\cite{DBLP:journals/pervasive/SatyanarayananBCD09}.
 %
 Fog computing generalised this idea into a hierarchical layer of gateways and micro data centres between data sources and the cloud,
-driven by the amount and spread of IoT traffic~\cite{DBLP:conf/sigcomm/BonomiMZA12}.
+driven by the amount and spread of \ac{IoT} traffic~\cite{DBLP:conf/sigcomm/BonomiMZA12}.
 %
 Edge computing pushed the same idea further,
 placing computation directly at or near the devices that generate the data rather than at an intermediate layer~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
@@ -59,8 +59,7 @@ and open problems~\cite{DBLP:journals/jss/ArcangeliBL15}.
 More recent work treats deployment for the continuum not as a one-off placement decision,
 but as a process that can be reconfigured at any time.
 %
-This matches an older argument in software architecture research: a system's components and connectors should be built to change while running,
-not patched together as an afterthought~\cite{DBLP:conf/icse/KramerM07}.
+This matches an older argument in software architecture research: a system's components and connectors should be built to change while running~\cite{DBLP:conf/icse/KramerM07}.
 %
 Pulverisation, for instance, breaks applications into fine-grained units whose deployment can be reconfigured at runtime,
 for any kind of application~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
@@ -115,8 +114,7 @@ when,
 and under which constraints.
 %
 Device and network heterogeneity therefore compound,
-and the programming and deployment abstractions examined in \cref{chap:programming-models} and \cref{sec:architectural-paradigms} have to accommodate both at once,
-rather than assume a uniform target for computation.
+and the programming and deployment abstractions examined in \cref{chap:programming-models} and \cref{sec:architectural-paradigms} have to accommodate both at once.
 
 Energy is a further axis of heterogeneity that does not track computational capacity.
 %
@@ -149,17 +147,17 @@ where a route is not computed in advance but assembled hop by hop as devices hap
 
 Drone swarms and other ad hoc networks are a particularly extreme case of this volatility.
 %
-A flying ad hoc network (FANET) is more volatile than a ground-based ad hoc network for a simple reason: its nodes move in three dimensions and at speed,
+A \ac{FANET} is more volatile than a ground-based ad hoc network for a simple reason: its nodes move in three dimensions and at speed,
 so links form and break faster than most routing protocols were designed for.
 %
-FANETs are consequently studied as a networking class of their own,
+\acp{FANET} are consequently studied as a networking class of their own,
 with dedicated mobility models and protocols~\cite{DBLP:journals/adhoc/BekmezciST13}.
 %
-Surveys of UAV communication networks routinely list delay-tolerant,
+Surveys of \ac{UAV} communication networks routinely list delay-tolerant,
 store-carry-forward schemes as one of the standard design options,
 alongside clustering and cooperative relaying~\cite{DBLP:journals/comsur/GuptaJV16}.
 %
-Ground robot swarms and dense IoT deployments (\cref{subsec:swarm-robotics} and \cref{subsec:iot-systems}) face a milder version of the same problem,
+Ground robot swarms and dense \ac{IoT} deployments (\cref{subsec:swarm-robotics} and \cref{subsec:iot-systems}) face a milder version of the same problem,
 since packing enough autonomous devices into a short-range ad hoc network is enough on its own to keep the topology dynamic.
 
 Coordination mechanisms for the continuum need to consider such dynamic topologies as a first-class concern.
@@ -186,7 +184,7 @@ and energy constraints with a need for both local autonomy and collective coordi
 exercising its heterogeneity and volatility at once.
 %
 This section surveys two concrete instances of such pervasive environments,
-IoT ecosystems (\cref{subsec:iot-systems}) and swarm robotics (\cref{subsec:swarm-robotics}),
+\ac{IoT} ecosystems (\cref{subsec:iot-systems}) and swarm robotics (\cref{subsec:swarm-robotics}),
 frames them as instances of the broader class of collective adaptive systems (\cref{subsec:collective-adaptive-systems}),
 and closes by drawing out the deployment and coordination challenges they share (\cref{subsec:environment-challenges}),
 which motivate the architectural paradigms reviewed next, in \cref{sec:architectural-paradigms}.
@@ -194,38 +192,37 @@ which motivate the architectural paradigms reviewed next, in \cref{sec:architect
 \subsection{Pervasive IoT Systems}
 \label{subsec:iot-systems}
 
-IoT ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} populate the continuum with large numbers of sensing and actuating devices,
+\ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} populate the continuum with large numbers of sensing and actuating devices,
 connected through the heterogeneous links discussed in \cref{subsec:continuum-characteristics}.
 %
 Individually, such devices run comparatively simple sensing or actuation loops;
-what makes an IoT deployment interesting is the aggregate,
-collective behaviour that emerges once many of them are coordinated toward a shared goal,
+what makes an \ac{IoT} deployment interesting is the collective behaviour that emerges once many of them are coordinated toward a shared goal,
 such as monitoring a building,
 a field,
 or a city district.
 %
-The notion of \emph{aggregate process} was introduced precisely to capture this shift in perspective:
-a concurrent, self-organising computation whose execution and interactions are sustained by a dynamic team of devices,
-and whose spatial region and set of participants can vary opportunistically over time~\cite{CASADEI2021104081}.
+The team of devices sustaining such a collective behaviour is not fixed:
+devices join and leave as they move,
+fail,
+or run out of power,
+so the computation must survive changes in its own set of participants (\cref{subsec:network-volatility}).
 %
-Programming at the level of the aggregate rather than the individual device is,
-in this view,
-a consequence of the continuum's own volatility (\cref{subsec:network-volatility}) rather than a stylistic choice:
-the team of devices sustaining a given computation cannot be fixed in advance if the devices themselves come and go.
+How such a changing collective can be programmed as a single unit is the subject of \cref{chap:programming-models};
+what matters here is the deployment problem it creates.
 
-Realising this view in practice requires deciding,
+Any deployment of such a service must decide,
 continuously,
 which devices host which part of the computation.
 %
-Dynamic IoT deployment reconfiguration has been studied as a global-level self-organisation problem,
+Dynamic \ac{IoT} deployment reconfiguration has been studied as a global-level self-organisation problem,
 in which the ecosystem itself -- rather than an external orchestrator -- decides how to redistribute computation as devices join,
 leave,
 or change state~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 %
-Because trying out reconfiguration strategies on physical IoT deployments is costly and slow,
+Because trying out reconfiguration strategies on physical \ac{IoT} deployments is costly and slow,
 a complementary line of work develops simulation-based methodologies to estimate the deployment performance of smart collective services before they run on real infrastructure~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
 %
-Both directions treat deployment as a first-class, ongoing concern rather than a one-off placement decision,
+Both directions treat deployment as a first-class, ongoing concern,
 consistent with the general argument already made for the continuum in \cref{subsec:continuum-evolution}.
 
 \subsection{Swarm Robotics}
@@ -259,7 +256,7 @@ isolating per-robot state behind message passing~\cite{DBLP:conf/iros/YiDLD0WY20
 the actor model itself is treated in more general terms in \cref{subsec:actor-model-edge}.
 %
 Existing robotics middleware has been extended in the same direction,
-as with the swarm-specific package built on top of ROS~\cite{rosMicros_swarm_frameworkWiki},
+as with the swarm-specific package built on top of the \ac{ROS}~\cite{rosMicros_swarm_frameworkWiki},
 and toolkits such as PySwarming lower the barrier further by packaging common swarm algorithms for direct reuse~\cite{DBLP:journals/jossw/AndradeFS23}.
 
 This body of work has been validated largely on a shared set of experimental platforms.
@@ -274,33 +271,32 @@ multi-engine infrastructure needed to evaluate swarm algorithms at scale before 
 \subsection{Collective Adaptive Systems}
 \label{subsec:collective-adaptive-systems}
 
-IoT ecosystems and robot swarms are best understood as two instances of a broader class,
-termed \emph{Collective Adaptive Systems} (CAS) in a dedicated strand of the software engineering literature:
+\ac{IoT} ecosystems and robot swarms are best understood as two instances of a broader class,
+called \emph{Collective Adaptive Systems} (CAS)\acused{CAS}:
 systems composed of large numbers of autonomous, interacting entities whose collective behaviour must remain correct and useful despite continuous change in membership,
 environment,
 and goals~\cite{DBLP:journals/sttt/NicolaJW20}.
 %
-Framed this way, the aggregate processes of \cref{subsec:iot-systems} and the self-organising robot teams of \cref{subsec:swarm-robotics} are two applications of the same underlying requirement:
-a CAS cannot assume a fixed set of participants or a fixed topology,
+Framed this way, the collective \ac{IoT} services of \cref{subsec:iot-systems} and the self-organising robot teams of \cref{subsec:swarm-robotics} are two applications of the same underlying requirement:
+a \ac{CAS} cannot assume a fixed set of participants or a fixed topology,
 so its correctness has to be argued about the collective's behaviour under change,
 not about any single entity in isolation.
 
 Meeting this requirement calls for architecture models that treat reconfiguration as an intrinsic, formally grounded part of system behaviour,
 in the sense already argued for self-managed systems in general in \cref{subsec:continuum-evolution}~\cite{DBLP:conf/icse/KramerM07}.
 %
-The DReAM framework instantiates this idea for CAS specifically,
-modelling dynamic reconfiguration as part of a system's architecture rather than as an exception to it,
+The DReAM framework instantiates this idea for \ac{CAS} specifically,
+modelling dynamic reconfiguration as part of a system's architecture,
 with a formal semantics that supports reasoning about the system as it reconfigures~\cite{DBLP:journals/sttt/NicolaMS20}.
 %
 At the programming level, a recent survey situates \emph{macroprogramming} -- specifying the behaviour of a collective as a whole,
-rather than programming individual nodes -- as the dominant strategy for engineering CAS at scale~\cite{DBLP:journals/csur/Casadei23};
-\cref{chap:programming-models} examines in detail the programming models that realise this strategy,
-including the aggregate computing approach already introduced through the aggregate process notion of \cref{subsec:iot-systems}.
+rather than programming individual nodes -- as the dominant strategy for engineering \ac{CAS} at scale~\cite{DBLP:journals/csur/Casadei23};
+\cref{chap:programming-models} examines in detail the programming models that realise this strategy.
 
 \subsection{Deployment and Coordination Challenges}
 \label{subsec:environment-challenges}
 
-IoT ecosystems and robot swarms, despite their different physical form, put pressure on the continuum in the same two ways.
+\ac{IoT} ecosystems and robot swarms, despite their different physical form, put pressure on the continuum in the same two ways.
 %
 First, both must place computation and coordination logic onto a set of nodes that is heterogeneous in the sense of \cref{subsec:continuum-characteristics} -- constrained sensor nodes next to gateways and cloud servers -- and mobile or intermittently connected in the sense of \cref{subsec:network-volatility},
 so that no placement decision can be assumed to remain valid for long.
@@ -308,9 +304,9 @@ so that no placement decision can be assumed to remain valid for long.
 Second, both need the coordination logic itself,
 not only its placement,
 to keep working as the set of participating devices changes:
-the aggregate processes of \cref{subsec:iot-systems} and the ad hoc robot teams of \cref{subsec:swarm-robotics} are two answers to the same problem of coordinating a collective whose membership is not fixed in advance.
+the collective \ac{IoT} services of \cref{subsec:iot-systems} and the ad hoc robot teams of \cref{subsec:swarm-robotics} are two answers to the same problem of coordinating a collective whose membership is not fixed in advance.
 
-Deployment for such systems has to be revisited continuously rather than decided once,
+Deployment for such systems has to be revisited continuously,
 echoing the general argument made for the continuum at large in \cref{subsec:continuum-evolution}.
 %
 Fine-grained, runtime-reconfigurable deployment models such as pulverisation show one way of acting on this argument directly,
@@ -324,23 +320,118 @@ in \cref{sec:architectural-paradigms}.
 \section{Architectural Paradigms for Pervasive Systems}
 \label{sec:architectural-paradigms}
 
-% TODO(canovaccio): expand into full prose.
-Mainstream software architecture offers several paradigms for structuring distributed applications -- microservices, Function-as-a-Service (FaaS), and the actor model chief among them -- each of which has been adapted, with varying success, to edge and pervasive settings. This section reviews these paradigms as currently applied at the edge and then argues that they fall short of the fine-grained, dynamic deployment needs identified in \cref{sec:target-environments}.
+Mainstream software architecture has moved through a progression of increasingly fine-grained units of deployment:
+from monolithic applications,
+through microservices,
+to individual functions and actors.
+%
+Each step of this progression has been adapted to edge and pervasive settings,
+since smaller units are easier to place on constrained nodes and cheaper to move between them.
+%
+This section reviews how microservices and \ac{FaaS} on the one side (\cref{subsec:microservices-faas-edge}),
+and the actor model on the other (\cref{subsec:actor-model-edge}),
+have been brought to the edge,
+and then argues that all three retain assumptions from their cloud origins that conflict with the fine-grained,
+dynamic deployment needs identified in \cref{subsec:environment-challenges} (\cref{subsec:paradigm-limitations}).
 
 \subsection{Microservices and FaaS at the Edge}
 \label{subsec:microservices-faas-edge}
 
-% TODO(canovaccio): expand into full prose.
-Microservices~\cite{DBLP:books/sp/17/DragoniGLMMMS17} and FaaS~\cite{DBLP:books/sp/17/BaldiniCCCFIMMRSS17} both decompose applications into independently deployable units, which makes them attractive starting points for edge deployment, while classification frameworks for software component models offer the conceptual vocabulary to compare them against edge-specific alternatives~\cite{DBLP:journals/tse/CrnkovicSVC11}.
+Microservices structure an application as a set of small services,
+each running in its own process,
+communicating through lightweight protocols,
+and deployed,
+scaled,
+and replaced independently of the others~\cite{DBLP:books/sp/17/DragoniGLMMMS17}.
+%
+Independent deployability makes the model attractive for the continuum:
+a unit that can be deployed on its own can,
+in principle,
+be placed on an edge node rather than in the cloud.
+%
+Osmotic computing develops this observation into an architectural vision,
+in which microservices migrate between edge and cloud infrastructure in response to resource availability and application requirements,
+by analogy with osmotic pressure balancing concentrations across a membrane~\cite{DBLP:journals/cloudcomp/VillariFDRR16}.
+
+\ac{FaaS} pushes the decomposition one step further,
+structuring applications as stateless functions that are triggered by events and whose provisioning,
+scaling,
+and lifecycle are delegated entirely to the platform~\cite{DBLP:books/sp/17/BaldiniCCCFIMMRSS17}.
+%
+Fine granularity and demand-driven activation suit edge workloads,
+which are often bursty and tied to local events,
+and dedicated platforms have followed:
+serverless platforms have been prototyped specifically for edge infrastructure~\cite{DBLP:conf/icfc/BaresiM19},
+and tinyFaaS shrinks the platform itself to fit a single constrained edge node,
+dropping the cluster-level machinery that cloud \ac{FaaS} platforms assume~\cite{DBLP:conf/icfc/PfandzelterB20}.
+
+Seen through the classification of software component models introduced in \cref{subsec:continuum-characteristics}~\cite{DBLP:journals/tse/CrnkovicSVC11},
+the two paradigms differ mainly in deployment unit and binding time:
+a microservice is a long-lived component bound to its host at deployment time,
+whereas a function is bound at invocation and lives only for the duration of the call.
+%
+Both, however, assume a managed runtime substrate -- a container orchestrator or a \ac{FaaS} platform -- on every node that may host a unit,
+which already restricts which parts of the continuum they can reach.
 
 \subsection{The Actor Model at the Edge}
 \label{subsec:actor-model-edge}
 
-% TODO(canovaccio): expand into full prose.
-The actor model~\cite{DBLP:conf/ijcai/HewittBS73}, with its emphasis on isolated, message-passing units of computation, has also been proposed as a structuring principle for pervasive systems, as illustrated by actor-based frameworks for swarm robotics~\cite{DBLP:conf/iros/YiDLD0WY20}.
+The actor model structures a concurrent system as a collection of actors:
+isolated units of state and behaviour that interact only by asynchronous message passing,
+and can create further actors in response to the messages they receive~\cite{DBLP:conf/ijcai/HewittBS73}.
+%
+Because actors share no memory,
+the same abstraction covers concurrency within a node and distribution across nodes,
+and an actor can in principle be placed on any node able to deliver its messages.
+%
+The model therefore offers the finest deployment granularity of the paradigms considered here,
+at the scale of an individual stateful object rather than a service or a function.
+
+Modern actor runtimes have made placement the platform's responsibility.
+%
+Orleans, for instance, activates its actors on demand,
+recovers them on failure,
+and reclaims them when idle,
+without the application ever managing where they run~\cite{DBLP:conf/cloud/BykovGKLPT11}.
+%
+This location transparency decouples application logic from placement more thoroughly than either microservices or \ac{FaaS} achieve.
+%
+In pervasive settings the model has been applied directly,
+as in the actor-based framework for swarm robotic software already discussed in \cref{subsec:swarm-robotics},
+which isolates per-robot state behind message passing~\cite{DBLP:conf/iros/YiDLD0WY20}.
 
 \subsection{Limitations for Fine-Grained, Dynamic Deployment}
 \label{subsec:paradigm-limitations}
 
-% TODO(canovaccio): expand into full prose.
-Despite this adaptability, microservices, FaaS, and actor-based architectures largely retain deployment granularities and lifecycles designed for comparatively stable cloud infrastructure: units of deployment are coarser, and re-placement across nodes is typically not a first-class, runtime-programmable operation. This confirms, at the architectural level, the partitioning and deployment limitations already identified in \cref{subsec:continuum-evolution}, \cref{subsec:continuum-characteristics}, and \cref{subsec:environment-challenges}. Pulverisation is presented directly as a response to this gap, decomposing applications into much finer-grained units whose deployment can be declaratively reconfigured at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24} -- a direction this thesis builds upon and develops in full in \cref{chap:pulverization}, after \cref{chap:dynamic-reconfiguration} takes up the runtime and orchestration side of the same gap.
+Despite these adaptations,
+all three paradigms retain deployment granularities and lifecycles designed for comparatively stable cloud infrastructure.
+%
+A microservice's unit of deployment is a container image running under an orchestrator,
+which presumes nodes capable of hosting a container runtime and a cluster whose membership changes slowly;
+neither presumption holds towards the constrained,
+volatile end of the continuum characterised in \cref{subsec:continuum-characteristics} and \cref{subsec:network-volatility}.
+%
+Re-placing a microservice is consequently an operations-level action -- rescheduling a container -- that the application itself can neither express nor trigger.
+
+\ac{FaaS} narrows the deployment unit but constrains it in another way:
+functions are stateless by construction,
+so application state moves into backing services that are typically cloud-hosted,
+reintroducing the wide-area round trips that motivated edge execution in the first place.
+%
+The actor model avoids this by keeping state inside the actor,
+and runtimes such as Orleans show that placement can be automated;
+the placement policy,
+however,
+belongs to the runtime,
+is tuned for data-centre clusters,
+and is not exposed to the application as something to be programmed or adapted.
+%
+In none of the three paradigms is the mapping from logical units to physical hosts a first-class,
+runtime-programmable artefact.
+
+This confirms, at the architectural level, the partitioning and deployment limitations already identified in \cref{subsec:continuum-evolution} and \cref{subsec:environment-challenges}.
+%
+Pulverisation responds directly to this gap,
+decomposing applications into much finer-grained units whose deployment can be declaratively reconfigured at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24} --
+a direction this thesis builds upon and develops in full in \cref{chap:pulverization},
+after \cref{chap:dynamic-reconfiguration} takes up the runtime and orchestration side of the same gap.

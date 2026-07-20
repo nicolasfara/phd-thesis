@@ -261,6 +261,70 @@ Jolie realises the resulting service-oriented protocols directly as a programmin
 giving choreographic programming, like aggregate computing before it (\Cref{subsec:cas-platforms}),
 a route from formal model to deployable runtime.
 
+\subsubsection{Execution Model}
+\label{subsubsec:choreography-execution-model}
+
+A choreography fixes, in one global program, both the set of participants -- named roles such as \texttt{Buyer} or \texttt{Seller} -- and the sequence of interactions between them:
+an interaction statement names the value computed by a sender, the channel it travels on, and the receiver bound to it,
+so that the whole multiparty protocol reads as a single piece of source code rather than as one process per participant~\cite{Montesi:2014}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/epp.png}
+    \caption{Endpoint projection applied to a two-party choreography, adapted from Wiersdorf~\cite{wiersdorf2024chorex}.
+    The global choreography (top) specifies a key-exchange-and-encryption protocol between \texttt{Alice} and \texttt{Bob} as interaction statements of the form \texttt{Sender.expr() \textasciitilde> Receiver.(binder)}; projection compiles it into one local program per role (bottom), rewriting each interaction into a matching \texttt{send} or \texttt{receive} call.}
+    \label{fig:epp}
+\end{figure}
+
+\emph{Endpoint projection} (EPP) turns this global description into an implementation, exactly as \Cref{fig:epp} illustrates on that two-party protocol:
+for each role, EPP erases every interaction the role is not party to and keeps only the statements -- sends, receives, local computation -- that mention it,
+yielding one process per participant that, together, reproduce exactly the behaviour prescribed by the choreography~\cite{10.1145/2429069.2429101}.
+%
+This is only sound if the choreography satisfies a \emph{well-formedness} condition on conditionals and choice:
+whenever a role's continuation depends on a decision taken elsewhere,
+that decision must be communicated to it before the branch is taken,
+so that no two projected processes can ever disagree about which branch of the protocol they are in~\cite{10.1145/2429069.2429101,Montesi2023chor}.
+%
+Enforcing this statically, rather than checking it against an implementation after the fact, is what gives choreographic programming its central guarantee:
+any program produced by EPP from a well-formed choreography is deadlock-free and communication-safe by construction, not merely in the instances tested~\cite{10.1145/2429069.2429101}.
+%
+Typed accounts of EPP strengthen this correspondence into a proof:
+Pirouette derives, in Coq, that message-type soundness of the underlying language transfers through projection to deadlock freedom of the whole system~\cite{10.1145/3498684},
+and functional choreographic programming develops the same correspondence for a higher-order, effectful setting~\cite{10.1007/978-3-031-17715-6_15}.
+%
+Library embeddings turn EPP itself into an ordinary function of the host language, rather than a separate compiler pass:
+Choral compiles a choreography to a set of ordinary Java classes, one per role, so that projection happens ahead of time and the resulting endpoints are plain object-oriented libraries~\cite{10.1145/3632398};
+HasChor instead performs projection at run time, interpreting a choreography written as a free monad of located computations directly against each role's local view~\cite{10.1145/3607849},
+and ChoRus repeats this run-time construction in Rust, at the cost of surface-syntax convenience but without leaving the host language's ecosystem~\cite{kashiwa2024chorus}.
+%
+Where aggregate computing (\Cref{subsubsec:ac-execution-model}) admits an open, dynamically changing neighbourhood and derives correctness from alignment and self-stabilisation over an unbounded field,
+the choreographic execution model instead starts from a closed, statically named set of roles,
+and derives correctness from a projection that type-checks once, at compile time, against that fixed set;
+dynamic choreographies and process polymorphism relax exactly this assumption,
+letting the set of projected processes grow or be instantiated at runtime instead of being fixed in the source choreography~\cite{Preda:2017,GRAVERSEN_HIRSCH_MONTESI_2024},
+which is what makes the resulting model compatible at all with the changing membership of a \ac{CAS} (\Cref{subsec:collective-adaptive-systems}).
+
+\subsubsection{Application Scenarios}
+
+The paradigm's earliest and still most direct application is service-oriented computing,
+the setting the W3C Web Services Choreography Description Language targeted before an operational semantics existed for it~\cite{WSCDL}:
+Jolie realises the resulting multiparty service protocols directly as a programming language,
+compiling a service choreography down to the message-passing code that each participating service executes~\cite{DBLP:books/sp/wsf14/MontesiGZ14}.
+%
+The same protocol-centric view is used purely for specification and verification rather than code generation:
+Scribble describes multiparty session protocols in a syntax close to a choreography and checks an existing implementation against them~\cite{DBLP:conf/icdcit/HondaMBCY11},
+a discipline since embedded directly in the type system of a systems language~\cite{chen_et_al:LIPIcs.ECOOP.2022.22}
+and given a lightweight, purely functional presentation~\cite{Lindley:2017}.
+%
+More recent work moves choreographic programming from a research language onto deployable cloud infrastructure:
+census-polymorphic choreographies target multi-tenant services whose participant count is not fixed until deployment~\cite{DBLP:journals/pacmpl/BatesKJSKN25},
+and lightweight choreographic cloud services optimise the resulting projected processes for the resource constraints of real cloud deployments~\cite{DBLP:conf/pepm/IonescuR26}.
+%
+Across these scenarios, the unit being coordinated is a small, fixed, and named set of services engaged in a protocol with a definite shape -- a purchase, a two-factor login, a request-response exchange --
+a different problem shape from the open, populous, and anonymous collectives that motivate aggregate computing's swarms and edge deployments (\Cref{subsubsec:ac-execution-model});
+the dynamic and polymorphic choreographies already noted above are the closest this line of work has come to that setting,
+and \Cref{chap:language-and-coordination} returns to what a coordination language for collective systems can still borrow from it.
+
 \subsection{Multitier Programming}
 \label{subsec:multitier-programming}
 
@@ -294,15 +358,45 @@ Type-safe dynamic placement with first-class placed values goes further,
 letting where a value lives change at runtime while keeping placement checked statically~\cite{Zakhour:2023:TypeSafe},
 the multitier counterpart of the dynamic-membership problem already raised for choreographies in \Cref{subsec:choreographic-programming}.
 %
-Where placement is instead treated as an optimisation problem,
-search-based tier assignment automatically decides which tier should host which fragment of a multi-tier web application to maximise offline availability~\cite{Philips:2018};
-exceptional asynchronous session types show that the tier boundary can be dissolved altogether,
+Exceptional asynchronous session types show that the tier boundary can be dissolved altogether,
 typing client-server interaction with the same session-typed discipline used for the choreographies of \Cref{subsec:choreographic-programming},
 without a syntactic notion of tier at all~\cite{10.1145/3290341}.
 
-The remaining piece is how tiers exchange data once they are placed.
+\subsubsection{Execution Model}
+\label{subsubsec:multitier-execution-model}
+
+A multitier program is not executed directly:
+a compiler slices the single source into one deployable unit per tier,
+together with the communication code the resulting units need to interact once they run on separate machines~\cite{DBLP:journals/csur/WeisenburgerWS20}.
 %
-Multitier languages have converged on language-integrated query as the mechanism of choice,
+Two largely independent choices govern how that slicing happens.
+%
+The first is where the placement decision comes from.
+%
+Explicit placement, the norm among the languages surveyed above, leaves the assignment of each program fragment to the programmer, expressed through whichever mechanism -- annotation, escaping and quoting, or a placement type -- the language provides.
+%
+Automatic placement instead derives the assignment from a static analysis of the whole program:
+the source-to-source transformation already noted above for turning sequential programs into multi-tier applications assigns primitive operations to tiers and lets the analysis insert the resulting remote calls~\cite{10.1145/1040305.1040324},
+and search-based tier assignment goes further still, optimising the split for a metric such as offline availability instead of applying a fixed placement rule~\cite{Philips:2018}.
+%
+The second choice is how the split programs relate to each other once execution begins.
+%
+Partitioned execution splits the program into independent components that run concurrently and communicate as peers over the network, the strategy adopted by Links, ML5, and ScalaLoci~\cite{DBLP:conf/fmco/CooperLWY06,10.5555/1793574.1793585,DBLP:journals/pacmpl/WeisenburgerKS18}.
+%
+Staged execution instead runs the tiers in sequence:
+the server stage executes first and generates the program for the next stage,
+splicing values it has already computed into the generated code before shipping it,
+so that the client program produced by Hop, Ur/Web, or Eliom already carries the server-side values it needs rather than fetching them separately~\cite{DBLP:conf/oopsla/SerranoGL06,10.1145/2676726.2677004,Radanne:2016}.
+
+Once placement is fixed, tiers still need to exchange data,
+and multitier languages offer a handful of recurring abstractions for it~\cite{DBLP:journals/csur/WeisenburgerWS20}.
+%
+Remote procedures are the predominant mechanism, letting a piece of code on one tier be invoked from another as if it were a local call;
+message passing exposes the underlying network protocol more directly;
+publish-subscribe and reactive programming propagate an event, or a changing value, from one tier to the others as it updates;
+shared state lets every tier read and write a single, server-coordinated data structure.
+%
+Remote procedures are most often specialised further into language-integrated queries,
 letting a query against a remote database, or a call to a remote server, be written with the same syntax and type discipline as the rest of the program:
 the idea was popularised by Kleisli's functional query system~\cite{wong2000kleisli} and by \ac{LINQ} in C\#~\cite{Torgersen:2007},
 and has since been developed for nested, heterogeneous data~\cite{10.1007/978-3-030-72019-3_21},
@@ -314,6 +408,31 @@ typing a remote procedure call by the location of the code that issues it rather
 Cross-tier communication in a multitier program is, in this sense, a query or a call compiled to cross a tier boundary rather than a message assembled by hand --
 the same shift, from writing communication code to specifying what should happen and letting the compiler derive how,
 that motivates aggregate computing and choreographic programming in the first place.
+
+\subsubsection{Application Scenarios}
+
+The setting multitier languages target overwhelmingly is the Web client-server application,
+where a browser tier talks to a server tier over HTTP and both are generated from the same source for their respective runtimes -- JavaScript for the browser, the host language's own runtime for the server~\cite{DBLP:journals/csur/WeisenburgerWS20}.
+%
+A recurring extension folds a third tier into the same compilation unit:
+Links and Ur/Web add language-level access to the database tier alongside client and server,
+so that a query against persistent storage is placed and type-checked exactly like a call to the server itself~\cite{DBLP:conf/fmco/CooperLWY06,10.1145/2676726.2677004}.
+%
+A smaller number of languages move beyond the client-server pair.
+%
+ScalaLoci represents tiers as peer types instead of a fixed client/server pair,
+letting a developer declare a custom architecture -- a pipeline, a ring, a master-worker scheme -- and have the compiler check that data only flows between the peers the architecture allows;
+Multitier Modules extend the same peer-type discipline across module boundaries,
+so that a distributed architecture can be assembled by composing reusable subsystems rather than written as one flat program~\cite{DBLP:journals/pacmpl/WeisenburgerKS18,Weisenburger:2019:Multitier}.
+%
+AmbientTalk/R targets a different topology again:
+loosely-coupled mobile ad hoc networks, where peers export and discover each other's services directly rather than through a fixed server,
+and reactive programming abstractions propagate a changing value to whichever peers happen to be in communication range at a given moment~\cite{DBLP:conf/tools/CarretonMCM10}.
+%
+Even so, most multitier languages still fix the set of tiers, typically just client and server, for the whole lifetime of the application,
+unlike the open membership a \ac{CAS} must tolerate (\Cref{subsec:collective-adaptive-systems}).
+%
+Type-safe dynamic placement, already noted above for letting where a value lives change at runtime while keeping placement checked statically, and ScalaLoci's peer types are the closest a multitier language comes to that requirement~\cite{Zakhour:2023:TypeSafe,DBLP:journals/pacmpl/WeisenburgerKS18}.
 
 \subsection{Platforms and Toolchains for Collective Intelligence}
 \label{subsec:cas-platforms}

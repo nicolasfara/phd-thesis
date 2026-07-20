@@ -1,17 +1,76 @@
 \chapter{Programming Models for Large-scale Distributed Systems}
 \label{chap:programming-models}
 
-\lipsum[1]
-
 \section{Introduction to Macro-programming}
 \label{sec:macro-programming}
 
-\lipsum[1]
+Every paradigm reviewed in \Cref{sec:architectural-paradigms} -- microservices, \ac{FaaS}, actors -- still asks the programmer to reason about the system one deployment unit at a time,
+even where the runtime automates where that unit ends up~\cite{DBLP:journals/tse/CrnkovicSVC11}.
+%
+\Cref{subsec:paradigm-limitations} showed why this stops scaling once the target is a \ac{CAS}:
+membership changes continuously,
+so any correctness argument built node by node has to be redone,
+implicitly or explicitly,
+every time a device joins or leaves~\cite{DBLP:journals/sttt/NicolaJW20}.
+%
+A monitoring service spread over a building,
+or a coordinated task assigned to a robot swarm,
+is specified by what the whole collective achieves (\Cref{subsec:iot-systems,subsec:swarm-robotics}).
+%
+Node-centric code names the wrong unit for that specification:
+it describes a single device's behaviour,
+and the collective's behaviour would have to be reconstructed from many such descriptions by hand.
+
+\begin{figure}
+    \centering
+    \def\svgwidth{\textwidth}
+    \input{figures/macroprogramming.pdf_tex}
+    \caption{The general idea of macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}: at the macro level, macro-abstractions relate the goals of a macro-program to macro-observables of the system as a whole; a macro-to-micro mapping derives the micro-level programs that individual entities execute in their environment, whose effects and emergent behaviour are what the macro-observables report back.}
+    \label{fig:macroprogramming}
+\end{figure}
+
+Macro-programming inverts this relationship:
+a program describes the collective's behaviour directly,
+as a specification over the whole system,
+and the compiler or runtime derives whatever each participating device must run to realise it~\cite{DBLP:journals/csur/Casadei23}.
+%
+\Cref{fig:macroprogramming} depicts this picture:
+a macro-program, expressed over macro-abstractions that relate goals to macro-observables,
+is mapped -- through a macro-to-micro mapping -- onto the micro-level programs that individual entities run in their environment,
+and the effects and emergent behaviour of that execution are what the macro-observables report back.
+%
+It names a family of approaches that differ in what the global specification looks like and how it is projected onto individual devices,
+surveyed in \Cref{sec:foundational-paradigms}.
+%
+What they share is the shift already argued for architecturally in \Cref{subsec:continuum-evolution}:
+the collective is the unit that is designed,
+verified,
+and reconfigured,
+and its mapping onto physical devices follows automatically from the specification.
+
+This shift is what makes macro-programming relevant to engineering large-scale distributed systems specifically.
+%
+A property proved about a macro-program -- that a protocol terminates, that a placement type-checks, that a field stabilises -- holds for every deployment the specification admits,
+regardless of how many devices instantiate it or how often the set of participants changes~\cite{DBLP:journals/csur/Casadei23}.
+%
+\Cref{subsec:collective-adaptive-systems} already argued that this is exactly the guarantee a \ac{CAS} needs.
+%
+\Cref{sec:foundational-paradigms} reviews three paradigms that realise this idea -- aggregate computing, choreographic programming, and multitier programming -- together with the platforms that turn them into usable tools;
+\Cref{sec:advanced-linguistic-abstractions} then looks at the language machinery, monads, effects, and capabilities, that these paradigms increasingly rely on to make coordination obligations part of a program's type;
+\Cref{sec:llms-for-code-generation} closes on a complementary strategy for the same goal, using \acp{LLM} to lower the cost of writing macro-programs and the domain-specific languages that host them.
 
 \section{Foundational Macro-programming Paradigms}
 \label{sec:foundational-paradigms}
 
-\lipsum[1]
+The three paradigms surveyed in this section answer the same question -- how to give one, global description of a distributed computation -- from different starting points.
+%
+Aggregate computing derives node-local behaviour from a functional specification over computational fields (\Cref{subsec:aggregate-computing}).
+%
+Choreographic programming derives one program per participant from a description of a multiparty interaction protocol (\Cref{subsec:choreographic-programming}).
+%
+Multitier programming derives per-tier code from a single program annotated with placement information (\Cref{subsec:multitier-programming}).
+%
+\Cref{subsec:cas-platforms} then reviews the toolchains that turn the first of these, aggregate computing, into engineering practice for collective and self-organising systems, the setting most of this thesis builds on.
 
 \subsection{Aggregate Computing}
 \label{subsec:aggregate-computing}
@@ -22,12 +81,104 @@ Field-based coordination provides the theoretical backbone for much of this thes
 \subsection{Choreographic Programming}
 \label{subsec:choreographic-programming}
 
-\lipsum[1]
+Choreographic programming approaches multiparty coordination from the opposite direction of a node-centric implementation.
+%
+Its industrial precursor, the W3C \emph{Web Services Choreography Description Language},
+already described the interactions among a set of services from a single, global viewpoint,
+but without an operational way to derive implementations guaranteed to conform to that description~\cite{WSCDL}.
+%
+Montesi's \emph{Kickstarting Choreographic Programming} turned the idea into a programming discipline,
+building on an older line of work that bridged interaction-oriented and process-oriented descriptions of choreographies~\cite{Montesi:2014,10.1109/SEFM.2008.11},
+itself rooted in process algebra's tradition of describing a system by its interactions rather than by the individual transitions of its components~\cite{10.1016/j.tcs.2004.07.036}.
+%
+A choreography is a single program describing the whole interaction among a fixed set of participants;
+\emph{endpoint projection} compiles it automatically into one program per participant,
+which is how properties such as deadlock freedom can be guaranteed by construction rather than checked after the fact,
+the central result behind multiparty asynchronous global programming~\cite{10.1145/2429069.2429101}.
+
+Later work turned this operational idea into typed calculi.
+%
+Choreographies in practice and procedural choreographic programming brought choreographies closer to ordinary source code,
+adding familiar syntax and imperative control flow to the underlying model~\cite{CruzFilipe:2016,CruzFilipe2017};
+dynamic choreographies relaxed the assumption of a fixed participant set,
+letting processes join and leave a choreography at runtime~\cite{Preda:2017},
+and process polymorphism went further still,
+letting a single choreography be written once and instantiated for a number of participants decided later~\cite{GRAVERSEN_HIRSCH_MONTESI_2024} --
+both directions speak directly to the changing membership that defines a \ac{CAS} (\Cref{subsec:collective-adaptive-systems}).
+%
+\emph{Pirouette} ported choreographic programming to a higher-order, typed functional setting~\cite{10.1145/3498684},
+a direction developed further by subsequent work on functional choreographic programming~\cite{10.1007/978-3-031-17715-6_15};
+Montesi's \emph{Introduction to Choreographies} now collects these results into a single account of the field~\cite{Montesi2023chor}.
+
+On the implementation side, choreographies have increasingly been embedded as libraries inside general-purpose host languages rather than compiled from a dedicated calculus.
+%
+Choral embeds choreographic programming in an object-oriented host language~\cite{10.1145/3632398},
+while HasChor and ChoRus do the same at library level for Haskell and Rust respectively~\cite{10.1145/3607849,kashiwa2024chorus};
+census-polymorphic choreographies and lightweight choreographic cloud services push the same embedding strategy toward efficient,
+deployable systems~\cite{DBLP:journals/pacmpl/BatesKJSKN25,DBLP:conf/pepm/IonescuR26}.
+%
+This implementation lineage runs alongside session types,
+which type-check the same kind of multiparty protocol from the perspective of one participant rather than deriving every participant from a single global description:
+Scribble specifies interaction protocols with a syntax close to a choreography~\cite{DBLP:conf/icdcit/HondaMBCY11},
+and the discipline has since been embedded in Rust~\cite{chen_et_al:LIPIcs.ECOOP.2022.22} and given a lightweight functional presentation~\cite{Lindley:2017}.
+%
+Jolie realises the resulting service-oriented protocols directly as a programming language~\cite{DBLP:books/sp/wsf14/MontesiGZ14},
+giving choreographic programming, like aggregate computing before it (\Cref{subsec:cas-platforms}),
+a route from formal model to deployable runtime.
 
 \subsection{Multitier Programming}
 \label{subsec:multitier-programming}
 
-\lipsum[1]
+Multitier programming addresses the same coordination problem from a third angle.
+%
+Rather than deriving per-participant code from a global interaction description,
+it lets the programmer write a single program for the whole application and annotate fragments of it with the tier -- client, server, or, in this thesis' setting, any node of the continuum -- where they must run,
+leaving a compiler to slice the program accordingly~\cite{DBLP:journals/csur/WeisenburgerWS20}.
+%
+Links was among the first languages to realise this for the web,
+replacing the traditional split between client- and server-side code with a single functional language and an automatic slicing compiler~\cite{DBLP:conf/fmco/CooperLWY06},
+a design that can be read as the conclusion of an older line of work that transformed ordinary sequential programs into multi-tier applications by source-to-source transformation~\cite{10.1145/1040305.1040324}.
+%
+Hop applies the same principle with a Scheme-derived syntax~\cite{DBLP:conf/oopsla/SerranoGL06},
+later revised as HopJS on top of JavaScript~\cite{10.1145/2951913.2951916},
+while Ocsigen and its successor Eliom develop the same idea for OCaml~\cite{10.1145/1159876.1159889,Radanne:2016},
+extended to whole applications rather than single pages by tierless web programming in the large~\cite{10.1145/3184558.3185953};
+Ur/Web couples tier slicing with a language designed specifically to rule out the injection and markup-mismatch errors common in hand-written web code~\cite{10.1145/2676726.2677004}.
+
+Placement can also be treated as a type-level concern rather than a syntactic annotation.
+%
+The symmetric modal lambda calculus grounds this move in intuitionistic modal logic~\cite{10.5555/1018438.1021865,Sim94},
+giving each location its own modality and typing cross-tier access explicitly;
+\emph{ML5} develops the resulting calculus into a practical, type-safe distributed language~\cite{10.5555/1793574.1793585}.
+%
+ScalaLoci embeds placement types directly in Scala,
+so that a distributed system's architecture is checked by the type system rather than left to convention~\cite{DBLP:journals/pacmpl/WeisenburgerKS18},
+and Multitier Modules extend the same discipline to placed components composed across module boundaries~\cite{Weisenburger:2019:Multitier}.
+%
+Type-safe dynamic placement with first-class placed values goes further,
+letting where a value lives change at runtime while keeping placement checked statically~\cite{Zakhour:2023:TypeSafe},
+the multitier counterpart of the dynamic-membership problem already raised for choreographies in \Cref{subsec:choreographic-programming}.
+%
+Where placement is instead treated as an optimisation problem,
+search-based tier assignment automatically decides which tier should host which fragment of a multi-tier web application to maximise offline availability~\cite{Philips:2018};
+exceptional asynchronous session types show that the tier boundary can be dissolved altogether,
+typing client-server interaction with the same session-typed discipline used for the choreographies of \Cref{subsec:choreographic-programming},
+without a syntactic notion of tier at all~\cite{10.1145/3290341}.
+
+The remaining piece is how tiers exchange data once they are placed.
+%
+Multitier languages have converged on language-integrated query as the mechanism of choice,
+letting a query against a remote database, or a call to a remote server, be written with the same syntax and type discipline as the rest of the program:
+the idea was popularised by Kleisli's functional query system~\cite{wong2000kleisli} and by \ac{LINQ} in C\#~\cite{Torgersen:2007},
+and has since been developed for nested, heterogeneous data~\cite{10.1007/978-3-030-72019-3_21},
+extended with provenance tracking~\cite{10.1145/3315507.3330198},
+and adapted to temporal data~\cite{10.1145/3564719.3568690};
+a polymorphic \ac{RPC} calculus generalises the same principle beyond queries,
+typing a remote procedure call by the location of the code that issues it rather than by a fixed, monomorphic tier~\cite{CHOI2020102499}.
+%
+Cross-tier communication in a multitier program is, in this sense, a query or a call compiled to cross a tier boundary rather than a message assembled by hand --
+the same shift, from writing communication code to specifying what should happen and letting the compiler derive how,
+that motivates aggregate computing and choreographic programming in the first place.
 
 \subsection{Platforms and Toolchains for Collective Intelligence}
 \label{subsec:cas-platforms}
@@ -41,11 +192,53 @@ Several toolchains turn the principles of \cref{subsec:aggregate-computing} into
 % [Optional] ScalaTropy section in \cref{chap:language-and-coordination};
 % if ScalaTropy is dropped, reconsider this section too.
 
-\lipsum[1]
+The paradigms reviewed in \Cref{sec:foundational-paradigms} all eventually have to account for effects:
+sending a message, waiting on a reply, failing partway through a protocol.
+%
+Functional languages have long used monads to keep such effects explicit in the type of a computation rather than implicit in its execution,
+an idea that extends well beyond input and output,
+as Kleisli's monadic treatment of queries already illustrated in \Cref{subsec:multitier-programming}~\cite{wong2000kleisli}.
+%
+Algebraic effects and handlers generalise this style:
+an effect is given by a signature of operations rather than by a fixed monad,
+and a handler supplies its interpretation,
+so the same effectful program can be run under different handlers without being rewritten~\cite{plotkin2003algebraic,plotkin2009handlers}.
+%
+Effect systems make the resulting obligations visible in a function's type instead of leaving them to documentation,
+tracing back to Lucassen and Gifford's polymorphic effect systems~\cite{lucassen1988polymorphic},
+and a continuation-passing semantics has since put handlers themselves on a formal footing~\cite{Hillerström:2017}.
+
+Capabilities push the same idea from what a computation may effect to what it may even reach.
+%
+An object-capability system grants access to a resource only by handing over an unforgeable reference to it,
+so authority is tracked by what a piece of code holds rather than by an ambient identity check~\cite{miller2003capability}.
+%
+Effekt realises this as a language design,
+passing a capability for each effect explicitly as an argument so that effect safety follows from ordinary parameter passing~\cite{brachthaeuser2020effekt},
+and effects-as-capabilities develops the same correspondence formally,
+unifying effect handlers with lightweight effect polymorphism~\cite{10.1145/3428194}.
+%
+Capturing types brings capability tracking into Scala's type system directly,
+so that which capabilities a value may use becomes part of its type~\cite{DBLP:journals/toplas/BoruchGruszeckiOLLB23},
+and Degrees of Separation applies the resulting capture-checking machinery to concurrency,
+using capability types to rule out unsafe sharing between concurrent computations without a separate effect system~\cite{DBLP:journals/pacmpl/XuBO24} --
+both built on Scala 3, whose reference documents the language features this line of work extends~\cite{odersky2021scala3}.
+
+For multiparty coordination specifically, monads, effects, and capabilities offer three increasingly precise ways of making a protocol's obligations part of the type of the program that implements it,
+rather than a property checked separately,
+the same goal already pursued by the typed choreographies and placement types reviewed in \Cref{subsec:choreographic-programming,subsec:multitier-programming}.
+%
+\Cref{chap:language-and-coordination} takes up this connection directly:
+it examines how a coordination language for collective systems can draw on aggregate computing, choreographic programming, and multitier programming at once (\Cref{sec:foundational-paradigms}),
+and, where the resulting design keeps that scope,
+on monadic communication primitives built from the abstractions just introduced.
 
 \section{Large Language Models for Code Generation and DSLs}
 \label{sec:llms-for-code-generation}
 % NOTE: scoped background for \cref{chap:language-based-macroprogramming};
 % keep it on code generation and DSLs, not a general LLM survey.
+% TODO(canovaccio): no citations for LLM-based code generation / DSL synthesis
+% are in background.bib or bibliography.bib yet -- add sources (e.g. on code
+% LLMs, DSL synthesis, grammar-constrained decoding) before drafting prose.
 
 \lipsum[1]

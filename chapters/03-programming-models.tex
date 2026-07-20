@@ -75,8 +75,143 @@ Multitier programming derives per-tier code from a single program annotated with
 \subsection{Aggregate Computing}
 \label{subsec:aggregate-computing}
 
-% TODO(canovaccio): expand into full prose.
-Field-based coordination provides the theoretical backbone for much of this thesis' treatment of self-organisation: system state and behaviour are expressed as \emph{computational fields} -- functions mapping devices, over time, to values -- and collective behaviour emerges from the local computation and propagation of such fields. The field calculus distils this idea into a minimal, universal functional model with equivalent local and aggregate semantics~\cite{VIROLI2019100486}, later extended to a higher-order calculus that supports passing fields (including field-producing programs) as first-class values~\cite{AVDPB-TOCL2019}. These foundations make it possible to prove properties such as self-stabilisation once, at the level of reusable language constructs, and have them transfer by composition to whole applications.
+Aggregate programming addresses the reasoning burden identified in \Cref{sec:macro-programming} by making the collective itself the object of programming, rather than reconstructing collective behaviour from a set of per-device descriptions after the fact~\cite{DBLP:journals/csur/Casadei23}.
+%
+Its core intuition is to express system state and behaviour as a \emph{computational field}: a distributed value, spread across the devices of the system and evolving over time, whose composition and transformation the developer specifies at the macroscopic level, not device by device~\cite{VIROLI2019100486}.
+%
+The field calculus distils this intuition into a minimal, universal functional model with equivalent local and aggregate semantics~\cite{VIROLI2019100486}, later extended to a higher-order calculus that supports passing fields -- including field-producing programs -- as first-class values~\cite{AVDPB-TOCL2019}.
+
+Field-based coordination provides the theoretical backbone for this thesis' treatment of self-organisation.
+%
+Two mechanisms make it implementable on a real distributed system, in which devices execute asynchronously, communicate only locally, and may be added, removed, or fail at any time.
+%
+The first is \emph{alignment}: two neighbouring devices contribute to each other's evaluation of a field expression only if they are currently evaluating the same point of the program -- typically, the same branch of a conditional.
+%
+Constructs such as \texttt{nbr} and \texttt{rep}, which respectively read a neighbour's value of an expression and carry state across computation rounds, combine incoming messages exclusively from aligned neighbours,
+which is what keeps the domain of a field expression well defined regardless of how the network partitions or reconverges at runtime~\cite{VIROLI2019100486,AVDPB-TOCL2019}.
+%
+The second is \emph{self-stabilisation}: a field computation is self-stabilising if, started from an arbitrary state, it converges to a correct output and keeps recovering it after bounded perturbations to the network or the environment.
+%
+Because self-stabilising building blocks compose into self-stabilising programs, properties proved once at the level of reusable language constructs transfer, by composition, to whole applications~\cite{DBLP:conf/saso/BealV14a,DBLP:journals/tomacs/ViroliABDP18}.
+
+The field calculus specifies \emph{what} a collective computation is; a complete foundation also needs a reference execution model showing \emph{how} that specification is enacted on a distributed system.
+%
+The eXchange Calculus (XC) revisits the design of the underlying language with exactly this in mind, distilling field computations into a smaller, more composable core built around a single \texttt{exchange} construct~\cite{DBLP:journals/jss/AudritoCDSV24}.
+%
+\Cref{subsubsec:ac-execution-model} describes the execution model at the level this thesis relies on, and \Cref{subsec:cas-platforms} surveys the toolchains -- ScaFi, Protelis, FCPP, and XC among them -- that realise it in practice.
+
+\subsubsection{Execution Model}
+\label{subsubsec:ac-execution-model}
+
+Since aggregate programming follows a top-down approach,
+its execution model makes only a few assumptions about the underlying distributed system,
+letting the paradigm apply to a wide range of scenarios.
+%
+At the device level,
+an aggregate computing system consists of a set of devices,
+each executing an instance of the same aggregate program.
+%
+Each device can exchange messages with a (sub-)set of devices within its communication range,
+called its \emph{neighbours}.
+%
+Communication links between devices are assumed to be bidirectional,
+although messages may be lost or delayed,
+reflecting the inherent unreliability of wireless communication;
+time-fluid scheduling pushes this asynchrony further still,
+letting each device pick its own execution rate instead of assuming a shared clock across the collective~\cite{DBLP:journals/lmcs/PianiniCVMZ21}.
+%
+\Cref{fig:ac-architecture} illustrates this distributed system architecture.
+%
+The gray blob on the left represents the collective system,
+composed of multiple devices (circles) that interact through local communication (lines);
+on the right,
+a single device is shown in detail to highlight its round-based execution model.
+%
+Each device operates asynchronously,
+repeatedly performing \emph{sense-compute-interact} rounds,
+whose three steps are described below.
+
+\begin{figure}[t]
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{figures/ac.pdf_tex}
+    \caption{
+        Distributed system architecture for aggregate computing.
+        Each device executes an instance of the aggregate program, interacting with its neighbours through local communication.
+        The collective behaviour emerges from the composition of individual device computations and interactions.}
+    \label{fig:ac-architecture}
+\end{figure}
+
+\paragraph{Sense.}
+During the \emph{sense} step,
+the device collects environmental data through its sensors, if any,
+and stores the readings for use in the macro-level computation.
+%
+It then receives messages from its neighbours,
+which carry the collective information needed for the computation.
+%
+Once the sensors are read and the messages are received,
+the device is ready to perform the \emph{compute} step.
+
+\paragraph{Compute.}
+In the \emph{compute} step,
+the device applies the macro-program logic against the computational context assembled during \emph{sense}:
+(i) the local sensor readings;
+(ii) the messages received from neighbours;
+and (iii) the device's own state from past computations.
+%
+Given these inputs,
+the device evaluates the aggregate program,
+producing a \emph{new local state},
+\emph{messages for neighbours},
+\emph{prescriptive actions},
+and an \emph{output value}.
+%
+The new state is stored for use in the next round,
+the messages are placed in the outgoing message buffer to be sent during \emph{interact},
+the prescriptive actions are executed against the device's actuators, if any,
+and the output value represents the device's contribution to the collective computation.
+
+\paragraph{Interact.}
+Finally,
+during the \emph{interact} step,
+the device inspects the outgoing message buffer,
+and for each reachable neighbour,
+sends the corresponding message carrying the collective information needed for their computation.
+%
+At the end of the \emph{interact} step,
+the device completes the round,
+and typically sleeps for a period before starting the next one.
+
+This execution model is platform-independent:
+a deployment may combine devices with different hardware architectures,
+operating systems,
+and runtime environments,
+provided each executes a complete instance of the same aggregate program and supports the \emph{sense-compute-interact} cycle.
+%
+This preserves homogeneous collective logic over heterogeneous devices,
+while requiring platform-specific support for sensing and actuation,
+local program execution,
+and interoperable neighbour communication.
+%
+\Cref{chap:pulverization} takes up exactly this problem,
+realising the model across heterogeneous target platforms, not a single runtime;
+\Cref{chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration} take up the complementary problem of placing and offloading computations across the edge-cloud continuum,
+instead of assuming, as this execution model does, that every device already runs a full instance of the aggregate program.
+
+\subsubsection{Application Scenarios}
+
+The field calculus and its execution model are deliberately generic; what makes them useful is that the same handful of constructs -- alignment, \texttt{nbr}/\texttt{rep}, self-stabilisation -- recur, largely unchanged, across collectives that otherwise have little in common.
+%
+Beal and Viroli make this reuse explicit with a shared library of aggregate building blocks -- gradients, information spreading, partitioning, and channel formation -- assembled into higher-level behaviours such as crowd steering, where a population of mobile devices is guided collectively toward a goal without any device knowing the full picture~\cite{DBLP:conf/saso/BealV14a}.
+%
+Swarm robotics is a second recurring scenario: teams of robots or drones that must explore an area, cover it, or converge on a shared spatial configuration using only local, range-limited communication, matching directly the neighbourhood-based communication model of \Cref{subsubsec:ac-execution-model}.
+%
+Buzz and Voltron both target this setting with language-level support for robot-to-robot synchronisation and drone sensor networks respectively~\cite{buzz-robot,voltron-robot}, and the broader swarm-robotics literature documents the same decentralisation requirements across a wide range of multi-robot systems~\cite{DBLP:journals/swarm/BrambillaFBD13}.
+%
+A third scenario moves the same constructs to the infrastructure layer: smart-city and edge services composed of many small, heterogeneous devices that cannot be assumed to share a clock, which is exactly why time-fluid scheduling lets each device pick its own execution rate~\cite{DBLP:journals/lmcs/PianiniCVMZ21}, and whose deployment performance can be estimated through simulation before such collective services are rolled out on real edge infrastructure~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
+%
+Across all three scenarios, the sense-compute-interact cycle and the alignment/self-stabilisation guarantees stay the same; only the devices, the communication substrate, and the goal of the collective change.
 
 \subsection{Choreographic Programming}
 \label{subsec:choreographic-programming}

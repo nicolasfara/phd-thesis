@@ -489,8 +489,57 @@ Type-safe dynamic placement, already noted above for letting where a value lives
 \subsection{Platforms and Toolchains for Collective Intelligence}
 \label{subsec:cas-platforms}
 
-% TODO(canovaccio): expand into full prose.
-Several toolchains turn the principles of \cref{subsec:aggregate-computing} into engineering practice. ScaFi embeds aggregate computing as a Scala DSL with a companion runtime~\cite{casadei2022scafi}, Protelis offers a dedicated, practical aggregate-programming language~\cite{pianini2015protelis}, and FCPP targets resource-constrained settings with a C++-based implementation~\cite{DBLP:journals/scp/AudritoT24}. The eXchange Calculus (XC) revisits the design of the underlying language itself, aiming for a smaller, more composable core for distributed collective systems~\cite{DBLP:journals/jss/AudritoCDSV24}. Experience reports on declarative macro-programming with aggregate computing distil lessons learned from applying these tools in practice~\cite{10.1145/3678232.3678235}, while more recent work explores augmenting aggregate computing with reinforcement learning~\cite{aguzzi2022towards} and applies collective self-organisation to concrete edge scenarios such as aggregate processes~\cite{CASADEI2021104081} and proximity-aware, self-federated learning~\cite{DBLP:journals/iot/DominiFAVE26}. Together, these platforms constitute the closest prior art to the deployment and coordination model developed later in the thesis.
+The field calculus and XC specify what an aggregate computation is (\Cref{subsec:aggregate-computing});
+turning that specification into something a device can run needs a language to program it in,
+a runtime that carries out the sense-compute-interact cycle,
+and, in practice, a simulator to check a design before it meets real hardware.
+%
+Several toolchains supply this layer,
+giving aggregate computing the same route from formal model to deployable runtime that Jolie gives choreographic programming and ScalaLoci gives multitier programming (\Cref{subsec:choreographic-programming,subsec:multitier-programming}).
+
+ScaFi takes the embedding route:
+it realises the field calculus as an internal \ac{DSL} hosted in Scala,
+packaged with a companion runtime that runs the same aggregate program, unmodified, inside a discrete-event simulation or on physically distributed devices~\cite{casadei2022scafi}.
+%
+Embedding buys aggregate programs the host language's tooling, libraries, and type system for free,
+at the cost of a syntax that is aggregate computing filtered through Scala's own conventions.
+%
+Protelis instead commits to a dedicated, external language purpose-built for aggregate programming,
+trading that free tooling for a syntax designed from scratch around fields and their composition, rather than adapted from a general-purpose host~\cite{pianini2015protelis}.
+%
+Where ScaFi and Protelis both target the JVM,
+FCPP re-implements the same execution model in C++,
+reaching the resource-constrained microcontrollers and embedded nodes a JVM runtime cannot,
+without giving up the sense-compute-interact cycle of \Cref{subsubsec:ac-execution-model}~\cite{DBLP:journals/scp/AudritoT24}.
+%
+XC, already introduced in \Cref{subsec:aggregate-computing} as a reworking of the field calculus itself, belongs to this same lineage of toolchains:
+by collapsing \texttt{nbr}, \texttt{rep}, and the alignment discipline relating them into a single \texttt{exchange} construct,
+it shrinks the core an implementation has to get right, rather than adding a fourth runtime alongside ScaFi, Protelis, and FCPP~\cite{DBLP:journals/jss/AudritoCDSV24}.
+
+An experience report spanning more than a decade of aggregate-computing research reads this ecosystem back through the lens of declarative programming,
+tracing how the paradigm's declarative core has let language,
+execution-dynamics,
+middleware,
+and deployment concerns each be addressed on their own,
+without progress on one forcing a redesign of the others~\cite{10.1145/3678232.3678235}.
+%
+Later work builds on these toolchains rather than replacing them.
+%
+Aggregate processes extend the aggregate-computing model, and its ScaFi implementation, with constructs for concurrent collective computations whose execution is sustained by a dynamic team of devices, whose spatial region can itself vary over time -- precisely the elastic membership a \ac{CAS} exhibits (\Cref{subsec:collective-adaptive-systems})~\cite{CASADEI2021104081}.
+%
+\ac{RL} has been explored as a way of deriving,
+rather than hand-specifying,
+some of the local behaviour an aggregate program prescribes,
+complementing the field calculus' top-down specification with a learned component~\cite{aguzzi2022towards}.
+%
+Proximity-aware, self-federated learning applies the same field-based coordination to a concrete edge-learning scenario,
+clustering devices for federated training from local, decentralised information alone,
+with no central coordinator deciding cluster membership~\cite{DBLP:journals/iot/DominiFAVE26}.
+%
+None of this treats deployment performance as a given:
+a simulation-based methodology lets it be estimated for a collective service before that service is rolled out on real edge infrastructure, the same practice already noted for smart-city and edge scenarios in \Cref{subsec:aggregate-computing}~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
+
+Together, ScaFi, Protelis, FCPP, and XC -- and the aggregate-process, learning-augmented, and federated-learning extensions built on top of them -- constitute the closest prior art to the deployment and coordination model this thesis develops in \Cref{chap:pulverization,chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration}.
 
 \section{Advanced Linguistic Abstractions for Coordination}
 \label{sec:advanced-linguistic-abstractions}
@@ -501,18 +550,49 @@ Several toolchains turn the principles of \cref{subsec:aggregate-computing} into
 The paradigms reviewed in \Cref{sec:foundational-paradigms} all eventually have to account for effects:
 sending a message, waiting on a reply, failing partway through a protocol.
 %
-Functional languages have long used monads to keep such effects explicit in the type of a computation rather than implicit in its execution,
+Two styles of making these effects part of a program's type have developed since:
+encoding them in a monad that sequences effectful steps explicitly,
+or keeping the code in direct style and tracking effects some other way -- a handler's interpretation, a type-level annotation, or a capability a function must be given.
+
+\subsection{Monadic Effects}
+\label{subsec:monadic-effects}
+
+Functional languages have long used monads to keep effects explicit in the type of a computation rather than implicit in its execution,
 an idea that extends well beyond input and output,
 as Kleisli's monadic treatment of queries already illustrated in \Cref{subsec:multitier-programming}~\cite{wong2000kleisli}.
 %
-Algebraic effects and handlers generalise this style:
+A monadic protocol reads as a pipeline:
+send, then wait, then branch on failure become ordinary composition through the monad's bind,
+so a protocol's sequencing is enforced by the same type discipline that sequences any other effectful computation.
+
+\subsection{Direct-Style Effect Systems}
+\label{subsec:direct-style-effect-systems}
+
+Algebraic effects and handlers generalise this style by separating what an effect can do from how it is carried out:
 an effect is given by a signature of operations rather than by a fixed monad,
 and a handler supplies its interpretation,
 so the same effectful program can be run under different handlers without being rewritten~\cite{plotkin2003algebraic,plotkin2009handlers}.
 %
-Effect systems make the resulting obligations visible in a function's type instead of leaving them to documentation,
-tracing back to Lucassen and Gifford's polymorphic effect systems~\cite{lucassen1988polymorphic},
-and a continuation-passing semantics has since put handlers themselves on a formal footing~\cite{Hillerström:2017}.
+A continuation-passing semantics has since put handlers themselves on a formal footing~\cite{Hillerström:2017}.
+%
+For a coordination protocol, this separation matters beyond style:
+the code that issues an effect -- send this message, wait on that reply -- stays the same whether the handler interpreting it performs a genuine remote call or drives a local simulation,
+so the same protocol implementation serves as its own test harness, with no separate code path for either.
+%
+Handlers reach past network coordination as well:
+retrofitted onto OCaml, they let the concurrency scheduler that decides which computation runs next be written as an ordinary handler rather than fixed into the runtime,
+so scheduling becomes one more effect a program can interpret, not a mechanism the runtime alone controls~\cite{DBLP:conf/pldi/Sivaramakrishnan21}.
+
+Effect systems push the same signature-based view into static checking:
+they make the effects a function may perform part of its type, an obligation the type checker verifies rather than one left to documentation,
+tracing back to Lucassen and Gifford's polymorphic effect systems~\cite{lucassen1988polymorphic}.
+%
+Tracking a communication effect this way turns out to coincide with the discipline already reviewed for choreographic and multitier programs (\Cref{subsec:choreographic-programming,subsec:multitier-programming}):
+Orchard and Yoshida show that an effect system for a concurrency calculus and a session-typed process calculus are the same system read from two sides,
+so the sequence of effects a type records for one party is exactly the session type its channel would prescribe~\cite{DBLP:conf/popl/OrchardY16}.
+%
+Exceptional asynchronous session types put this correspondence to work on the failure a distributed protocol cannot avoid:
+building session-typed channels on an effect-handler implementation lets a disconnection be handled by the same mechanism that handles any other effect, without leaving the session-typed discipline~\cite{10.1145/3290341}.
 
 Capabilities push the same idea from what a computation may effect to what it may even reach.
 %
@@ -530,7 +610,7 @@ and Degrees of Separation applies the resulting capture-checking machinery to co
 using capability types to rule out unsafe sharing between concurrent computations without a separate effect system~\cite{DBLP:journals/pacmpl/XuBO24} --
 both built on Scala 3, whose reference documents the language features this line of work extends~\cite{odersky2021scala3}.
 
-For multiparty coordination specifically, monads, effects, and capabilities offer three increasingly precise ways of making a protocol's obligations part of the type of the program that implements it,
+For multiparty coordination specifically, monadic sequencing, handler-based interpretation, statically tracked effects, and capability-based reach offer increasingly precise ways of making a protocol's obligations part of the type of the program that implements it,
 rather than a property checked separately,
 the same goal already pursued by the typed choreographies and placement types reviewed in \Cref{subsec:choreographic-programming,subsec:multitier-programming}.
 %

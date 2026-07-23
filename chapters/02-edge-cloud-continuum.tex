@@ -124,7 +124,9 @@ and a sensor node may run indefinitely on a harvested,
 intermittent supply.
 %
 Placement decisions must therefore account for how long and how often a node can sustain a computation,
-not only what it is capable of computing. \Cref{subsec:energy-aware-orchestration} returns to this as a first-class deployment concern.
+not only what it is capable of computing.
+%
+\Cref{subsec:energy-aware-orchestration} returns to this as a first-class deployment concern.
 
 \subsection{Network Volatility and Partitioning}
 \label{subsec:network-volatility}
@@ -161,8 +163,6 @@ Ground robot swarms and dense \ac{IoT} deployments (\cref{subsec:swarm-robotics}
 since packing enough autonomous devices into a short-range ad hoc network is enough on its own to keep the topology dynamic.
 
 Coordination mechanisms for the continuum need to consider such dynamic topologies as a first-class concern.
-%be built with this in mind from the start,
-% rather than have it patched in later.
 %
 Time-fluid, field-based coordination, for instance, turns scheduling into something the collective itself can program and adapt to conditions,
 instead of assuming synchrony by default~\cite{DBLP:journals/lmcs/PianiniCVMZ21}.
@@ -170,9 +170,6 @@ instead of assuming synchrony by default~\cite{DBLP:journals/lmcs/PianiniCVMZ21}
 Decentralised proximity-aware clustering does something similar for a different problem:
 it organises a collective or federated learning process around whichever neighbours happen to be reachable at a given moment,
 rather than around a graph fixed in advance~\cite{DBLP:journals/iot/DominiFAVE26}.
-%
-% Both examples point to a theme that recurs throughout the thesis:
-% handling network volatility well is as much a concern for the programming model as it is for the infrastructure underneath it.
 
 \section{Target Environments: IoT Ecosystems and Robot Swarms}
 \label{sec:target-environments}
@@ -298,7 +295,8 @@ rather than programming individual nodes -- as the dominant strategy for enginee
 
 \ac{IoT} ecosystems and robot swarms, despite their different physical form, put pressure on the continuum in the same two ways.
 %
-First, both must place computation and coordination logic onto a set of nodes that is heterogeneous in the sense of \cref{subsec:continuum-characteristics} -- constrained sensor nodes next to gateways and cloud servers -- and mobile or intermittently connected in the sense of \cref{subsec:network-volatility},
+First, both must place computation and coordination logic onto a set of nodes that is heterogeneous in the sense of \cref{subsec:continuum-characteristics} -- constrained sensor nodes next to gateways and cloud servers --
+and mobile or intermittently connected in the sense of \cref{subsec:network-volatility},
 so that no placement decision can be assumed to remain valid for long.
 %
 Second, both need the coordination logic itself,

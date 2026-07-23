@@ -3,26 +3,130 @@
 
 \section{The Deployment Problem in Pervasive Systems}
 \label{sec:the-deployment-problem}
-% Focus: Static vs. dynamic deployment and the specific challenges of runtime reconfiguration in the continuum.
 
-% TODO(canovaccio): expand into full prose.
-\cref{chap:edge-cloud-continuum} identified deployment as a challenge shared by the target environments of this thesis (\cref{subsec:environment-challenges}); this chapter takes up that challenge from the runtime perspective, contrasting static deployment -- where placement decisions are fixed at design or release time -- with dynamic deployment, where placement must be revisited continuously as the infrastructure changes.
+\Cref{chap:edge-cloud-continuum} identified deployment as a challenge shared by the target environments of this thesis (\cref{subsec:environment-challenges}):
+placing computation and coordination logic onto nodes that are heterogeneous (\cref{subsec:continuum-characteristics}) and mobile or intermittently connected (\cref{subsec:network-volatility}),
+so that no placement decision can be assumed to remain valid for long.
+%
+This chapter takes up that challenge from the runtime perspective:
+how is the mapping from logical computational units to physical hosts actually decided,
+revised,
+and enacted,
+once the assumption of a fixed topology is dropped?
+
+At its core, deployment is an assignment problem:
+given a set of computational units -- services, functions, actors -- and a set of candidate hosts connected by links of varying capacity,
+find a mapping from the former to the latter that respects the units' resource and connectivity requirements.
+%
+\emph{Static deployment} answers this question once, at design or release time, and keeps the resulting mapping fixed for the lifetime of the application;
+this is still the default assumption behind most automatic deployment tooling, which targets getting a system correctly installed and running rather than keeping it correctly placed as conditions change~\cite{DBLP:journals/jss/ArcangeliBL15}.
+%
+\emph{Dynamic deployment} instead treats the mapping as a variable that must be revisited continuously,
+recomputing or adjusting it as devices join,
+leave,
+move,
+or change state -- exactly the behaviour \cref{subsec:continuum-evolution} already argued self-managed systems need in general~\cite{DBLP:conf/icse/KramerM07}.
+
+Static deployment is not simply an inferior version of the dynamic case;
+it is the wrong model whenever the assumptions behind it fail to hold.
+%
+A mapping computed once implicitly assumes that the set of candidate hosts,
+their capacity,
+and the connectivity between them are known and stable enough that a single decision remains valid.
+%
+\Cref{subsec:continuum-characteristics,subsec:network-volatility} showed that none of the three holds towards the edge of the continuum,
+where nodes differ radically in capacity and energy budget and links form and break as devices move.
+%
+Under these conditions a static mapping does not merely become suboptimal over time:
+it can stop being satisfiable at all,
+if the host it names disappears or the link to it is no longer available.
+
+Reopening the mapping at runtime raises three questions that structure the rest of this chapter.
+%
+First, an implementation must decide \emph{what} makes one placement better than another -- which objective the mapping should optimise, and under which constraints -- a question the orchestration and placement literature answers chiefly through the constraint- and optimisation-based formulations reviewed in \cref{subsec:constraint-based-placement}.
+%
+Second, it must decide \emph{which} objective to privilege when several compete;
+\cref{subsec:energy-aware-orchestration} looks at energy as one such objective,
+already flagged in \cref{subsec:continuum-characteristics} as a concern orthogonal to raw computational capacity and promised a first-class treatment here.
+%
+Third, it must decide \emph{how} to compute a new mapping fast enough to matter on a topology that keeps changing while the computation runs -- a scalability concern that motivates the shift from the classical heuristics surveyed in \cref{sec:edge-orchestration-sota} to the learning-based methods examined in \cref{sec:ml-for-topologies}.
 
 \section{State-of-the-Art in Edge Orchestration and Placement}
 \label{sec:edge-orchestration-sota}
-% Focus: Current approaches, including optimization strategies, constraint-based placement, and orchestration frameworks.
 
-\lipsum[1]
+Automating the mapping problem posed in \cref{sec:the-deployment-problem} is the subject of a substantial body of work on \emph{edge orchestration and service placement},
+surveyed comprehensively by Aït-Salaht et al.,
+who propose a classification scheme for the field and catalogue its open issues~\cite{DBLP:journals/csur/Ait-SalahtDL20},
+and, four years later, by Taleb et al.,
+whose very appearance is itself a sign that placement in integrated cloud-fog-edge settings remains unsettled rather than solved by the first wave of proposals~\cite{DBLP:journals/csur/TalebGD25}.
+%
+The latter survey groups existing proposals into three categories -- graph-based (exact) methods,
+heuristics,
+and machine-learning-based methods~\cite{DBLP:journals/csur/TalebGD25} --
+a classification this chapter follows loosely:
+\cref{subsec:constraint-based-placement} reviews the first two categories under the umbrella of constrained optimisation,
+\cref{subsec:energy-aware-orchestration} narrows the objective to energy,
+and \cref{sec:ml-for-topologies} turns to the third category,
+which both surveys register as the most active recent trend.
 
-\subsection{Optimization and Constraint-based Placement}
+\subsection{Optimisation and Constraint-based Placement}
 \label{subsec:constraint-based-placement}
 
-\lipsum[1]
+The dominant formulation treats placement as a constrained combinatorial optimisation problem:
+an application is described as a graph of components annotated with their resource demands and mutual communication requirements,
+the infrastructure as a graph of nodes annotated with capacity and links annotated with latency and bandwidth,
+and a placement is an assignment of the first graph onto the second that respects every node's and link's capacity while optimising an objective function~\cite{DBLP:journals/csur/Ait-SalahtDL20}.
+%
+Proposals in what Taleb et al. call the graph-based category typically pose this assignment as an \ac{ILP} over the two graphs, solvable exactly for small instances~\cite{DBLP:journals/csur/TalebGD25}.
+%
+Skarlat et al. instantiate the general formulation for \ac{IoT} services over fog resources, explicitly weighing the \ac{QoS} attributes of both applications and resources in the objective, and pair an exact solver with a genetic-algorithm heuristic once instance sizes make the exact method impractical~\cite{DBLP:journals/soca/SkarlatNSBL17}.
+%
+Brogi and Forti tackle the same assignment from the eligibility side: their model for multi-component \ac{IoT} applications over cloud-fog infrastructure, prototyped in the FogTorch tool, filters candidate placements by the hardware, software, and \ac{QoS} constraints each component and host must jointly satisfy, rather than searching for a single numerically optimal one~\cite{DBLP:journals/iotj/BrogiF17}.
+%
+Miloradovic and Papadopoulos compare two ways of solving the same assignment for application offloading over what they term the Edge-to-Cloud Continuum, formulating it once as an \ac{ILP} and once as a constraint-programming model, and fold the carbon footprint of the offloaded computation into the objective alongside resource utilisation~\cite{DBLP:conf/cdc/MiloradovicP23} --
+an objective \cref{subsec:energy-aware-orchestration} returns to next.
+%
+Across these proposals, and more broadly across the graph-based category, the same pattern recurs: exact methods give an optimal answer for a snapshot of the infrastructure, but their cost grows too fast with the number of nodes and services to be recomputed as often as \cref{subsec:network-volatility} suggests a volatile continuum demands, which is exactly why heuristics -- and, later, the learning-based methods of \cref{sec:ml-for-topologies} -- take over as problem size and reconfiguration frequency both grow.
+
+A distinct line of work brings the reconfiguration frequency concern into the container runtime itself, for applications with real-time constraints that ordinary container orchestration does not preserve~\cite{DBLP:conf/fogiot/StruharBAP20}.
+%
+Struhár et al. decompose the problem into an offline phase that computes an optimal initial placement and dimensioning of containers from a system model, and an online phase that adapts each container's resource allocation at runtime in response to workload variation and interference, without which a real-time containerised application would drift out of its timing requirements~\cite{DBLP:journals/tecs/StruharCABP24}.
+%
+A companion proposal narrows the online objective further, adapting a containerised control application's resource allocation specifically to bound the deviation of its response from the ideal, rather than a generic timing bound~\cite{DBLP:conf/etfa/StruharABPC23}.
+%
+Both examples make the offline/online split implicit in \cref{sec:the-deployment-problem}'s framing explicit and load-bearing: reconfiguration is not an afterthought bolted onto a static placement, but a second, continuously running phase built into the deployment model from the start.
+
+What is deployed operationally lags behind this literature.
+%
+A benchmark of existing edge orchestration platforms against the \ac{QoS} attributes they target, and their ability to adapt scheduling to remote, edge-located resources, finds Kubernetes and its distributions the most ready deployment vehicle available today, while noting that they still fall short of fully accommodating the dynamic, distributed character of edge environments~\cite{DBLP:journals/sensors/CilicKZK23}.
+%
+This gap is consistent with the limitation \cref{subsec:paradigm-limitations} already identified in the underlying architectural paradigms:
+the placement policy belongs to the orchestrator,
+is comparatively coarse,
+and is not exposed to the application as a first-class, programmable artefact that could host the richer objective functions surveyed above.
 
 \subsection{Energy-aware Orchestration}
 \label{subsec:energy-aware-orchestration}
 
-\lipsum[1]
+\Cref{subsec:continuum-characteristics} identified energy as an axis of heterogeneity that does not track computational capacity, and promised to return to it here as a first-class deployment concern.
+%
+Energy-aware placement predates the edge: in the data centre, Beloglazov et al. cast it as a consolidation problem, packing virtual machines onto the fewest active physical hosts that still meet each workload's negotiated \ac{QoS}, and powering down or idling the rest, using heuristics designed to reduce idle-server energy waste at a scale no exact solver could handle~\cite{DBLP:journals/fgcs/BeloglazovAB12}.
+%
+That formulation assumes hosts whose energy cost is roughly uniform and whose main lever is consolidation;
+neither assumption survives the move to the edge, where \cref{subsec:continuum-characteristics} showed energy budgets vary by orders of magnitude from one node to the next,
+from mains-powered gateways to battery-limited robots to harvested, intermittent supplies.
+
+Fog- and edge-specific proposals adjust the objective accordingly.
+%
+Azizi et al., for instance, schedule \ac{IoT} tasks across fog nodes with semi-greedy heuristics that jointly minimise total energy consumption and deadline-violation time, rather than pursuing data-centre-style consolidation~\cite{DBLP:journals/jnca/AziziSAB22} --
+one representative of a now sizeable family of heuristic and metaheuristic fog schedulers pursuing the same energy/deadline trade-off under different search strategies.
+%
+A further complication specific to the edge is that the energy available at a node is not only heterogeneous but can fluctuate over time,
+when it is drawn from renewable or harvested sources rather than a stable grid connection.
+%
+Struhár et al. address this directly, framing container placement at the edge as a multi-armed bandit problem, so that the orchestrator can learn online which placement to prefer as the supply of green energy at each node fluctuates, instead of optimising once against a fixed energy budget assumed at deployment time~\cite{DBLP:conf/ucami/StruharPAAF25}.
+%
+Treating placement as something learned online, rather than solved once against a static model of available energy, is the same shift that motivates the broader move from the classical heuristics reviewed in this section to the learning-based methods examined next, in \cref{sec:ml-for-topologies}.
 
 \section{Machine Learning for Distributed Network Topologies}
 \label{sec:ml-for-topologies}

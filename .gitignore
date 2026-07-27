@@ -248,3 +248,10 @@ TSWLatexianTemp*
 context/
 AGENTS.md
 logs/
+
+## Claude Code
+# Personal/machine-specific settings: never share these.
+.claude/settings.local.json
+# Project agents and skills are shared tooling: keep them tracked.
+!.claude/agents/
+!.claude/skills/

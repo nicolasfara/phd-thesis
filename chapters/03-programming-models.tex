@@ -235,9 +235,9 @@ The field calculus and its execution model are deliberately generic;
 what makes them useful is that the same handful of constructs -- alignment, \texttt{nbr}/\texttt{rep}, self-stabilisation -- recur, largely unchanged,
 across collectives that otherwise have little in common.
 %
-Beal and Viroli make this reuse explicit with a shared library of aggregate building blocks -- gradients, information spreading, partitioning, and channel formation --
-assembled into higher-level behaviours such as crowd steering,
-where a population of mobile devices is guided collectively toward a goal without any device knowing the full picture~\cite{DBLP:conf/saso/BealV14a}.
+Beal and Viroli make this reuse explicit with a shared library of aggregate building blocks -- gradients, aggregation, time summarisation, and partitioning --
+assembled into higher-level behaviours such as crowd monitoring,
+where a population of mobile devices is tracked and warned collectively away from dangerously dense areas without any device knowing the full picture~\cite{DBLP:conf/saso/BealV14a}.
 %
 Swarm robotics is a second recurring scenario:
 teams of robots or drones that must explore an area,
@@ -279,15 +279,15 @@ the central result behind multiparty asynchronous global programming~\cite{10.11
 
 Later work turned this operational idea into typed calculi.
 %
-Choreographies in practice and procedural choreographic programming brought choreographies closer to ordinary source code,
-adding familiar syntax and imperative control flow to the underlying model~\cite{CruzFilipe:2016,CruzFilipe2017}.
+Choreographies in practice stress-tested the model against a set of concurrent algorithms and reported how far it still was from ordinary source code~\cite{CruzFilipe:2016};
+procedural choreographic programming closed that gap, adding familiar syntax and imperative control flow to the underlying model~\cite{CruzFilipe2017}.
 %
-Dynamic choreographies relaxed the assumption of a fixed participant set,
-letting processes join and leave a choreography at runtime~\cite{Preda:2017}.
+Dynamic choreographies relax a different assumption, that a role's projected code cannot change once deployed,
+letting delimited fragments of a participant's behaviour be replaced by new code at runtime while keeping deadlock and race freedom across the update~\cite{Preda:2017}.
 %
-Process polymorphism went further still,
+Process polymorphism instead relaxes the assumption of a fixed participant set,
 letting a single choreography be written once and instantiated for a number of participants decided later~\cite{GRAVERSEN_HIRSCH_MONTESI_2024};
-both directions speak directly to the changing membership that defines a \ac{CAS} (\cref{subsec:collective-adaptive-systems}).
+this is the direction that speaks directly to the changing membership that defines a \ac{CAS} (\cref{subsec:collective-adaptive-systems}).
 %
 \emph{Pirouette} ported choreographic programming to a higher-order, typed functional setting~\cite{10.1145/3498684},
 a direction developed further by subsequent work on functional choreographic programming~\cite{10.1007/978-3-031-17715-6_15};
@@ -338,7 +338,7 @@ any program produced by \ac{EPP} from a well-formed choreography is deadlock-fre
 %
 Typed accounts of \ac{EPP} strengthen this correspondence into a proof:
 Pirouette derives, in Coq, that message-type soundness of the underlying language transfers through projection to deadlock freedom of the whole system~\cite{10.1145/3498684},
-and functional choreographic programming develops the same correspondence for a higher-order, effectful setting~\cite{10.1007/978-3-031-17715-6_15}.
+and functional choreographic programming develops the same correspondence for a higher-order setting~\cite{10.1007/978-3-031-17715-6_15}.
 %
 Library embeddings turn \ac{EPP} itself into an ordinary function of the host language, rather than a separate compiler pass:
 Choral compiles a choreography to a set of ordinary Java classes, one per role, so that projection happens ahead of time and the resulting endpoints are plain object-oriented libraries~\cite{10.1145/3632398};
@@ -350,16 +350,19 @@ Aggregate computing (\cref{subsubsec:ac-execution-model}) admits an open, dynami
 The choreographic execution model starts instead from a closed, statically named set of roles,
 and derives correctness from a projection that type-checks once, at compile time, against that fixed set.
 %
-Dynamic choreographies and process polymorphism relax exactly this assumption,
-letting the set of projected processes grow or be instantiated at runtime rather than fixed in the source choreography~\cite{Preda:2017,GRAVERSEN_HIRSCH_MONTESI_2024},
+Process polymorphism relaxes exactly this assumption,
+letting the set of projected processes be instantiated at runtime for a participant count decided later rather than fixed in the source choreography~\cite{GRAVERSEN_HIRSCH_MONTESI_2024},
 which is what makes the resulting model compatible with the changing membership of a \ac{CAS} (\cref{subsec:collective-adaptive-systems}).
+%
+Dynamic choreographies relax a related but distinct assumption,
+that a role's code, once projected, cannot change: delimited fragments of it can be replaced at runtime without reopening the deadlock- and race-freedom guarantees already established~\cite{Preda:2017}.
 
 \subsubsection{Application Scenarios}
 
 The paradigm's earliest and still most direct application is service-oriented computing,
 the setting the W3C Web Services Choreography Description Language targeted before an operational semantics existed for it~\cite{WSCDL}:
 Jolie realises the resulting multiparty service protocols directly as a programming language,
-compiling a service choreography down to the message-passing code that each participating service executes~\cite{DBLP:books/sp/wsf14/MontesiGZ14}.
+in which each participating service's send, receive, and correlation logic is written and executed as ordinary source code~\cite{DBLP:books/sp/wsf14/MontesiGZ14}.
 %
 The same protocol-centric view is used purely for specification and verification rather than code generation:
 Scribble describes multiparty session protocols in a syntax close to a choreography and checks an existing implementation against them~\cite{DBLP:conf/icdcit/HondaMBCY11},
@@ -374,7 +377,7 @@ Across these scenarios, the unit being coordinated is a small, fixed, and named 
 %
 This is a different problem shape from the open, populous, and anonymous collectives that motivate aggregate computing's swarms and edge deployments (\cref{subsubsec:ac-execution-model}).
 %
-The dynamic and polymorphic choreographies already noted above are the closest this line of work has come to that setting,
+The process-polymorphic choreographies already noted above are the closest this line of work has come to that setting,
 and \cref{chap:language-and-coordination} returns to what a coordination language for collective systems can still borrow from it.
 
 \subsection{Multitier Programming}
@@ -385,8 +388,18 @@ Multitier programming addresses the same coordination problem from a third angle
 Instead of deriving per-participant code from a global interaction description,
 it has the programmer write a single program for the whole application and annotate each fragment with the tier where it must run -- client, server, or, in this thesis' setting, any node of the continuum.
 %
-A compiler then slices the program accordingly~\cite{DBLP:journals/csur/WeisenburgerWS20}.
-%
+A compiler then slices the program accordingly~\cite{DBLP:journals/csur/WeisenburgerWS20},
+as \Cref{fig:multitier-programming} illustrates for the canonical two-tier case.
+
+\begin{figure}[t]
+    \centering
+    \def\svgwidth{\columnwidth}
+    \input{figures/multitier-programming.pdf_tex}
+    \caption{
+        The general idea of multitier programming, adapted from Weisenburger et al.~\cite{DBLP:journals/csur/WeisenburgerWS20}: a single multitier program, with each fragment annotated for the tier where it must run, is split by the multitier compiler into one program per tier -- here, a client program deployed in the browser and a server program deployed on the JVM.}
+    \label{fig:multitier-programming}
+\end{figure}
+
 Links was among the first languages to realise this for the web,
 replacing the traditional split between client- and server-side code with a single functional language and an automatic slicing compiler~\cite{DBLP:conf/fmco/CooperLWY06},
 a design that can be read as the conclusion of an older line of work that transformed ordinary sequential programs into multi-tier applications by source-to-source transformation~\cite{10.1145/1040305.1040324}.

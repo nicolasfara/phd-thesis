@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="100mm"
+   viewBox="0 0 210 100"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="multitier-programming.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.5390495"
+     inkscape:cx="402.52117"
+     inkscape:cy="126.3767"
+     inkscape:window-width="1720"
+     inkscape:window-height="1358"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1"
+     showguides="true">
+    <sodipodi:guide
+       position="15.603833,74.999999"
+       orientation="0,1"
+       id="guide7"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide
+       position="22.493131,29.747158"
+       orientation="0,-1"
+       id="guide8"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="marker10"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.3"
+       markerHeight="0.3"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path10" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.3"
+       markerHeight="0.3"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path9" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g2"
+       style="stroke-width:0.5;stroke-dasharray:none">
+      <rect
+         style="fill:none;fill-opacity:0.501961;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none"
+         id="rect1"
+         width="69.392906"
+         height="19.39291"
+         x="70.303543"
+         y="0.30354476" />
+      <text
+         xml:space="preserve"
+         style="font-weight:bold;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic, Bold';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:none;fill-opacity:0.501961;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none"
+         x="104.9633"
+         y="11.478844"
+         id="text1"><tspan
+           sodipodi:role="line"
+           id="tspan1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-dasharray:none"
+           x="104.9633"
+           y="11.478844">Multitier Program</tspan></text>
+    </g>
+    <g
+       id="g3"
+       transform="translate(6.9207527,9.5250003)">
+      <g
+         id="g5">
+        <rect
+           style="fill:#cdcdcd;fill-opacity:1;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           id="rect3"
+           width="50"
+           height="10"
+           x="25.252157"
+           y="65.844406" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           x="50.161846"
+           y="72.930031"
+           id="text3"><tspan
+             sodipodi:role="line"
+             id="tspan3"
+             style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+             x="50.161846"
+             y="72.930031">Client</tspan></text>
+      </g>
+      <g
+         id="g4">
+        <rect
+           style="fill:none;fill-opacity:1;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           id="rect3-2"
+           width="50"
+           height="10"
+           x="25.252157"
+           y="79.861801" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           x="50.063068"
+           y="86.910736"
+           id="text4"><tspan
+             sodipodi:role="line"
+             id="tspan4"
+             style="stroke-width:0.5"
+             x="50.063068"
+             y="86.910736">Browser</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g3-4"
+       transform="translate(100.25837,9.5250003)">
+      <g
+         id="g5-7">
+        <rect
+           style="fill:#cdcdcd;fill-opacity:1;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           id="rect3-6"
+           width="50"
+           height="10"
+           x="25.252157"
+           y="65.844406" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           x="50.161846"
+           y="72.930031"
+           id="text3-5"><tspan
+             sodipodi:role="line"
+             id="tspan3-6"
+             style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+             x="50.161846"
+             y="72.930031">Server</tspan></text>
+      </g>
+      <g
+         id="g4-9">
+        <rect
+           style="fill:none;fill-opacity:1;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           id="rect3-2-3"
+           width="50"
+           height="10"
+           x="25.252157"
+           y="79.861801" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+           x="50.063068"
+           y="86.910736"
+           id="text4-7"><tspan
+             sodipodi:role="line"
+             id="tspan4-4"
+             style="stroke-width:0.5"
+             x="50.063068"
+             y="86.910736">JVM</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g7"
+       transform="translate(0,3.992939)">
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#23373b;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+         id="rect2"
+         width="180"
+         height="20"
+         x="14.999996"
+         y="36.007061" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:none;fill-opacity:1;stroke:#23373b;stroke-width:0.750001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+         x="166.65944"
+         y="47.587502"
+         id="text2"><tspan
+           sodipodi:role="line"
+           id="tspan2"
+           style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75"
+           x="166.65944"
+           y="47.587502">Multitier Compiler</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:0.9;font-family:'URW Gothic';-inkscape-font-specification:'URW Gothic';text-align:center;letter-spacing:0px;word-spacing:0.0211667px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1"
+         x="105.11571"
+         y="47.522594"
+         id="text7"><tspan
+           sodipodi:role="line"
+           id="tspan7"
+           style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:3"
+           x="105.11571"
+           y="47.522594">\textit{Splitting}</tspan></text>
+    </g>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#454545;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker10)"
+       d="M 98.983019,25 57.17291,70.252842"
+       id="path7"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#454545;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3.5;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+       d="m 110.19653,25 40.314,45.252842"
+       id="path8"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>

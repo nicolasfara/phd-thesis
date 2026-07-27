@@ -262,8 +262,9 @@ The Kilobot is a low-cost robot designed specifically to be deployed in the larg
 and the Kilogrid testbed extends it with a virtual sensing and communication substrate that lets a swarm of Kilobots be reconfigured between experiments without touching the hardware~\cite{valentini2018kilogrid}.
 %
 Where physical swarms of the required size are impractical,
-the ARGoS~\cite{pinciroli2012argos} and Webots~\cite{Michel2004} simulators provide the modular,
-multi-engine infrastructure needed to evaluate swarm algorithms at scale before -- or instead of -- deploying them on real robots.
+ARGoS provides a modular, multi-engine simulation infrastructure built specifically for large swarms~\cite{pinciroli2012argos},
+and Webots offers a general-purpose mobile-robot simulator with a graphical front-end~\cite{Michel2004};
+both let swarm algorithms be evaluated at scale before -- or instead of -- deploying them on real robots.
 
 \subsection{Collective Adaptive Systems}
 \label{subsec:collective-adaptive-systems}
@@ -287,7 +288,7 @@ modelling dynamic reconfiguration as part of a system's architecture,
 with a formal semantics that supports reasoning about the system as it reconfigures~\cite{DBLP:journals/sttt/NicolaMS20}.
 %
 At the programming level, a recent survey situates \emph{macroprogramming} -- specifying the behaviour of a collective as a whole,
-rather than programming individual nodes -- as the dominant strategy for engineering \ac{CAS} at scale~\cite{DBLP:journals/csur/Casadei23};
+rather than programming individual nodes -- as the natural strategy for engineering \ac{CAS} at scale~\cite{DBLP:journals/csur/Casadei23};
 \cref{chap:programming-models} examines in detail the programming models that realise this strategy.
 
 \subsection{Deployment and Coordination Challenges}

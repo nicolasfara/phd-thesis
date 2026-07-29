@@ -168,11 +168,11 @@ Machine learning generalises that move, and both surveys cited in \cref{sec:edge
 
 A learned policy takes a different route to the same decision.
 %
-Instead of solving an optimisation problem anew against the latest known state, it is trained to map states of the environment directly to placement or offloading decisions, whatever representation the environment is given.
+Instead of solving an optimisation problem anew against the latest known state, it is trained to map states of the environment directly to placement or offloading decisions, whatever form those states take.
 %
-This moves the cost of search into a training phase that runs once, offline; at runtime the decision reduces to evaluating the learned function.
+This moves the cost of search into a training phase that runs once, offline; at runtime the decision reduces to a single forward pass through the learned function.
 %
-The methods examined below go further offline than the online bandit: they train against a model of the environment ahead of time and, once trained, decide in a single forward pass.
+The methods examined below separate training from operation more sharply than the online bandit, which learns as it runs: they train against a model of the environment ahead of time, before any decision is taken.
 %
 This separation pays off only if the trained policy generalises to states it did not meet during training, a requirement \cref{subsec:gnns-for-edge} returns to.
 %
@@ -201,7 +201,7 @@ Cast this way, offloading is a special case of the placement problem of \cref{se
 %
 Huang et al. take the same problem to a learned policy instead, training an agent to decide, for each arriving task, whether to compute locally or offload over a wireless-powered link, and to do so directly from the time-varying channel state rather than from a re-solved optimisation problem~\cite{DBLP:journals/tmc/HuangBZ20}.
 %
-Their network learns the binary offloading decisions directly from experience, dispensing with the combinatorial search the constraint-based formulation would rerun for every new channel state.
+Their network learns these binary decisions from experience, dispensing with the combinatorial search the constraint-based formulation would rerun for every new channel state.
 %
 The distinction is not that the learned policy reaches a different answer than the heuristic would on a fixed instance -- on a static snapshot of the channel, framing the problem as one to solve exactly still works -- but that it shifts where the cost of adapting to change is paid.
 %
@@ -227,9 +227,9 @@ a topology described by the position, load, and connectivity of every node in a 
 %
 Deep Q-learning replaces the table with a neural network trained to approximate the Q-value function directly from raw or lightly processed state observations, letting the agent generalise to states it has not seen during training instead of memorising one value per state~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
-Training that network with the plain Q-learning update is unstable, because successive observations are strongly correlated and the update's own target drifts as the network changes; deep Q-learning restores stability with two devices -- an experience-replay buffer that samples past transitions at random to break the correlation, and a separate target network held fixed between periodic updates so the target stops chasing the estimate~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
+Training that network with the plain Q-learning update is unstable, because successive observations are strongly correlated and the update's own target drifts as the network changes; deep Q-learning restores stability with two mechanisms -- an experience-replay buffer that samples past transitions at random to break the correlation, and a separate target network held fixed between periodic updates so the target stops chasing the estimate~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
-Mnih et al. demonstrate the resulting agent on Atari games played from raw pixel input, using the same network architecture and hyperparameters across a range of games with no problem-specific tuning, a genericity that is precisely what makes the algorithm exportable to a domain -- offloading over a continuum topology -- the original work never targeted~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
+Mnih et al. demonstrate the resulting agent on Atari games played from raw pixel input, using the same network architecture and hyperparameters across a range of games with no problem-specific tuning, a generality that makes the algorithm exportable to a domain -- offloading over a continuum topology -- the original work never targeted~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
 Exporting it, however, still requires the state fed to the network to expose the structure of the problem: a topology is a graph of nodes and links, not a fixed-size vector of pixels, and the representation this difference calls for is the subject of \cref{subsec:gnns-for-edge}.
 

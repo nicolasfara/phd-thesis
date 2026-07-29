@@ -1,0 +1,44 @@
+% Multitier programming: one tier-annotated program is split by the compiler
+% into one program per tier (client in the browser, server on the JVM).
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+% Include with a normal figure environment, e.g. \input{figures/multitier-programming}.
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  frag/.style={rounded corners,draw,minimum width=13mm,minimum height=5mm,inner sep=0pt,font=\scriptsize},
+  cfrag/.style={frag,fill=gray!30},
+  sfrag/.style={frag,fill=gray!12},
+  prog/.style={rounded corners,draw,fill=gray!4,inner sep=5pt},
+  compiler/.style={rounded corners,draw,fill=gray!18,minimum width=46mm,minimum height=9mm,align=center},
+  tierprog/.style={rounded corners,draw,minimum width=22mm,minimum height=8mm,align=center},
+  host/.style={draw,dotted,rounded corners,inner sep=5pt},
+  split/.style={->,thick,gray!70},
+]
+
+% ---------- multitier program (top) ----------
+\node[cfrag] (f1) at (-1.35,5) {@client};
+\node[sfrag] (f2) at ( 0.00,5) {@server};
+\node[cfrag] (f3) at ( 1.35,5) {@client};
+\begin{scope}[on background layer]
+  \node[prog,fit=(f1)(f2)(f3)] (mp) {};
+\end{scope}
+\node[anchor=south] at (mp.north) {\textbf{Multitier program}};
+
+% ---------- multitier compiler (middle) ----------
+\node[compiler] (cc) at (0,3.0) {\textbf{Multitier compiler}\\[1pt]\scriptsize\emph{splitting}};
+
+% ---------- per-tier programs (bottom) ----------
+\node[tierprog,fill=gray!30] (client) at (-2.3,1.0) {Client\\program};
+\node[host,fit=(client)] (browser) {};
+\node[anchor=north,font=\scriptsize] at (browser.south) {Browser};
+
+\node[tierprog,fill=gray!12] (server) at (2.3,1.0) {Server\\program};
+\node[host,fit=(server)] (jvm) {};
+\node[anchor=north,font=\scriptsize] at (jvm.south) {JVM};
+
+% ---------- arrows ----------
+\draw[split] (mp.south) -- (cc.north);
+\draw[split] (cc.south) to[out=-135,in=90] (browser.north);
+\draw[split] (cc.south) to[out= -45,in=90] (jvm.north);
+
+\end{tikzpicture}

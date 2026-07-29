@@ -23,8 +23,7 @@ and the collective's behaviour would have to be reconstructed from many such des
 
 \begin{figure}
     \centering
-    \def\svgwidth{\textwidth}
-    \input{figures/macroprogramming.pdf_tex}
+    \input{figures/macroprogramming}
     \caption{The general idea of macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}: at the macro level, macro-abstractions relate the goals of a macro-program to macro-observables of the system as a whole; a macro-to-micro mapping derives the micro-level programs that individual entities execute in their environment, whose effects and emergent behaviour are what the macro-observables report back.}
     \label{fig:macroprogramming}
 \end{figure}
@@ -163,8 +162,7 @@ whose three steps are described below.
 
 \begin{figure}[t]
     \centering
-    \def\svgwidth{\columnwidth}
-    \input{figures/ac.pdf_tex}
+    \input{figures/ac}
     \caption{
         Distributed system architecture for aggregate computing.
         Each device executes an instance of the aggregate program, interacting with its neighbours through local communication.
@@ -318,7 +316,7 @@ so that the whole multiparty protocol reads as a single piece of source code rat
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.65\textwidth]{figures/epp.png}
+    \input{figures/epp}
     \caption{Endpoint projection applied to a two-party choreography, adapted from Wiersdorf~\cite{wiersdorf2024chorex}.
     The global choreography (top) specifies a key-exchange-and-encryption protocol between \texttt{Alice} and \texttt{Bob} as interaction statements of the form \texttt{Sender.expr() \textasciitilde> Receiver.(binder)}; projection compiles it into one local program per role (bottom), rewriting each interaction into a matching \texttt{send} or \texttt{receive} call.}
     \label{fig:epp}
@@ -393,8 +391,7 @@ as \Cref{fig:multitier-programming} illustrates for the canonical two-tier case.
 
 \begin{figure}[t]
     \centering
-    \def\svgwidth{\columnwidth}
-    \input{figures/multitier-programming.pdf_tex}
+    \input{figures/multitier-programming}
     \caption{
         The general idea of multitier programming, adapted from Weisenburger et al.~\cite{DBLP:journals/csur/WeisenburgerWS20}: a single multitier program, with each fragment annotated for the tier where it must run, is split by the multitier compiler into one program per tier -- here, a client program deployed in the browser and a server program deployed on the JVM.}
     \label{fig:multitier-programming}

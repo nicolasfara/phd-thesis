@@ -1,0 +1,51 @@
+% Endpoint projection: one global choreography is compiled into one local
+% program per role, adapted from Wiersdorf's ChoRex tutorial.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+% Include with a normal figure environment, e.g. \input{figures/epp}.
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  code/.style={align=left,font=\scriptsize\ttfamily,inner sep=0pt},
+  title/.style={font=\small\bfseries,inner sep=0pt},
+  prog/.style={rounded corners,draw,fill=gray!4,inner sep=5pt},
+  local/.style={prog,fill=gray!12},
+  split/.style={->,thick,gray!70},
+]
+
+% ---------- global choreography (top) ----------
+\node[code] (ccode) at (-0.55,4.95) {%
+  Alice.get\_modulus() \textasciitilde> Bob.(m)\\
+  Bob.make\_session(m) \textasciitilde> Alice.(session)\\
+  Alice.encrypt(session, message) \textasciitilde> Bob.(c)\\
+  Bob.decrypt(c)};
+\node[title,anchor=south] (ctitle) at ([yshift=2.5mm]ccode.north) {Choreography};
+\begin{scope}[on background layer]
+  \node[prog,fit=(ctitle)(ccode)] (chor) {};
+\end{scope}
+
+% ---------- projected local programs (bottom) ----------
+\node[code,anchor=north east] (acode) at (-0.65,1.15) {%
+  send(Bob, get\_modulus())\\
+  session = receive()\\
+  send(Bob, encrypt(session, message))};
+\node[title,anchor=south] (atitle) at ([yshift=2.5mm]acode.north) {Code for Alice};
+\begin{scope}[on background layer]
+  \node[local,fit=(atitle)(acode)] (alice) {};
+\end{scope}
+
+\node[code,anchor=north west] (bcode) at (0.65,1.15) {%
+  m = receive()\\
+  send(Alice, make\_session(m))\\
+  c = receive()\\
+  decrypt(c)};
+\node[title,anchor=south] (btitle) at ([yshift=2.5mm]bcode.north) {Code for Bob};
+\begin{scope}[on background layer]
+  \node[local,fit=(btitle)(bcode)] (bob) {};
+\end{scope}
+
+% ---------- projection ----------
+\draw[split] ([xshift=-6mm]chor.south) -- (alice.north);
+\draw[split] ([xshift= 6mm]chor.south) -- (bob.north);
+\node[align=center,font=\small\bfseries] at (-0.55,3.0) {Endpoint\\projection};
+
+\end{tikzpicture}

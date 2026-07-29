@@ -1,0 +1,14 @@
+% Reinforcement-learning agent-environment loop specialised to offloading.
+% Requires: \usepackage{tikz}  \usetikzlibrary{arrows.meta,positioning}
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  box/.style={draw,rounded corners,minimum width=34mm,minimum height=16mm,align=center,fill=gray!10},
+]
+\node[box] (agent) at (0,0) {\textbf{Agent}\\\scriptsize learned offloading policy};
+\node[box] (env)   at (7.2,0) {\textbf{Environment}\\\scriptsize continuum topology + workload};
+
+\draw[->,thick] (agent.north) to[bend left=26]
+  node[above,align=center]{\emph{action}\\\scriptsize placement / offload choice} (env.north);
+\draw[->,thick] (env.south) to[bend left=26]
+  node[below,align=center]{\emph{state} \scriptsize (topology, load) \;/\; \emph{reward} \scriptsize ($-$latency, $-$energy)} (agent.south);
+\end{tikzpicture}

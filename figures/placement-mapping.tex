@@ -1,0 +1,65 @@
+% Placement as a mapping between two graphs (application -> infrastructure).
+% Requires in the preamble: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+% Include with a normal figure environment, e.g. \input{figures/placement-mapping}.
+\begin{tikzpicture}[
+  >=Latex,
+  font=\small,
+  comp/.style={circle,draw,minimum size=6mm,inner sep=0pt,fill=gray!12},
+  host/.style={rounded corners,draw,align=center,inner sep=2pt},
+  cloud/.style={host,fill=gray!8,minimum width=18mm,minimum height=9mm},
+  edge/.style={host,fill=gray!16,minimum width=15mm,minimum height=8mm},
+  gw/.style={host,fill=gray!24,minimum width=13mm,minimum height=7mm},
+  dev/.style={host,fill=gray!34,minimum width=11mm,minimum height=6mm},
+  link/.style={draw,thick},
+  clink/.style={draw,gray!60},
+  map/.style={->,dashed,gray!70,shorten >=1pt,shorten <=1pt},
+]
+
+% ---------- application graph (left) ----------
+\node[comp] (c1) at (0,2.2) {$c_1$};
+\node[comp] (c2) at (1.4,2.9) {$c_2$};
+\node[comp] (c3) at (1.5,1.3) {$c_3$};
+\node[comp] (c4) at (0.2,0.5) {$c_4$};
+
+\draw[clink] (c1) -- (c2);
+\draw[clink] (c1) -- (c3);
+\draw[clink] (c3) -- (c4);
+\draw[clink] (c2) -- (c3);
+
+\begin{scope}[on background layer]
+  \node[draw,dotted,rounded corners,fit=(c1)(c2)(c3)(c4),inner sep=6pt] (app) {};
+\end{scope}
+\node[anchor=south] at (app.north) {\textbf{Application graph}};
+\node[anchor=north,font=\scriptsize,text width=3.2cm,align=center]
+  at (app.south) {components + communication demands};
+
+% ---------- infrastructure graph (right) ----------
+\node[cloud] (cl) at (7.2,3.0) {Cloud};
+\node[edge]  (e1) at (6.3,1.3) {Edge};
+\node[gw]    (g1) at (8.3,1.4) {Gateway};
+\node[dev]   (d1) at (5.9,-0.3) {Device};
+\node[dev]   (d2) at (8.6,-0.2) {Robot};
+
+\draw[link] (cl) -- (e1);
+\draw[link] (cl) -- (g1);
+\draw[link] (e1) -- (d1);
+\draw[link] (e1) -- (g1);
+\draw[link] (g1) -- (d2);
+
+\begin{scope}[on background layer]
+  \node[draw,dotted,rounded corners,fit=(cl)(e1)(g1)(d1)(d2),inner sep=6pt] (infra) {};
+\end{scope}
+\node[anchor=south] at (infra.north) {\textbf{Infrastructure graph}};
+\node[anchor=north,font=\scriptsize,text width=3.6cm,align=center]
+  at (infra.south) {heterogeneous hosts + links (latency, bandwidth)};
+
+% ---------- mapping ----------
+\draw[map] (c2) to[out=20,in=160] (cl);
+\draw[map] (c1) to[out=-10,in=170] (e1);
+\draw[map] (c3) to[out=0,in=220] (g1);
+\draw[map] (c4) to[out=-20,in=190] (d1);
+
+\node[font=\scriptsize\itshape,gray!70,fill=white,inner sep=1.5pt] at (3.9,3.2) {placement (mapping)};
+
+\end{tikzpicture}

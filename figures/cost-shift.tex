@@ -1,0 +1,39 @@
+% Where the adaptation cost is paid: re-solved optimisation vs. learned policy.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,decorations.pathreplacing}
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  solve/.style={draw,fill=gray!32,minimum height=9mm,minimum width=13mm,align=center,inner sep=1pt},
+  fpass/.style={draw,fill=gray!12,minimum height=6mm,minimum width=8mm,align=center,inner sep=1pt},
+  train/.style={draw,fill=gray!22,minimum height=15mm,minimum width=20mm,align=center},
+  dec/.style={circle,fill=black,inner sep=1.4pt},
+  ax/.style={->,gray!55,thick},
+]
+% offline | online separator
+\draw[dotted,gray] (2.55,-1.2) -- (2.55,3.1);
+\node[gray,font=\scriptsize,anchor=south] at (1.35,3.05) {offline (once)};
+\node[gray,font=\scriptsize,anchor=south] at (7.0,3.05) {online (per decision)};
+
+% lane labels
+\node[anchor=east,align=right] at (-0.15,2.1) {\textbf{Re-solved}\\\textbf{optimisation}};
+\node[anchor=east,align=right] at (-0.15,0.0) {\textbf{Learned}\\\textbf{policy}};
+
+% ---- top lane: optimisation ----
+\draw[ax] (0.1,2.1) -- (9.9,2.1);
+\foreach \x/\d in {3.4/4.5, 5.6/6.7, 7.8/8.9}{
+  \node[solve] at (\x,2.1) {solve};
+  \node[dec] at (\d,2.1) {};
+}
+\draw[decorate,decoration={brace,amplitude=4pt},gray] (2.7,2.75) -- (8.5,2.75)
+  node[midway,above=3pt,font=\scriptsize,gray]{cost paid at \emph{every} decision};
+
+% ---- bottom lane: learned ----
+\node[train] (tr) at (1.35,0.0) {Training\\(offline)};
+\draw[ax] (2.6,0.0) -- (9.9,0.0);
+\foreach \x/\d in {3.4/4.2, 5.2/6.0, 7.0/7.8, 8.6/9.2}{
+  \node[fpass] at (\x,0.0) {fwd\\pass};
+  \node[dec] at (\d,0.0) {};
+}
+\node[font=\scriptsize,gray,anchor=north] at (1.35,-0.85) {cost paid \emph{once}};
+\node[font=\scriptsize,gray,anchor=north] at (6.4,-0.85) {each decision: one forward pass};
+\end{tikzpicture}

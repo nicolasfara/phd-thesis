@@ -16,7 +16,7 @@ once the assumption of a fixed topology is dropped?
 
 At its core, deployment is an assignment problem:
 given a set of computational units -- services, functions, actors -- and a set of candidate hosts connected by links of varying capacity,
-find a mapping from the former to the latter that respects the units' resource and connectivity requirements.
+find a mapping from the former to the latter that respects the units' resource and connectivity requirements (\cref{fig:placement-mapping}).
 %
 \emph{Static deployment} answers this question once, at design or release time, and keeps the resulting mapping fixed for the lifetime of the application;
 this is still the default assumption behind most automatic deployment tooling, which targets getting a system correctly installed and running rather than keeping it correctly placed as conditions change~\cite{DBLP:journals/jss/ArcangeliBL15}.
@@ -26,6 +26,13 @@ recomputing or adjusting it as devices join,
 leave,
 move,
 or change state -- exactly the behaviour \cref{subsec:continuum-evolution} already argued self-managed systems need in general~\cite{DBLP:conf/icse/KramerM07}.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/placement-mapping}
+    \caption[Deployment as an assignment problem between two graphs]{Deployment as an assignment problem: an application graph of components annotated with their communication demands (left) is mapped onto an infrastructure graph of heterogeneous hosts and capacity-, latency-, and bandwidth-annotated links (right). Static deployment fixes this mapping once; dynamic deployment revisits it as hosts join, leave, move, or change state.}
+    \label{fig:placement-mapping}
+\end{figure}
 
 Static deployment is not just a weaker form of the dynamic case;
 it is the wrong model altogether once the assumptions that justify it stop holding.
@@ -69,7 +76,14 @@ a classification this chapter follows loosely:
 \cref{subsec:constraint-based-placement} reviews the first two categories under the umbrella of constrained optimisation,
 \cref{subsec:energy-aware-orchestration} narrows the objective to energy,
 and \cref{sec:ml-for-topologies} turns to the third category,
-which both surveys register as the most active recent trend.
+which both surveys register as the most active recent trend (\cref{fig:orchestration-taxonomy}).
+
+\begin{figure}[t]
+    \centering
+    \resizebox{\textwidth}{!}{\input{figures/orchestration-taxonomy}}
+    \caption[Taxonomy of edge-orchestration and placement methods]{The three categories into which Taleb et al.~\cite{DBLP:journals/csur/TalebGD25} group edge-orchestration and placement proposals, with representative works from this chapter as leaves. This chapter reviews the first two under constrained optimisation (\cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration}) and turns to the third, learning-based, category in \cref{sec:ml-for-topologies}.}
+    \label{fig:orchestration-taxonomy}
+\end{figure}
 
 \subsection{Optimisation and Constraint-based Placement}
 \label{subsec:constraint-based-placement}
@@ -205,18 +219,33 @@ Their network learns these binary decisions from experience, dispensing with the
 %
 The distinction is not that the learned policy reaches a different answer than the heuristic would on a fixed instance -- on a static snapshot of the channel, framing the problem as one to solve exactly still works -- but that it shifts where the cost of adapting to change is paid.
 %
-An optimisation-based policy pays that cost at every decision, resolving the problem instance whenever the channel or workload changes; a learned policy pays it once, during training, and reduces every later decision to a forward pass through the trained model.
+An optimisation-based policy pays that cost at every decision, resolving the problem instance whenever the channel or workload changes; a learned policy pays it once, during training, and reduces every later decision to a forward pass through the trained model (\cref{fig:cost-shift}).
 %
 That shift matters exactly under the conditions \cref{subsec:network-volatility} already established for the continuum, where the channel and the topology change faster than a fresh optimisation could be solved and applied.
 %
 It does not remove the need for a model of the problem -- the agent still needs a representation of states, actions, and rewards, a formulation \cref{subsec:reinforcement-learning} develops next -- but it moves the burden from finding a solution online to finding one during a training phase that need not run in real time.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/cost-shift}
+    \caption[Where the cost of adapting to change is paid]{Where the cost of adapting to change is paid. A re-solved optimisation (top) recomputes the problem instance before every decision, so the cost recurs each time the channel or topology changes. A learned policy (bottom) pays the cost once, in an offline training phase, and reduces every runtime decision to a single forward pass through the trained model.}
+    \label{fig:cost-shift}
+\end{figure}
 
 \subsection{Reinforcement Learning and Deep Q-Learning}
 \label{subsec:reinforcement-learning}
 
 Reinforcement learning frames a decision problem as a sequence of interactions between an agent and an environment: at each step the agent observes the environment's state, selects an action, and receives a reward, with the goal of learning a policy that maximises the reward accumulated over time rather than at any single step~\cite{DBLP:books/lib/SuttonB18}.
 %
-For an offloading or placement decision, the state is a description of the current topology and workload, the action is a placement or offloading choice, and the reward encodes the objective the mapping should optimise -- latency, energy, or any of the criteria \cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration} folded into an optimisation objective instead.
+For an offloading or placement decision, the state is a description of the current topology and workload, the action is a placement or offloading choice, and the reward encodes the objective the mapping should optimise -- latency, energy, or any of the criteria \cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration} folded into an optimisation objective instead (\cref{fig:rl-offloading-loop}).
+
+\begin{figure}[t]
+    \centering
+    \input{figures/rl-offloading-loop}
+    \caption[The reinforcement-learning loop for offloading]{The reinforcement-learning interaction loop, specialised to the offloading decision. The agent observes a state -- the current topology and workload -- selects an action -- a placement or offloading choice -- and receives a reward encoding the objective to optimise, such as negative latency or energy; over time it learns a policy that maximises the reward accumulated across the sequence of decisions.}
+    \label{fig:rl-offloading-loop}
+\end{figure}
+
 %
 Q-learning solves this problem by estimating, for every state-action pair, the expected cumulative reward of taking that action and then following the best policy thereafter -- the pair's \emph{Q-value} -- and updating that estimate from experience, without requiring a model of how the environment evolves~\cite{DBLP:journals/ml/WatkinsD92}.
 %
@@ -249,9 +278,17 @@ a property that matters once the nodes being aggregated over are not interchange
 %
 Both formulations, though, still assume a graph with a single type of node and a single type of link, an assumption a continuum topology does not meet: gateways, edge servers, and end devices differ in the resources and capabilities \cref{subsec:continuum-characteristics} catalogued, and the links between them differ correspondingly in bandwidth and volatility.
 %
-Wang et al. address this mismatch directly with a \emph{heterogeneous} graph attention network, learning both how much a node should attend to each of its neighbours and how much it should weigh each type of relation that connects it to them, rather than treating every neighbour and every link as an instance of the same relation~\cite{DBLP:conf/www/WangJSWCYY19}.
+Wang et al. address this mismatch directly with a \emph{heterogeneous} graph attention network, learning both how much a node should attend to each of its neighbours and how much it should weigh each type of relation that connects it to them, rather than treating every neighbour and every link as an instance of the same relation~\cite{DBLP:conf/www/WangJSWCYY19} (\cref{fig:gnn-aggregation}).
 %
 Applied to an edge-cloud topology, this two-level attention gives a placement or offloading policy a representation that mirrors the topology's own heterogeneity, distinguishing, say, a link to a battery-limited robot from a link to a mains-powered gateway rather than folding both into an undifferentiated edge~\cite{DBLP:conf/www/WangJSWCYY19}.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/gnn-aggregation}
+    \caption[Neighbourhood aggregation: homogeneous vs.\ heterogeneous GNN]{Neighbourhood aggregation in a graph neural network. A homogeneous GNN (left) computes a node's representation by applying one shared weight to interchangeable neighbours. A heterogeneous GNN (right) distinguishes neighbours by type -- cloud (C), gateway (G), device (D), robot (R) -- and learns both how much a node should attend to each neighbour and how much to weigh each type of relation, so the learned representation mirrors the topology's own heterogeneity.}
+    \label{fig:gnn-aggregation}
+\end{figure}
+
 %
 Heterogeneity is not the only property of a continuum topology a \ac{GNN} must accommodate: the graph presented at runtime is rarely the one seen during training, since nodes join, leave, and move, as \cref{subsec:network-volatility} established.
 %

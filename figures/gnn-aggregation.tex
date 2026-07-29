@@ -1,0 +1,42 @@
+% GNN neighbourhood aggregation: homogeneous vs. heterogeneous.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  ctr/.style={circle,draw,thick,minimum size=8mm,inner sep=0pt,fill=white},
+  nb/.style={circle,draw,minimum size=6.5mm,inner sep=0pt,fill=gray!15},
+  cloud/.style={circle,draw,minimum size=7mm,inner sep=0pt,fill=gray!8},
+  gw/.style={circle,draw,minimum size=7mm,inner sep=0pt,fill=gray!24},
+  dev/.style={circle,draw,minimum size=7mm,inner sep=0pt,fill=gray!38},
+  agg/.style={->,gray!70},
+]
+% ===== LEFT: homogeneous =====
+\node[ctr] (v1) at (0,0) {$v$};
+\node[nb] (a1) at (-1.5,1.1) {};
+\node[nb] (a2) at ( 1.5,1.1) {};
+\node[nb] (a3) at (-1.6,-1.0){};
+\node[nb] (a4) at ( 1.6,-1.0){};
+\foreach \n in {a1,a2,a3,a4}{ \draw[agg] (\n) -- (v1); }
+\node[font=\scriptsize,align=center] at (-1.35,0.15) {$W$};
+\node[anchor=north,align=center,font=\scriptsize,text width=3.6cm] at (0,-1.6)
+  {\textbf{Homogeneous}\\one shared weight over identical neighbours};
+
+% ===== RIGHT: heterogeneous =====
+\begin{scope}[xshift=7.2cm]
+\node[ctr] (v2) at (0,0) {$v$};
+\node[cloud] (c) at (-1.6,1.1) {\scriptsize C};
+\node[gw]    (g) at ( 1.6,1.1) {\scriptsize G};
+\node[dev]   (d) at (-1.6,-1.0){\scriptsize D};
+\node[dev]   (r) at ( 1.6,-1.0){\scriptsize R};
+\draw[agg] (c) -- (v2);
+\draw[agg] (g) -- (v2);
+\draw[agg] (d) -- (v2);
+\draw[agg] (r) -- (v2);
+\node[font=\scriptsize] at (-0.6, 0.8)  {$\alpha_{\mathrm{cloud}}$};
+\node[font=\scriptsize] at ( 0.6, 0.8)  {$\alpha_{\mathrm{gw}}$};
+\node[font=\scriptsize] at (-0.7,-0.75) {$\alpha_{\mathrm{dev}}$};
+\node[font=\scriptsize] at ( 0.7,-0.75){$\alpha_{\mathrm{dev}}$};
+\node[anchor=north,align=center,font=\scriptsize,text width=4.2cm] at (0,-1.6)
+  {\textbf{Heterogeneous}\\per-type weights + node/type attention $\alpha$};
+\end{scope}
+\end{tikzpicture}

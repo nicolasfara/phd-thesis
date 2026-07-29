@@ -1,0 +1,22 @@
+% Taxonomy of edge-orchestration and placement methods (after Taleb et al.).
+% Requires: \usepackage[edges]{forest}
+% Wrap in \resizebox{\textwidth}{!}{...} in the figure environment: this tree is
+% naturally wider than \textwidth.
+\begin{forest}
+  for tree={
+    draw, rounded corners, align=center, font=\small,
+    parent anchor=south, child anchor=north,
+    edge={-,gray}, l sep=8mm, s sep=6mm, inner sep=3pt,
+  }
+  [Edge orchestration \& placement, fill=gray!8
+    [Graph-based\\(exact), fill=gray!16
+      [{ILP / CP over two graphs\\\scriptsize Skarlat et al.; Brogi \& Forti;\\\scriptsize Miloradovi\'{c} \& Papadopoulos}, fill=white]
+    ]
+    [Heuristic /\\metaheuristic, fill=gray!16
+      [{consolidation, semi-greedy, GA\\\scriptsize Beloglazov et al.; Azizi et al.}, fill=white]
+    ]
+    [Machine\\learning, fill=gray!16
+      [{online bandit; deep RL + GNN\\\scriptsize Struh\'{a}r et al.; Huang et al.}, fill=white]
+    ]
+  ]
+\end{forest}

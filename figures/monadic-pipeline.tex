@@ -1,0 +1,36 @@
+% Monadic effect pipeline: a protocol reads as one bind-sequenced pipeline,
+% written exactly as if every step were local; the process monad is what
+% inserts an actual network round-trip underneath (cf. Cloud Haskell).
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+% Include with a normal figure environment, e.g. \input{figures/monadic-pipeline}.
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  code/.style={align=left,font=\scriptsize\ttfamily,inner sep=0pt},
+  title/.style={font=\small\bfseries,inner sep=0pt},
+  prog/.style={rounded corners,draw,fill=gray!4,inner sep=5pt},
+  host/.style={rounded corners,draw,fill=gray!18,minimum width=28mm,minimum height=10mm,align=center},
+  msg/.style={->,gray!85,shorten >=1mm,shorten <=1mm},
+  split/.style={->,thick,gray!70},
+]
+
+% ---------- monadic pipeline, written as local code (top) ----------
+\node[code] (pcode) at (0,5.15) {%
+  send(worker, task)\\
+  result = receive()\\
+  branch on result};
+\node[title,anchor=south] (ptitle) at ([yshift=2.5mm]pcode.north) {Monadic pipeline (written as local code)};
+\begin{scope}[on background layer]
+  \node[prog,fit=(ptitle)(pcode)] (pipe) {};
+\end{scope}
+
+% ---------- process monad ----------
+\draw[split] (pipe.south) to[out=-100,in=90] node[pos=0.45,above,font=\scriptsize\itshape] {process monad} (-1.8,2.4);
+
+% ---------- what actually runs (bottom) ----------
+\node[host] (nodea) at (-1.8,1.6) {\textbf{Node A}\\[1pt]\scriptsize\emph{pipeline runs here}};
+\node[host] (nodeb) at ( 2.4,1.6) {\textbf{Node B}\\[1pt]\scriptsize\emph{remote process}};
+\draw[msg] (nodea.east) to[bend left=15] node[midway,above,font=\scriptsize] {send} (nodeb.west);
+\draw[msg] (nodeb.west) to[bend left=15] node[midway,below,font=\scriptsize] {reply} (nodea.east);
+
+\end{tikzpicture}

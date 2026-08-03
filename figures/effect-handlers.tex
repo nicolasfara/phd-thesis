@@ -1,0 +1,55 @@
+% Effect handlers: the same effectful program, with a fixed signature of
+% operations, is run under two different handlers -- one performing a
+% genuine remote call, the other driving a local simulation -- without the
+% program's code changing between the two.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+% Include with a normal figure environment, e.g. \input{figures/effect-handlers}.
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  code/.style={align=left,font=\scriptsize\ttfamily,inner sep=0pt},
+  title/.style={font=\small\bfseries,inner sep=0pt},
+  htitle/.style={font=\scriptsize\bfseries,inner sep=0pt},
+  note/.style={font=\scriptsize,inner sep=0pt},
+  prog/.style={rounded corners,draw,fill=gray!4,inner sep=5pt},
+  handler/.style={rounded corners,draw,fill=gray!12,inner sep=6pt},
+  dev/.style={circle,draw,fill=gray!50,minimum size=3.4mm,inner sep=0pt},
+  msg/.style={->,gray!85,shorten >=1mm,shorten <=1mm},
+  loop/.style={->,gray!85},
+  split/.style={->,thick,gray!70},
+]
+
+% ---------- effectful program (top) ----------
+\node[code] (ecode) at (0,5.15) {%
+  send(Bob, msg)\\
+  reply = receive()};
+\node[title,anchor=south] (etitle) at ([yshift=2.5mm]ecode.north) {Effectful program};
+\begin{scope}[on background layer]
+  \node[prog,fit=(etitle)(ecode)] (eff) {};
+\end{scope}
+
+% ---------- network handler (bottom left): a genuine remote call ----------
+\node[htitle] (ntitle) at (-3.2,2.3) {Network handler};
+\node[dev] (na) at (-3.9,1.3) {};
+\node[dev] (nb) at (-2.5,1.3) {};
+\draw[msg] (na) to[bend left=22] (nb);
+\draw[msg] (nb) to[bend left=22] (na);
+\node[note,anchor=north] (nnote) at (-3.2,0.7) {\emph{genuine remote call}};
+\begin{scope}[on background layer]
+  \node[handler,fit=(ntitle)(na)(nb)(nnote)] (net) {};
+\end{scope}
+
+% ---------- simulation handler (bottom right): a local simulation ----------
+\node[htitle] (stitle) at (3.2,2.3) {Simulation handler};
+\node[dev] (sa) at (3.2,1.3) {};
+\draw[loop] ([shift=(55:3.3mm)]sa) arc (55:-275:3.3mm);
+\node[note,anchor=north] (snote) at (3.2,0.7) {\emph{local simulation}};
+\begin{scope}[on background layer]
+  \node[handler,fit=(stitle)(sa)(snote)] (sim) {};
+\end{scope}
+
+% ---------- arrows: same program, two handlers ----------
+\draw[split] (eff.south) to[out=-135,in=90] node[pos=0.55,left=5mm,font=\scriptsize] {handles} (net.north);
+\draw[split] (eff.south) to[out= -45,in=90] node[pos=0.55,right=5mm,font=\scriptsize] {handles} (sim.north);
+
+\end{tikzpicture}

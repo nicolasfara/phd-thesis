@@ -592,13 +592,20 @@ and Wadler turns that structure into an ordinary programming idiom,
 packaging a monad's operations behind one uniform interface that any effect can implement~\cite{DBLP:conf/popl/Wadler92}.
 %
 This idea extends well beyond input and output,
-as Kleisli's monadic treatment of queries already illustrated in \cref{subsec:multitier-programming}~\cite{wong2000kleisli}.
+as Kleisli's monadic treatment of queries \cref{subsec:multitier-programming}~\cite{wong2000kleisli}.
 
 A monadic protocol reads as a pipeline:
 send, then wait, then branch on failure become ordinary composition through the monad's bind,
 so a protocol's sequencing is enforced by the same type discipline that sequences any other effectful computation.
-%
-Cloud Haskell puts this pipeline to work on an actual coordination protocol:
+
+\begin{figure}
+    \centering
+    \input{figures/monadic-pipeline}
+    \caption{The general idea of a monadic effect pipeline, illustrated on Cloud Haskell's process monad~\cite{DBLP:conf/haskell/EpsteinBJ11}: a protocol is written once, as a single bind-sequenced pipeline that looks entirely local (top); running it, the process monad executes that same pipeline at the node that wrote it, while inserting an actual network round-trip to the node it communicates with (bottom).}
+    \label{fig:monadic-pipeline}
+\end{figure}
+
+Cloud Haskell puts this pipeline to work on an actual coordination protocol, as \Cref{fig:monadic-pipeline} depicts:
 a process monad sequences send, receive, and spawn across a network of nodes,
 so a distributed program is written exactly as if the same operations were local, and the monad is what inserts the network in between~\cite{DBLP:conf/haskell/EpsteinBJ11}.
 %
@@ -610,7 +617,7 @@ so a protocol violation -- sending where the type expects a receive -- is a type
 \label{subsec:direct-style-effect-systems}
 
 Algebraic effects and handlers generalise this style by separating what an effect can do from how it is carried out:
-an effect is given by a signature of operations rather than by a fixed monad,
+an effect is given by a signature of operations rather than by a fixed smonad,
 and a handler supplies its interpretation,
 so the same effectful program can be run under different handlers without being rewritten~\cite{plotkin2003algebraic,plotkin2009handlers}.
 %
@@ -618,8 +625,15 @@ A continuation-passing semantics has since put handlers themselves on a formal f
 %
 For a coordination protocol, this separation matters beyond style:
 the code that issues an effect -- send this message, wait on that reply -- stays the same whether the handler interpreting it performs a genuine remote call or drives a local simulation,
-so the same protocol implementation serves as its own test harness, with no separate code path for either.
-%
+so the same protocol implementation serves as its own test harness, with no separate code path for either, as \Cref{fig:effect-handlers} depicts.
+
+\begin{figure}
+    \centering
+    \input{figures/effect-handlers}
+    \caption{The general idea of algebraic effect handlers applied to a coordination protocol: the effectful program (top) issues operations -- \texttt{send}, \texttt{receive} -- against a fixed signature, without committing to how they are carried out; a network handler interprets them as a genuine remote call between two nodes, and a simulation handler interprets the very same code as a local simulation, with neither handler requiring the program to be rewritten.}
+    \label{fig:effect-handlers}
+\end{figure}
+
 Handlers reach past network coordination as well:
 retrofitted onto OCaml, they let the concurrency scheduler that decides which computation runs next be written as an ordinary handler rather than fixed into the runtime,
 so scheduling becomes one more effect a program can interpret, not a mechanism the runtime alone controls~\cite{DBLP:conf/pldi/Sivaramakrishnan21}.

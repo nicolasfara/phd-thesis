@@ -1,6 +1,21 @@
 \chapter{The Edge-Cloud Continuum and Its Architectural Paradigms}
 \label{chap:edge-cloud-continuum}
 
+Every contribution of this thesis targets the same substrate:
+the computing infrastructure stretching between cloud data centres and the devices embedded in the physical world.
+%
+This chapter opens Part I by fixing that substrate.
+%
+It establishes what the edge-cloud continuum is,
+which environments this thesis must serve on it -- \ac{IoT} ecosystems and robot swarms --
+and why the architectural paradigms currently used to structure distributed software cannot deploy applications on it at the granularity,
+or with the runtime flexibility,
+those environments demand.
+%
+The gap this review exposes is the one the pulverisation model of \cref{chap:pulverization} closes;
+the other two background chapters ask, against the same substrate,
+how collective systems can be programmed (\cref{chap:programming-models}) and how their placement can be revised while they run (\cref{chap:dynamic-reconfiguration}).
+
 \section{The Edge-Cloud Continuum}
 \label{sec:the-continuum}
 
@@ -64,7 +79,7 @@ This matches an older argument in software architecture research: a system's com
 Pulverisation, for instance, breaks applications into fine-grained units whose deployment can be reconfigured at runtime,
 for any kind of application~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
 %
-Within the narrower field of collective and self-organising systems, the same idea appears at the level of macro-programming:
+Within the narrower field of collective and self-organising systems, the same idea appears at the level of macroprogramming:
 declarative, high-level specifications state where collective behaviour should run across cloud and edge~\cite{DBLP:conf/acsos/FarabegoliVC24},
 and simulation methods estimate the deployment performance of collective services once they are spread across such a topology~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
 %
@@ -182,7 +197,7 @@ exercising its heterogeneity and volatility at once.
 %
 This section surveys two concrete instances of such pervasive environments,
 \ac{IoT} ecosystems (\cref{subsec:iot-systems}) and swarm robotics (\cref{subsec:swarm-robotics}),
-frames them as instances of the broader class of collective adaptive systems (\cref{subsec:collective-adaptive-systems}),
+frames them as instances of a broader class introduced in \cref{subsec:collective-adaptive-systems},
 and closes by drawing out the deployment and coordination challenges they share (\cref{subsec:environment-challenges}),
 which motivate the architectural paradigms reviewed next, in \cref{sec:architectural-paradigms}.
 
@@ -238,7 +253,7 @@ Fault-tolerant cooperation among multiple robots predates this framing:
 ALLIANCE organised a team of behaviour-based robots so that tasks could be reassigned and individual failures tolerated without central coordination~\cite{parker1998alliance},
 anticipating by two decades the self-organisation requirements now associated with the continuum.
 
-Programming a swarm directly in terms of individual robot behaviours does not scale past a handful of units,
+Programming a swarm directly in terms of individual robot behaviours becomes unmanageable as the swarm grows,
 which motivated dedicated languages and frameworks that let a programmer express swarm behaviour at a higher level.
 %
 Buzz provides swarm-oriented primitives -- neighbourhood queries,
@@ -265,6 +280,9 @@ Where physical swarms of the required size are impractical,
 ARGoS provides a modular, multi-engine simulation infrastructure built specifically for large swarms~\cite{pinciroli2012argos},
 and Webots offers a general-purpose mobile-robot simulator with a graphical front-end~\cite{Michel2004};
 both let swarm algorithms be evaluated at scale before -- or instead of -- deploying them on real robots.
+%
+\Cref{chap:demonstrator} returns to this setting at the end of the thesis,
+exercising the models and platform this thesis develops end to end on a self-organising robot team.
 
 \subsection{Collective Adaptive Systems}
 \label{subsec:collective-adaptive-systems}

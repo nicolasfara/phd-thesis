@@ -1,6 +1,21 @@
 \chapter{Dynamic Reconfiguration and Intelligent Offloading}
 \label{chap:dynamic-reconfiguration}
 
+The macroprogramming models of \cref{chap:programming-models} abstract from physical placement by design:
+they fix what each logical participant runs,
+not which physical host runs it.
+%
+Some mechanism at runtime must therefore supply the missing choice of host,
+and keep revising it as the infrastructure characterised in \cref{chap:edge-cloud-continuum} changes underneath it.
+%
+This chapter closes Part I by reviewing what the literature offers for that task:
+constraint- and optimisation-based placement,
+energy- and carbon-aware objectives,
+and policies learned with \ac{RL} over graph representations of the topology.
+%
+The review is direct background for the thesis' answers in Part III:
+the deployment and reconfiguration strategies of \cref{chap:deployment-and-reconfiguration} and the learned offloading policy of \cref{chap:heterogeneous-gnn}.
+
 \section{Deployment Problems in Pervasive Systems}
 \label{sec:the-deployment-problem}
 
@@ -14,7 +29,7 @@ revised,
 and enacted,
 once the assumption of a fixed topology is dropped?
 
-At its core, deployment is an assignment problem:
+Deployment is an assignment problem:
 given a set of computational units -- services, functions, actors -- and a set of candidate hosts connected by links of varying capacity,
 find a mapping from the former to the latter that respects the units' resource and connectivity requirements (\cref{fig:placement-mapping}).
 %
@@ -44,7 +59,7 @@ and the connectivity between them are known and stable enough that a single deci
 \Cref{subsec:continuum-characteristics,subsec:network-volatility} showed that none of the three holds towards the edge of the continuum,
 where nodes differ radically in capacity and energy budget and links form and break as devices move.
 %
-Under these conditions a static mapping does not only become suboptimal over time:
+Under these conditions a static mapping does not merely become suboptimal over time:
 it can stop being satisfiable at all,
 if the host it names disappears or the link to it is no longer available.
 
@@ -64,7 +79,7 @@ Third, it must decide \emph{how} to compute a new mapping fast enough to matter 
 \label{sec:edge-orchestration-sota}
 
 Automating the mapping problem posed in \cref{sec:the-deployment-problem} is the subject of a substantial body of work on \emph{edge orchestration and service placement},
-surveyed comprehensively by Aït-Salaht et al.,
+surveyed by Aït-Salaht et al.,
 who propose a classification scheme for the field and catalogue its open issues~\cite{DBLP:journals/csur/Ait-SalahtDL20},
 and, four years later, by Taleb et al.,
 whose appearance signals that the first wave of proposals left placement in integrated cloud-fog-edge settings unsettled~\cite{DBLP:journals/csur/TalebGD25}.
@@ -105,7 +120,11 @@ Miloradovic and Papadopoulos solve the same assignment for application offloadin
 %
 Their objective folds the carbon footprint of the offloaded computation in alongside resource utilisation.
 %
-Across these proposals, and more broadly across the graph-based category, the same pattern recurs: exact methods give an optimal answer for a snapshot of the infrastructure, but their cost grows too fast with the number of nodes and services to be recomputed as often as \cref{subsec:network-volatility} suggests a volatile continuum demands, which is exactly why heuristics -- and, later, the learning-based methods of \cref{sec:ml-for-topologies} -- take over as problem size and reconfiguration frequency both grow.
+Across these proposals, and more broadly across the graph-based category, the same pattern recurs.
+%
+Exact methods give an optimal answer for a snapshot of the infrastructure, but their cost grows too fast with the number of nodes and services to be recomputed as often as \cref{subsec:network-volatility} suggests a volatile continuum demands.
+%
+This is why heuristics -- and, later, the learning-based methods of \cref{sec:ml-for-topologies} -- take over as problem size and reconfiguration frequency both grow.
 
 A distinct line of work brings the reconfiguration frequency concern into the container runtime itself, for applications with real-time constraints that ordinary container orchestration does not preserve~\cite{DBLP:conf/fogiot/StruharBAP20}.
 %
@@ -151,7 +170,7 @@ Fog- and edge-specific proposals adjust the objective accordingly.
 %
 Azizi et al., for instance, schedule \ac{IoT} tasks across fog nodes with semi-greedy heuristics that jointly minimise total energy consumption and deadline-violation time, in place of data-centre-style consolidation~\cite{DBLP:journals/jnca/AziziSAB22}.
 %
-Their scheduler is one of a now sizeable family of heuristic and metaheuristic fog schedulers that pursue the same energy/deadline trade-off under different search strategies.
+Their scheduler is one of many heuristic and metaheuristic fog schedulers that pursue the same energy/deadline trade-off under different search strategies.
 %
 These schedulers still treat energy as a quantity to be minimised wherever and whenever the work runs.
 %
@@ -165,8 +184,10 @@ Struhár et al. address this by framing container placement at the edge as a mul
 %
 The orchestrator then learns online which placement to prefer as each node's green-energy supply fluctuates, instead of optimising a fixed budget assumed at deployment time.
 %
-Treating placement as something learned online,
-is the shift that carries this section into the next: from the classical heuristics reviewed here to the learning-based methods examined in \cref{sec:ml-for-topologies}.
+Energy and carbon, tracked against a supply that varies in time, are also the objectives the thesis adopts:
+\cref{chap:deployment-and-reconfiguration} builds them into a declarative planner for green deployments on the continuum.
+%
+Treating placement as something learned online is the shift that carries this section into the next: from the classical heuristics reviewed here to the learning-based methods examined in \cref{sec:ml-for-topologies}.
 
 \section{Machine Learning for Distributed Network Topologies}
 \label{sec:ml-for-topologies}
@@ -190,28 +211,30 @@ The methods examined below separate training from operation more sharply than th
 %
 This separation pays off only if the trained policy generalises to states it did not meet during training, a requirement \cref{subsec:gnns-for-edge} returns to.
 %
-The networking literature has largely settled which kind of learning this calls for.
+Not every kind of learning fits this setting.
 %
 Supervised learning would need a supply of ground-truth optimal placements to imitate, precisely the expensive optimisation outputs the learned approach exists to avoid computing.
 %
-Reinforcement learning, by contrast, asks only for a reward signal that scores a placement after the fact.
+\ac{RL}, by contrast, asks only for a reward signal that scores a placement after the fact.
 %
-A survey of deep reinforcement learning in communications and networking catalogues its application across exactly this class of resource-allocation and offloading problems~\cite{DBLP:journals/comsur/LuongHGNWLK19}, and it is the route the rest of this section, and \cref{chap:heterogeneous-gnn}, take.
+A survey of deep \ac{RL} in communications and networking catalogues its application across exactly this class of resource-allocation and offloading problems~\cite{DBLP:journals/comsur/LuongHGNWLK19}, and it is the route the rest of this section, and \cref{chap:heterogeneous-gnn}, take.
 
 The three subsections that follow build that route, each depending on the one before.
 %
 \Cref{subsec:learning-based-offloading} contrasts the learned approach with the heuristics of \cref{sec:edge-orchestration-sota} on task offloading, where the decision narrows to a single unit and a binary choice of host, so the contrast with a re-solved optimisation stands out most sharply.
 %
-\Cref{subsec:reinforcement-learning} then introduces the reinforcement-learning formulation and the deep Q-learning algorithm that realises it at scale.
+\Cref{subsec:reinforcement-learning} then introduces the \ac{RL} formulation and the deep Q-learning algorithm that realises it at scale.
 %
-\Cref{subsec:gnns-for-edge} turns to the graph neural networks needed to feed such a policy a representation of a topology that is itself heterogeneous and changing -- the combination \cref{chap:heterogeneous-gnn} builds a full offloading policy around.
+\Cref{subsec:gnns-for-edge} turns to the \acp{GNN} needed to feed such a policy a representation of a topology that is itself heterogeneous and changing -- the combination \cref{chap:heterogeneous-gnn} builds a full offloading policy around.
 
 \subsection{Traditional vs. Learning-based Offloading}
 \label{subsec:learning-based-offloading}
 
 Task offloading is the decision, taken by or on behalf of a resource-constrained device, of whether to execute a computation locally or to send it to a more capable node reachable over the network~\cite{DBLP:journals/csur/Ait-SalahtDL20}.
 %
-Cast this way, offloading is a special case of the placement problem of \cref{sec:the-deployment-problem}, restricted to a single computational unit and a binary choice of host, and the exact and heuristic methods of \cref{subsec:constraint-based-placement} apply to it unchanged: an offloading policy can be obtained by solving an \ac{ILP} or a constraint-satisfaction problem over the device's and the remote host's resources, recomputed whenever the channel condition or the workload changes.
+Cast this way, offloading is a special case of the placement problem of \cref{sec:the-deployment-problem}, restricted to a single computational unit and a binary choice of host.
+%
+The exact and heuristic methods of \cref{subsec:constraint-based-placement} therefore apply to it unchanged: an offloading policy can be obtained by solving an \ac{ILP} or a constraint-satisfaction problem over the device's and the remote host's resources, recomputed whenever the channel condition or the workload changes.
 %
 Huang et al. take the same problem to a learned policy instead, training an agent to decide, for each arriving task, whether to compute locally or offload over a wireless-powered link, and to do so directly from the time-varying channel state rather than from a re-solved optimisation problem~\cite{DBLP:journals/tmc/HuangBZ20}.
 %
@@ -235,7 +258,7 @@ It does not remove the need for a model of the problem -- the agent still needs 
 \subsection{Reinforcement Learning and Deep Q-Learning}
 \label{subsec:reinforcement-learning}
 
-Reinforcement learning frames a decision problem as a sequence of interactions between an agent and an environment: at each step the agent observes the environment's state, selects an action, and receives a reward, with the goal of learning a policy that maximises the reward accumulated over time rather than at any single step~\cite{DBLP:books/lib/SuttonB18}.
+\ac{RL} frames a decision problem as a sequence of interactions between an agent and an environment: at each step the agent observes the environment's state, selects an action, and receives a reward, with the goal of learning a policy that maximises the reward accumulated over time rather than at any single step~\cite{DBLP:books/lib/SuttonB18}.
 %
 For an offloading or placement decision, the state is a description of the current topology and workload, the action is a placement or offloading choice, and the reward encodes the objective the mapping should optimise -- latency, energy, or any of the criteria \cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration} folded into an optimisation objective instead (\cref{fig:rl-offloading-loop}).
 
@@ -256,7 +279,9 @@ a topology described by the position, load, and connectivity of every node in a 
 %
 Deep Q-learning replaces the table with a neural network trained to approximate the Q-value function directly from raw or lightly processed state observations, letting the agent generalise to states it has not seen during training instead of memorising one value per state~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
-Training that network with the plain Q-learning update is unstable, because successive observations are strongly correlated and the update's own target drifts as the network changes; deep Q-learning restores stability with two mechanisms -- an experience-replay buffer that samples past transitions at random to break the correlation, and a separate target network held fixed between periodic updates so the target stops chasing the estimate~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
+Training that network with the plain Q-learning update is unstable, because successive observations are strongly correlated and the update's own target drifts as the network changes.
+%
+Deep Q-learning restores stability with two mechanisms: an experience-replay buffer that samples past transitions at random to break the correlation, and a separate target network held fixed between periodic updates so the target stops chasing the estimate~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
 Mnih et al. demonstrate the resulting agent on Atari games played from raw pixel input, using the same network architecture and hyperparameters across a range of games with no problem-specific tuning, a generality that makes the algorithm exportable to a domain -- offloading over a continuum topology -- the original work never targeted~\cite{DBLP:journals/nature/MnihKSRVBGRFOPB15}.
 %
@@ -269,7 +294,7 @@ A \ac{GNN} extends the neural architecture behind deep Q-learning to inputs that
 %
 Because the aggregation is defined locally -- over a node and its neighbourhood rather than the graph as a whole -- one set of learned parameters applies to graphs that differ in size and connectivity, unlike an ordinary network whose input layer fixes the dimension of what it accepts.
 %
-This locality has made GNNs a standard tool for problems posed over communication-network topologies, where the graph is a physical arrangement of devices and links rather than an abstract relation~\cite{DBLP:journals/wc/LeeYDL22}.
+This locality has made \acp{GNN} a standard tool for problems posed over communication-network topologies, where the graph is a physical arrangement of devices and links rather than an abstract relation~\cite{DBLP:journals/wc/LeeYDL22}.
 %
 Kipf and Welling formulate this aggregation as a graph convolution, propagating each node's features to its neighbours through an operation derived from a first-order approximation of spectral graph filtering, so that a node's learned representation comes to depend on the features of the nodes around it and, through further layers, on increasingly distant ones~\cite{DBLP:conf/iclr/KipfW17}.
 %
@@ -297,3 +322,18 @@ The spectral convolution of Kipf and Welling is transductive, trained on a fixed
 Hamilton et al. lift this restriction with an inductive formulation that learns the aggregation function itself rather than an embedding bound to one graph, so that the trained model applies unchanged to nodes -- and to whole topologies -- it never saw~\cite{DBLP:conf/nips/HamiltonYL17}.
 %
 An inductive, heterogeneity-aware representation of the topology is what lets the deep Q-learning agent of \cref{subsec:reinforcement-learning}, trained offline, act on a continuum that keeps changing under it -- the combination \cref{chap:heterogeneous-gnn} develops into a full offloading policy.
+
+Whatever the method, the object of every decision reviewed in this chapter is the same kind of unit:
+a service, a container, a function, a task --
+inherited from the architectural paradigms whose deployment limitations \cref{chap:edge-cloud-continuum} established.
+%
+The problem posed in \cref{sec:the-deployment-problem} is therefore only half answered.
+%
+The optimisation and orchestration methods of \cref{sec:edge-orchestration-sota} and the learned policies of \cref{sec:ml-for-topologies} say how a mapping is computed and revised;
+none of the reviewed work supplies a model of what is mapped at a granularity finer than these units,
+matched to the collective programs of \cref{chap:programming-models}.
+%
+Part II begins with exactly that model:
+\cref{chap:pulverization} defines the deployable units,
+the strategies of \cref{chap:deployment-and-reconfiguration} and the offloading policy of \cref{chap:heterogeneous-gnn} then decide where those units run,
+and \cref{chap:demonstrator} puts the whole chain to work on a self-organising robot team.

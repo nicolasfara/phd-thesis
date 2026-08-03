@@ -95,7 +95,13 @@ The field calculus distils this intuition into a minimal,
 universal functional model with equivalent local and aggregate semantics~\cite{VIROLI2019100486},
 later extended to a higher-order calculus that supports passing fields -- including field-producing programs -- as first-class values~\cite{AVDPB-TOCL2019}.
 
-Field-based coordination provides the theoretical backbone for this thesis' treatment of self-organisation.
+Field-based coordination provides the theoretical backbone for this thesis' treatment of self-organisation,
+in the sense fixed in \cref{subsec:swarm-robotics}:
+global order arising from local interactions alone.
+%
+Fields give that process an engineering form,
+because the self-stabilising building blocks introduced below make the outcome of those local interactions predictable and composable,
+rather than merely emergent~\cite{DBLP:conf/saso/BealV14a,VIROLI2019100486}.
 %
 Two mechanisms make it implementable on a real distributed system,
 in which devices execute asynchronously,
@@ -551,6 +557,9 @@ ScaFi takes the embedding route:
 it realises the field calculus as an internal \ac{DSL} hosted in Scala,
 packaged with a companion runtime that runs the same aggregate program, unmodified, inside a discrete-event simulation or on physically distributed devices~\cite{casadei2022scafi}.
 %
+The simulation seat is supplied by Alchemist,
+a discrete-event simulator built around chemical-inspired computational models that has become the reference testbed for aggregate programs~\cite{DBLP:journals/jos/PianiniMV13}.
+%
 Embedding buys aggregate programs the host language's tooling, libraries, and type system for free,
 at the cost of a syntax that is aggregate computing filtered through Scala's own conventions.
 %
@@ -589,7 +598,9 @@ clustering devices for federated training from local, decentralised information 
 with no central coordinator deciding cluster membership~\cite{DBLP:journals/iot/DominiFAVE26}.
 %
 None of this treats deployment performance as a given:
-a simulation-based methodology lets it be estimated for a collective service before that service is rolled out on real edge infrastructure,
+a simulation-based methodology,
+again built on Alchemist,
+lets it be estimated for a collective service before that service is rolled out on real edge infrastructure,
 the same practice already noted for smart-city and edge scenarios in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
 
 Together, ScaFi, Protelis, FCPP, and XC -- and the aggregate-process, learning-augmented, and federated-learning extensions built on top of them -- constitute the closest prior art to the deployment and coordination model this thesis develops in \cref{chap:pulverization,chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration}.
@@ -635,7 +646,11 @@ Cloud Haskell puts this pipeline to work on an actual coordination protocol, as 
 a process monad sequences send, receive, and spawn across a network of nodes,
 so a distributed program is written exactly as if the same operations were local, and the monad is what inserts the network in between~\cite{DBLP:conf/haskell/EpsteinBJ11}.
 %
-Session-typed channels admit the same treatment:
+Session-typed channels admit the same treatment.
+%
+Session types are the type discipline for structured communication introduced by Honda, Vasconcelos, and Kubo:
+a channel's type prescribes the order of sends and receives on it~\cite{DBLP:conf/esop/HondaVK98}.
+%
 Pucella and Tov encode a session type as a sequence of monadic actions,
 so a protocol violation -- sending where the type expects a receive -- is a type error in exactly the sense that using a value of the wrong type would be~\cite{DBLP:conf/haskell/PucellaT08}.
 

@@ -11,6 +11,7 @@ and keep revising it as the infrastructure characterised in \cref{chap:edge-clou
 This chapter closes Part I by reviewing what the literature offers for that task:
 constraint- and optimisation-based placement,
 energy- and carbon-aware objectives,
+declarative statements of the deployment problem,
 and policies learned with \ac{RL} over graph representations of the topology.
 %
 The review is direct background for the thesis' answers in Part III:
@@ -63,7 +64,7 @@ Under these conditions a static mapping does not merely become suboptimal over t
 it can stop being satisfiable at all,
 if the host it names disappears or the link to it is no longer available.
 
-Reopening the mapping at runtime raises three questions that structure the rest of this chapter.
+Reopening the mapping at runtime raises four questions that structure the rest of this chapter.
 %
 First, an implementation must decide \emph{what} makes one placement better than another:
 which objective the mapping should optimise, and under which constraints.
@@ -73,7 +74,11 @@ Second, it must decide \emph{which} objective to privilege when several compete;
 \cref{subsec:energy-aware-orchestration} looks at energy as one such objective,
 already flagged in \cref{subsec:continuum-characteristics} as a concern orthogonal to raw computational capacity and promised a first-class treatment here.
 %
-Third, it must decide \emph{how} to compute a new mapping fast enough to matter on a topology that keeps changing while the computation runs -- a scalability concern that motivates the shift from the classical heuristics surveyed in \cref{sec:edge-orchestration-sota} to the learning-based methods examined in \cref{sec:ml-for-topologies}.
+Third, it must decide \emph{in what form} the problem itself is stated:
+how the components, their requirements, and the objective are declared to whatever computes the mapping.
+\Cref{subsec:declarative-deployment} reviews the specification models that carry this statement.
+%
+Fourth, it must decide \emph{how} to compute a new mapping fast enough to matter on a topology that keeps changing while the computation runs -- a scalability concern that motivates the shift from the classical heuristics surveyed in \cref{sec:edge-orchestration-sota} to the learning-based methods examined in \cref{sec:ml-for-topologies}.
 
 \section{State-of-the-Art in Edge Orchestration and Placement}
 \label{sec:edge-orchestration-sota}
@@ -90,6 +95,7 @@ and machine-learning-based methods~\cite{DBLP:journals/csur/TalebGD25} --
 a classification this chapter follows loosely:
 \cref{subsec:constraint-based-placement} reviews the first two categories under the umbrella of constrained optimisation,
 \cref{subsec:energy-aware-orchestration} narrows the objective to energy,
+\cref{subsec:declarative-deployment} steps back from how a placement is computed to how the problem is stated -- a concern the classification leaves implicit --
 and \cref{sec:ml-for-topologies} turns to the third category,
 which both surveys register as the most active recent trend (\cref{fig:orchestration-taxonomy}).
 
@@ -184,10 +190,32 @@ Struhár et al. address this by framing container placement at the edge as a mul
 %
 The orchestrator then learns online which placement to prefer as each node's green-energy supply fluctuates, instead of optimising a fixed budget assumed at deployment time.
 %
-Energy and carbon, tracked against a supply that varies in time, are also the objectives the thesis adopts:
-\cref{chap:deployment-and-reconfiguration} builds them into a declarative planner for green deployments on the continuum.
+How a planner is told what a green deployment is -- how the components, the infrastructure, and objectives such as these are stated for it -- is a question of its own, taken up next.
+
+\subsection{Declarative Deployment Specification}
+\label{subsec:declarative-deployment}
+
+The formulations reviewed in \cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration} presuppose that the problem is already stated: which components exist, what they require, what the infrastructure offers, and which objective the mapping should optimise.
 %
-Treating placement as something learned online is the shift that carries this section into the next: from the classical heuristics reviewed here to the learning-based methods examined in \cref{sec:ml-for-topologies}.
+Industrial practice states this declaratively.
+%
+TOSCA, the \emph{Topology and Orchestration Specification for Cloud Applications}, standardises a portable model of an application's components, their relationships, and the operations that manage them, so that a deployment can be described once and enacted by different orchestrators~\cite{DBLP:books/sp/aws14/BinzBKL14}.
+%
+\emph{Infrastructure as code} generalises the practice: provisioning and configuration are written as versioned, executable specifications rather than performed by hand~\cite{DBLP:journals/infsof/RahmanMW19}.
+%
+Kubernetes' operating model is itself declarative: the operator declares a desired state, and controllers continuously reconcile the running system towards it.
+%
+The declared state, however, remains an operations artefact: it belongs to whoever runs the platform, not to the application -- the same boundary \cref{subsec:constraint-based-placement} found around the placement policy itself.
+
+The declarative statement can also drive the placement search.
+%
+The constraint-filtering model of Brogi and Forti, reviewed in \cref{subsec:constraint-based-placement}, develops into \emph{declarative continuous reasoning}: the deployment goal is stated once, and an incremental reasoner repairs the placement as the infrastructure drifts, keeping the goal satisfied instead of re-solving from scratch at every change~\cite{DBLP:journals/logcom/FortiBB22}.
+%
+For collective systems, the declarative statement need not stop at operations: it can become the artefact the application itself manipulates at runtime, the direction taken for pulverised deployments~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+
+Energy and carbon objectives tracked against a time-varying supply (\cref{subsec:energy-aware-orchestration}) and a deployment goal stated once and kept satisfied are exactly the two threads \cref{chap:deployment-and-reconfiguration} combines into a declarative planner for green deployments on the continuum.
+%
+Treating placement as something learned online, rather than declared and repaired, is the shift that carries the chapter into the learning-based methods examined in \cref{sec:ml-for-topologies}.
 
 \section{Machine Learning for Distributed Network Topologies}
 \label{sec:ml-for-topologies}

@@ -1,2 +1,377 @@
 \chapter{The Pulverization Model}
 \label{chap:pulverization}
+
+\Cref{chap:edge-cloud-continuum} introduced pulverisation as Casadei et al.'s way of decoupling a collective system's self-organising logic from its deployment,
+splitting each logical device into a small, fixed set of components -- sensing,
+actuation,
+behaviour,
+state,
+and communication -- and promised that this thesis would develop the idea in full here~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+%
+\Cref{chap:programming-models} reached the same gap from the language side.
+%
+Aggregate computing,
+choreographic programming,
+and multitier programming each derive logical units of computation from a global specification of collective behaviour,
+but leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time;
+aggregate computing's own execution model further assumes that every device runs a complete instance of the aggregate program,
+not a fragment of one realised across heterogeneous target platforms.
+%
+\Cref{chap:dynamic-reconfiguration} closed Part I by naming what is still missing before that mapping can even be posed as a runtime decision:
+a model of what the unit being mapped actually is.
+
+This chapter supplies that model.
+%
+\Cref{sec:pulverization-motivation} recalls why the original, fixed-role pulverisation and its declarative,
+runtime-reconfigurable extension are not enough on their own,
+and states the more general, orthogonal partitioning this thesis develops instead.
+%
+\Cref{sec:pulverization-abstractions} gives that partitioning its core abstractions:
+the physical devices a macro-program runs on and the infrastructure that can support it,
+the macro-program itself as a directed acyclic graph of independently deployable components,
+the distinction between components that compute in isolation and components whose result depends on their neighbours,
+and the forwarding mechanism that maps components onto physical devices.
+%
+\Cref{sec:pulverization-semantics} closes the chapter with the model's execution semantics and its central formal guarantee:
+that, under stated conditions, a macro-program's observable behaviour does not depend on how its components are deployed.
+
+\section{Motivation and Design Goals}
+\label{sec:pulverization-motivation}
+
+The pulverisation approach recalled in \cref{chap:edge-cloud-continuum} decomposes every logical device of a system into the same five components,
+whatever the application does~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+%
+This is a deliberate design choice, not an oversight:
+fixing the decomposition in advance gives every pulverised application the same five deployment points,
+so a generic pulverisation middleware can be built once and reused across applications.
+%
+The same fixed decomposition is also a limitation.
+%
+A logical device's behaviour component can itself be arbitrarily complex,
+for instance an entire aggregate-computing program combining several collective computations,
+yet the original model can only ever place that whole component as one unit,
+regardless of whether its internal parts have different resource needs,
+different degrees of collectiveness,
+or different natural hosts.
+
+PulvReAKt, the runtime and pair of \acp{DSL} developed in this thesis' own prior work,
+closes one half of this gap without touching the other~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+%
+It attaches a \emph{capability} to every pulverised component and to every host,
+so that a component can only be deployed where the host's capabilities are a superset of what the component requires,
+and it lets that assignment be revised at runtime,
+declaratively and without touching the application logic,
+through a decentralised middleware that relocates components as capabilities change --
+for instance,
+moving a behaviour component off a device whose battery is degrading and onto a nearby host that still has the capability to run it.
+%
+This is an advance on the runtime-flexibility side of the problem:
+a pulverised system can now adapt its own deployment as conditions change,
+rather than being fixed at release time.
+%
+It leaves the partitioning itself untouched, however:
+every logical device still decomposes into exactly the same five roles,
+so the number and kind of deployable units a system offers never varies with what the application actually computes,
+and each logical device still corresponds, in essence, to a single physical device to be relocated as a whole.
+
+The model this thesis develops for the rest of Part II generalises pulverisation along an orthogonal axis:
+instead of a catalogue of execution concerns fixed once and for all,
+it partitions a macro-program along its own data-flow structure~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+%
+A macro-program decomposes into as many independently deployable components as its own logic warrants,
+connected in an arbitrary graph rather than assigned one of five fixed slots,
+and each component is classified by whether its computation genuinely needs to coordinate with neighbouring devices or not,
+independently of what part of the original five-role catalogue it would have corresponded to.
+%
+\Cref{sec:pulverization-abstractions} develops this partitioning in detail;
+\cref{sec:pulverization-semantics} then shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
+
+\section{Core Abstractions}
+\label{sec:pulverization-abstractions}
+
+\subsection{Application and Infrastructural Devices}
+\label{subsec:application-infrastructural-devices}
+
+The model is stated over a \emph{physical system}:
+a set of physical devices connected by a reflexive,
+symmetric \emph{physical neighbourhood} relation,
+which holds between two devices exactly when they can exchange messages directly.
+%
+Two roles are then singled out among these devices,
+not by any physical property but by the part they play in a given deployment.
+%
+\emph{Application devices} are the devices that jointly execute a macro-program --
+robots in a swarm,
+sensor and actuator nodes of an \ac{IoT} ecosystem -- and their neighbourhood relation,
+inherited from the physical one,
+defines a macro-program's own notion of neighbour interaction.
+%
+\emph{Infrastructural devices} are physical devices able to support the execution of some part of a macro-program on behalf of application devices,
+such as an edge server or a base station,
+without necessarily being targets of the application themselves.
+%
+The two roles are not a partition of the physical devices:
+a device can be both,
+as when a more capable robot in a swarm also executes computation on behalf of a weaker neighbour,
+though application devices such as swarm robots and infrastructural devices such as edge servers or cloud hosts are, in the common case, disjoint.
+%
+Devices in the application role are additionally assumed to expose a set of \emph{sensors},
+whose readings make up the device's \emph{sensor state},
+and,
+dually,
+a set of actuators through which the macro-program acts back on the physical process it monitors.
+
+\subsection{The Macro-program as a DAG of Components}
+\label{subsec:macroprogram-dag}
+
+A macro-program is a set of \emph{components} connected by \emph{bindings}.
+%
+Each component is an atomic,
+functional fragment of the macro-program:
+it takes a list of input values, received through named input \emph{ports},
+and produces a single output value on its output port.
+%
+A binding connects the output port of one component to an input port of another,
+composing components the way ordinary functions compose.
+%
+A macro-program is \emph{well-formed} when every component has a distinct output port,
+every input port of a downstream component is bound to the output port of some upstream one,
+and the resulting graph of components is acyclic -- a \ac{DAG}.
+%
+Output ports left unbound by any input are the macro-program's \emph{global output ports},
+the values the rest of the system observes as the macro-program's result.
+%
+\Cref{fig:macro-program-dag} shows this structure for a macro-program of four components.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/macro-program-dag}
+    \caption[A macro-program as a DAG of components]{A macro-program as a DAG of four components. Curved arrows are bindings, each connecting an upstream component's output port to a downstream component's input port; $c_4$'s unbound output port is the macro-program's global output port.}
+    \label{fig:macro-program-dag}
+\end{figure}
+
+Because a macro-program is executed jointly by the set of application devices,
+each component is instantiated once per application device:
+each instantiation yields a \emph{component instance},
+and component instances,
+not components,
+are the model's actual units of execution and deployment.
+%
+This is the first departure from the original pulverisation model:
+where a logical device always decomposed into exactly five components,
+here the number of components -- and so the number of instances, per device, that a deployment must place -- is whatever the macro-program's own data-flow graph calls for,
+from one to arbitrarily many.
+
+\subsection{Local and Collective Components}
+\label{subsec:local-collective-components}
+
+Orthogonal to their position in the \ac{DAG},
+components are classified by what executing one of their instances requires.
+%
+A component is \emph{local} if computing an instance is a pure transformation of that instance's own inputs into its output,
+with no dependency on any other device.
+%
+A component is \emph{collective} if computing an instance additionally requires interaction with instances of the \emph{same} component at neighbouring devices --
+the same neighbour-dependent computation that gives aggregate computing's fields their collective character (\cref{subsec:aggregate-computing}),
+now scoped to a single component of a larger macro-program rather than to the whole macro-program at once.
+%
+A component that turns one device's own readings into a per-device classification is local;
+a component whose output at one device depends on the same computation running at its neighbours -- propagating a value outward from a source,
+or agreeing on a shared partition of the network into regions -- is collective.
+%
+\Cref{fig:local-collective-components} marks the distinction on the same four-component macro-program of \cref{fig:macro-program-dag}.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/local-collective-components}
+    \caption[Local and collective components in the same macro-program]{The same macro-program, with each component classified as local or collective. $c_1$ and $c_4$ are local: each computes purely from its own inputs. $c_2$ and $c_3$ are collective, marked with a double border: computing an instance of either also requires the states of the same component's instances at neighbouring devices.}
+    \label{fig:local-collective-components}
+\end{figure}
+
+This distinction fixes two levels at which component instances interact.
+%
+\emph{Inter-component} interaction happens between different components instantiated at the \emph{same} device:
+a downstream instance reads the values its upstream instances produced,
+exactly as the bindings of \cref{subsec:macroprogram-dag} prescribe.
+%
+\emph{Intra-component} interaction happens between instances of the \emph{same} collective component at \emph{neighbouring} devices,
+letting that component's result cohere across the network rather than being computed device by device in isolation.
+%
+Correspondingly, a component instance's round of computation consumes up to four things:
+its own state from the previous round;
+the values received from its upstream instances at the same device;
+the local sensor state;
+and,
+only if the component is collective,
+the latest available states of the same component's instances at neighbouring devices --
+the same ingredients aggregate computing's \texttt{nbr}/\texttt{rep} constructs combine in a single, undivided program (\cref{subsubsec:ac-execution-model}),
+here made available separately to each component of a decomposed one.
+
+Because collectiveness is a property of individual components rather than of a logical device as a whole,
+a single macro-program can freely mix components that behave like self-organising, field-based services with components that behave like ordinary, non-coordinating ones,
+composed in the same \ac{DAG}.
+%
+The original pulverisation model has no equivalent distinction:
+its behaviour component may internally run a collective computation,
+but that computation's own local and collective parts are never exposed as separately deployable units.
+
+\subsection{Forward Chains to Physical Devices}
+\label{subsec:forwarding-chains}
+
+Deploying a macro-program means deciding, for every pair of a component and the application device that instantiates it, on which physical device that component instance actually runs.
+%
+Each such pair identifies a component instance together with its \emph{owner} -- the application device it was instantiated for.
+%
+By default, an instance runs at its owner.
+%
+An owner may lack the sensors, actuators, computational capacity, or storage a component needs, or another device may simply be a more efficient host for it;
+in either case, the instance is offloaded to an infrastructural device acting as its \emph{surrogate} for that specific component,
+while the rest of the owner's components may stay local or be offloaded elsewhere -- a \emph{mixed} deployment, in which an application device runs some of its own components and forwards others.
+%
+\Cref{fig:pulverization-forwarding} shows one such mixed deployment for the macro-program of \cref{fig:macro-program-dag,fig:local-collective-components}.
+
+\begin{figure}[t]
+    \centering
+    \resizebox{\textwidth}{!}{\input{figures/pulverization-forwarding}}
+    \caption[A macro-program deployed across an application device and a surrogate]{A deployment of the same macro-program across two physical devices. $c_1$, $c_3$, and $c_4$ execute on their owner, the application device; $c_2$ is forwarded along a forwarding chain to an infrastructural device acting as its surrogate. Faded components mark where a component sits in the macro-program's structure without executing there.}
+    \label{fig:pulverization-forwarding}
+\end{figure}
+
+Because the continuum this thesis targets is itself multi-hop and multi-tier (\cref{sec:the-continuum}),
+offloading need not stop at the first surrogate:
+the deployment of a component instance is captured, in general, by a \emph{forwarding chain} running from the owner,
+hop by hop,
+to the device that finally executes it.
+%
+A deployment is \emph{correct} when every component of every application device is assigned such a chain,
+and every chain both starts at its owner and contains no cycle --
+the same acyclicity requirement \cref{subsec:macroprogram-dag} places on the macro-program itself,
+now placed on its physical realisation.
+%
+Component instances carry no state of their own beyond what their round-inputs supply (\cref{subsec:local-collective-components}),
+so a surrogate that ends up hosting the same component forwarded by several owners -- as commonly happens when many devices forward the same component to a shared cloud host -- can treat those instances as one, without losing any owner-specific behaviour to collapse.
+
+Forwarding resembles what a multitier compiler does when it slices one program across statically known tiers (\cref{subsec:multitier-programming}),
+with two differences that matter for the continuum:
+the assignment is a per-component, per-device decision taken -- and revisable -- at runtime rather than fixed once at compile time,
+and it is driven by whether a host's exposed capabilities meet a component's requirements,
+in the sense PulvReAKt already established for the fixed five-role case (\cref{sec:pulverization-motivation}),
+rather than by a static tier annotation written by the programmer.
+
+\section{Semantics and Guarantees}
+\label{sec:pulverization-semantics}
+
+\subsection{Execution Model}
+\label{subsec:pulverization-execution-model}
+
+Every component instance is independently schedulable:
+its rounds of computation can proceed on their own timeline,
+asynchronously with respect to other instances at the same device and to instances of the same component at other devices,
+in the same time-fluid sense already established for aggregate computing (\cref{subsubsec:ac-execution-model}).
+%
+A round produces a new state from the four ingredients \cref{subsec:local-collective-components} listed,
+and the value read off that state becomes available to whichever instances are bound to consume it --
+downstream instances at the same device directly,
+or, if the component is offloaded, only once it has travelled the forwarding chain of \cref{subsec:forwarding-chains} in both directions:
+inputs and neighbour context outward to the surrogate, the result back to the owner.
+
+This informal picture is backed by a small-step operational semantics,
+stated as a set of rules over a global network configuration mapping devices to the messages pending for them.
+%
+It extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along exactly the two axes this chapter has introduced:
+a network configuration now carries the state of many components composed in a \ac{DAG}, not one flat program,
+and dedicated rules relay messages one hop at a time along a forwarding chain,
+rather than assuming a component always executes at the device that owns it.
+%
+Firing a component instance produces a state message for its neighbours;
+a communication rule ships that message to an aligned neighbour of the same component;
+and forwarding and backwarding rules copy, respectively, the inputs an offloaded instance needs and the result it produces one step along its chain,
+so that a chain of arbitrary length is handled by iterating the same single-hop rule.
+
+\subsection{Deployment Independence}
+\label{subsec:deployment-independence}
+
+The model's central result concerns \emph{self-stabilising} components,
+in the sense already fixed for field computations in \cref{subsec:aggregate-computing}:
+a computation is self-stabilising if every fair execution -- one in which each device keeps firing -- eventually reaches, and keeps recovering, the same output once the effects of transient perturbations such as message loss, topology changes, or node churn have faded~\cite{DBLP:journals/tomacs/ViroliABDP18}.
+%
+Given a well-formed macro-program whose components are all self-stabilising, and a correct deployment in which the sensor state feeding any given component stays uniform along its entire forwarding chain,
+the behaviour observed at the macro-program's global output ports is itself self-stabilising,
+and it stabilises to the same value regardless of which components are forwarded and to which surrogate~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+
+The argument behind this result composes two facts already available separately.
+%
+Without forwarding, the macro-program's output is a functional composition of its components along the \ac{DAG},
+and self-stabilisation is preserved by functional composition:
+upstream components stabilise first, and downstream ones follow once their inputs have~\cite{DBLP:journals/tomacs/ViroliABDP18}.
+%
+Forwarding does not break this, because a forwarding chain only relays the same input, neighbour-context, and result messages that a local execution would exchange internally, one hop at a time;
+under a fair schedule, those relays eventually deliver every message,
+so the extra hops a chain introduces are themselves just another transient effect that the components' own self-stabilisation already absorbs.
+%
+Simulation confirms the guarantee empirically,
+using as running cases the same two collective services \cref{subsec:local-collective-components} introduced to illustrate what a collective component is:
+a gradient propagating a value outward from a source,
+and a service partitioning the network into self-organising coordination regions~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+%
+Both were run over networks of 50,
+100,
+and 200 mobile nodes that move for the first part of the simulation and are stopped at $t=900$,
+comparing a monolithic deployment,
+in which every component runs on its owner,
+against one that offloads some components to infrastructural devices.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{gradient-convergence.pdf}
+    \\[0.4em]
+    \includegraphics[width=\textwidth]{gradient-convergence-error.pdf}
+    \caption[Gradient potential and error between monolithic and offloaded deployments]{Gradient potential under a monolithic and an offloaded deployment, for networks of 50, 100, and 200 nodes (top), and the error between the two deployments over the same runs (bottom). Data from~\cite{DBLP:conf/acsos/FarabegoliVC24}.}
+    \label{fig:gradient-convergence}
+\end{figure}
+
+\Cref{fig:gradient-convergence} shows the two deployments tracking each other closely while the nodes move,
+with the error between them driven by the extra hops forwarding introduces during that transient.
+%
+Once the nodes stop moving at $t=900$,
+the error collapses -- not to a permanent zero,
+but to the small,
+recovering residual self-stabilisation predicts once transient perturbations fade.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{scr-convergence.pdf}
+    \\[0.4em]
+    \includegraphics[width=\textwidth]{scr-convergence-error.pdf}
+    \caption[Coordination-region count and error between monolithic and offloaded deployments]{Number of self-organising coordination regions the network settles into, under a monolithic and an offloaded deployment (top), and the error between the two (bottom). Data from~\cite{DBLP:conf/acsos/FarabegoliVC24}.}
+    \label{fig:scr-convergence}
+\end{figure}
+
+\Cref{fig:scr-convergence} repeats the comparison for the region-partitioning service.
+%
+Larger networks take longer to agree on a stable partition and produce noisier error traces while the topology is still moving,
+but every network size drives the offloaded deployment onto the same region count as the monolithic one once movement stops,
+regardless of how many components were forwarded and to which surrogate.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{power-consumption.pdf}
+    \caption[Battery level and messages exchanged, monolithic vs. offloaded]{Average battery level (left) and cumulative messages exchanged (right) by application devices, under a monolithic and an offloaded deployment. Data from~\cite{DBLP:conf/acsos/FarabegoliVC24}.}
+    \label{fig:power-consumption}
+\end{figure}
+
+\Cref{fig:power-consumption} isolates the non-functional side of the same experiment:
+offloading components to infrastructural devices leaves application devices with more battery over the course of the run,
+at the cost of a modest increase in the number of messages exchanged --
+the price of the extra hops a forwarding chain introduces,
+paid in bandwidth rather than in energy or correctness.
+
+Because deployment independence holds for any correct deployment,
+the mapping from components to devices can safely be revised while the system runs,
+not only once at release time,
+and the choice between deployments can then be driven entirely by non-functional concerns -- capability, load, energy -- without risking the application's correctness.
+%
+\Cref{chap:deployment-and-reconfiguration} exploits this same property, on top of the model defined here, to turn deployment into an explicit runtime control problem.
+%
+\Cref{chap:language-and-coordination} returns to the paradigms surveyed in \cref{chap:programming-models} from the other side,
+unifying how aggregate computing, choreographic programming, and multitier programming each produce the kind of deployable component this chapter has defined.

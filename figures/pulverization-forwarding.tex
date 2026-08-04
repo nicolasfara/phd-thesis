@@ -1,0 +1,77 @@
+% A macro-program deployed across an application device and an infrastructural
+% device acting as a surrogate: one component is forwarded along a forwarding
+% chain, everything else stays local.
+% Requires in the preamble: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+% Include with a normal figure environment, e.g.
+%   \resizebox{\textwidth}{!}{\input{figures/pulverization-forwarding}}
+\begin{tikzpicture}[
+  >=Latex,
+  font=\small,
+  comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=18mm,minimum height=8mm,align=center},
+  collcomp/.style={comp,double,double distance=0.6pt,fill=orange!10,draw=orange!55!black},
+  ghost/.style={draw=gray!35,rounded corners,fill=gray!4,text=gray!55,minimum width=18mm,minimum height=8mm,align=center},
+  port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
+  ghostport/.style={draw=gray!35,fill=gray!20,minimum width=2mm,minimum height=2mm,inner sep=0pt},
+  bind/.style={->,thick,black!75},
+  ghostbind/.style={->,gray!45},
+]
+
+% ================= application device (left) =================
+\node[comp]     (c1) at (0,2.9)    {$c_1$};
+\node[collcomp] (c3) at (-1.1,1.5) {$c_3$};
+\node[ghost]    (c2) at (1.1,1.5)  {$c_2$};
+\node[comp]     (c4) at (0,0)      {$c_4$};
+
+\node[port]      (c1o)  at (c1.south) {};
+\node[port]      (c3i)  at (c3.north) {};
+\node[ghostport] (c2i)  at (c2.north) {};
+\node[port]      (c3o)  at (c3.south) {};
+\node[ghostport] (c2o)  at (c2.south) {};
+\node[port]      (c4il) at ([xshift=-3.5mm]c4.north) {};
+\node[port]      (c4ir) at ([xshift=3.5mm]c4.north) {};
+
+\draw[bind]      (c1o) to[out=200,in=90]  (c3i);
+\draw[ghostbind] (c1o) to[out=-20,in=90]  (c2i);
+\draw[bind]      (c3o) to[out=-90,in=160] (c4il);
+\draw[ghostbind] (c2o) to[out=-90,in=20]  (c4ir);
+
+\begin{scope}[on background layer]
+  \node[draw,thick,rounded corners,fill=gray!2,fit=(c1)(c2)(c3)(c4),inner sep=5mm] (appdev) {};
+\end{scope}
+\node[anchor=south,font=\small\bfseries] at (appdev.north) {application device};
+
+% ================= infrastructural device / surrogate (right) =================
+% Mirrored left-right relative to the application device, so the forwarded
+% component (c2) sits nearest the incoming forwarding chain instead of behind c3.
+\begin{scope}[xshift=7cm]
+  \node[ghost]    (c1r) at (0,2.9)    {$c_1$};
+  \node[collcomp] (c2r) at (-1.1,1.5) {$c_2$};
+  \node[ghost]    (c3r) at (1.1,1.5)  {$c_3$};
+  \node[ghost]    (c4r) at (0,0)      {$c_4$};
+
+  \node[ghostport] (c1ro)  at (c1r.south) {};
+  \node[port]      (c2ri)  at (c2r.north) {};
+  \node[ghostport] (c3ri)  at (c3r.north) {};
+  \node[port]      (c2ro)  at (c2r.south) {};
+  \node[ghostport] (c3ro)  at (c3r.south) {};
+  \node[ghostport] (c4ril) at ([xshift=-3.5mm]c4r.north) {};
+  \node[ghostport] (c4rir) at ([xshift=3.5mm]c4r.north) {};
+
+  \draw[ghostbind] (c1ro) to[out=200,in=90]  (c2ri);
+  \draw[ghostbind] (c1ro) to[out=-20,in=90]  (c3ri);
+  \draw[ghostbind] (c2ro) to[out=-90,in=160] (c4ril);
+  \draw[ghostbind] (c3ro) to[out=-90,in=20]  (c4rir);
+
+  \begin{scope}[on background layer]
+    \node[draw,thick,dashed,gray!55,rounded corners,fill=gray!2,fit=(c1r)(c2r)(c3r)(c4r),inner sep=5mm] (infdev) {};
+  \end{scope}
+\end{scope}
+\node[anchor=south,font=\small\bfseries] at (infdev.north) {infrastructural device (surrogate)};
+
+% ================= forwarding chain =================
+\draw[bind] (c2.east) to[out=0,in=180]
+  node[midway,above,font=\scriptsize,align=center] {forwarding\\chain}
+  (c2r.west);
+
+\end{tikzpicture}

@@ -1,0 +1,56 @@
+% A macro-program as a DAG of components, with ports and bindings labelled.
+% Requires in the preamble: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+% Include with a normal figure environment, e.g. \input{figures/macro-program-dag}.
+\begin{tikzpicture}[
+  >=Latex,
+  font=\small,
+  comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=22mm,minimum height=9mm,align=center},
+  port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
+  bind/.style={->,thick,black!75},
+]
+
+% ---------- components ----------
+\node[comp] (c1) at (0,3.4)     {$c_1$};
+\node[comp] (c3) at (-1.5,1.7)  {$c_3$};
+\node[comp] (c2) at (1.5,1.7)   {$c_2$};
+\node[comp] (c4) at (0,0)       {$c_4$};
+
+% ---------- ports ----------
+\node[port] (c1o)  at (c1.south) {};
+\node[port] (c3i)  at (c3.north) {};
+\node[port] (c2i)  at (c2.north) {};
+\node[port] (c3o)  at (c3.south) {};
+\node[port] (c2o)  at (c2.south) {};
+\node[port] (c4il) at ([xshift=-4mm]c4.north) {};
+\node[port] (c4ir) at ([xshift=4mm]c4.north) {};
+\node[port] (c4o)  at (c4.south) {};
+
+% ---------- bindings ----------
+\draw[bind] (c1o) to[out=200,in=90]  (c3i);
+\draw[bind] (c1o) to[out=-20,in=90]  (c2i);
+\draw[bind] (c3o) to[out=-90,in=160] (c4il);
+\draw[bind] (c2o) to[out=-90,in=20]  (c4ir);
+
+% ---------- global output port ----------
+\draw (c4o) -- ++(0,-3mm);
+\draw ([yshift=-3mm]c4o) ++(-2mm,0) -- ++(4mm,0);
+
+% ---------- enclosing macro-program box ----------
+\begin{scope}[on background layer]
+  \node[draw,rounded corners,fill=gray!3,fit=(c1)(c2)(c3)(c4),inner sep=6mm] (mp) {};
+\end{scope}
+\node[anchor=south,font=\small] at (mp.north) {macro-program};
+
+% ---------- upstream / downstream axis ----------
+\draw[->,thick,gray!60] ([xshift=4mm]mp.north east) -- ([xshift=4mm]mp.south east);
+\node[anchor=west,font=\scriptsize,gray!60] at ([xshift=4mm]mp.north east) {upstream};
+\node[anchor=west,font=\scriptsize,gray!60] at ([xshift=4mm]mp.south east) {downstream};
+
+% ---------- callouts ----------
+\draw[gray!60] (c2i) ++(2mm,1mm) -- ++(6mm,4mm) node[right,font=\scriptsize] {port};
+\draw[gray!60] (c3o) ++(-2mm,-2mm) -- ++(-2mm,-4mm) node[left,font=\scriptsize] {binding};
+\draw[gray!60] ([yshift=-3mm]c4o) ++(2mm,-1mm) -- ++(8mm,-7mm)
+  node[right,font=\scriptsize,align=left] {global\\output port};
+
+\end{tikzpicture}

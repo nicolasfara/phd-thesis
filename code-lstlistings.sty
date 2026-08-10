@@ -5,9 +5,30 @@
 % LISTING CONFIGURATIONS
 %-----------------------------------------------------
 
-\crefname{lstlisting}{listing}{listing}	
+\crefname{lstlisting}{listing}{listing}
 \Crefname{lstlisting}{Listing}{Listing}
+% Line-level labels inside listings (see the escapechar mechanism below).
+\crefname{lstnumber}{line}{lines}
+\Crefname{lstnumber}{Line}{Lines}
 \renewcommand\lstlistlistingname{List of Listings}
+
+% Allow \label inside a listing (via escapechar) to attach to the current line
+% number rather than to the enclosing counter. Without this, the line labels
+% Chapter 6 uses to point at individual lines of a snippet resolve to the wrong
+% number. Workaround from https://tex.stackexchange.com/q/737204/2388.
+\makeatletter
+\lst@AddToHook{Init}{\def\@currentcounter{lstnumber}}%
+\AtBeginDocument{%
+  \def\ltx@label#1{\cref@label{#1}}%            add braces
+  \def\label@in@display@noarg#1{\cref@old@label@in@display{#1}}% remove braces
+  \def\label@in@mmeasure@noarg#1{%
+    \begingroup%
+    \measuring@false%
+    \cref@old@label@in@display{#1}%
+    \endgroup
+  }%
+}
+\makeatother
 
 \lstset{
 	showstringspaces=false,
@@ -38,3 +59,106 @@
 	ndkeywords={@Deprecated, @JvmField, @JvmName, @JvmOverloads, @JvmStatic, @JvmSynthetic, Array, Byte, Double, Float, Int, Integer, Iterable, Long, Runnable, Short, String, Unit, it},
 	sensitive=true
 }
+
+%-----------------------------------------------------
+% SCALA 3 (Chapter 6)
+%-----------------------------------------------------
+% VS Code Light+ palette, as used by the two source papers, so that the
+% listings in Chapter 6 render as they do in the publications they come from.
+
+\definecolor{vscLightBackground}{HTML}{F5F5F5}
+\definecolor{vscLightKeyword}{HTML}{AF00DB}
+\definecolor{vscLightType}{HTML}{267F99}
+\definecolor{vscLightString}{HTML}{A31515}
+\definecolor{vscLightComment}{HTML}{008000}
+\definecolor{vscLightFunction}{HTML}{795E26}
+\definecolor{vscLightNumber}{HTML}{098658}
+\definecolor{vscLightLineNum}{HTML}{C8C8C8}
+\definecolor{vscLightText}{HTML}{000000}
+\definecolor{vscLightCapability}{HTML}{16697A}
+
+% One Scala 3 definition serving both source papers. Their own styles disagreed
+% on which class holds peer names, library types, and capabilities; the six
+% classes below fix a single assignment for the whole chapter.
+%   [1] language keywords          [4] paradigm operations
+%   [2] operators                  [5] capabilities and scopes
+%   [3] library/architecture types [6] peer names
+\lstdefinelanguage{Scala3}{
+	morekeywords={
+		abstract,case,catch,class,def,derives,do,else,end,enum,export,extends,
+		false,final,finally,for,forSome,given,if,implicit,import,infix,inline,
+		lazy,match,new,null,object,opaque,open,override,package,private,
+		protected,return,sealed,super,then,this,throw,trait,transparent,true,
+		try,type,update,using,val,var,while,with,yield
+	},
+	otherkeywords={?,=>,?=>,<-,<:,>:,\#,=>>,@peer,@multitier},
+	morekeywords=[2]{=>,?=>,?->,<-,<:,>:,\#,=>>},
+	morekeywords=[3]{
+		Option,Some,None,Either,Left,Right,Try,Success,Failure,Future,CanEqual,
+		Iterable,Ordering,Tuple,Map,List,Set,Vector,Seq,Unit,Int,String,Boolean,
+		Double,NonEmptyList,Task,Signal,Monad,Tie,Single,Multiple,TiedSingle,
+		TiedMultiple,TiedWithSingle,TiedWithMultiple,TiedToMultiple,Label,
+		Anisotropic,Quantifier,Environment,Remote,Erased,SharedCapability,
+		PeerTag,Flow,PlacedFlow,Reference,Address
+	},
+	morekeywords=[4]{
+		placed,asLocal,asLocalAll,on,at,take,takeAll,run,handle,flowOn,comm,
+		locally,multicast,broadcast,rep,nbr,branch,mux,choreography,collective,
+		multitier,isotropicComm,anisotropicComm,anisotropicMessage,
+		coAnisotropicComm,reachablePeers,alivePeersOf,localAddress,projectedOn,
+		% ScaFi operators, for chapter 7. The building blocks G, C, and S are
+		% deliberately left out: a single-capital keyword would also repaint the
+		% type parameters S and R of the ScalaTropy signatures in chapter 6.
+		sense,share,foldhood,foldhoodPlus,minHood,minHoodPlus,maxHood,
+		maxHoodPlus,nbrRange,mid
+	},
+	morekeywords=[5]{
+		Placement,Multitier,Choreography,Collective,Multiparty,MultiParty,
+		Network,Mutable,Scope,PeerScope,MultitierScope,ChoreographyScope,
+		CollectiveScope,VM
+	},
+	morekeywords=[6]{
+		Client,Server,DB,Database,Phone,Edge,Cloud,Organizer,Peer,Coordinator,
+		Participant,Dashboard,Master,Worker,Primary,Backup,Alice,Bob
+	},
+	sensitive=true,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+	morestring=[b]',
+}
+
+\lstdefinestyle{scala3}{
+	language=Scala3,
+	backgroundcolor=\color{vscLightBackground},
+	basicstyle=\ttfamily\scriptsize\color{vscLightText},
+	keywordstyle=\color{vscLightKeyword},
+	keywordstyle=[2]\color{vscLightText},
+	keywordstyle=[3]\color{vscLightType},
+	keywordstyle=[4]\color{vscLightFunction}\bfseries,
+	keywordstyle=[5]\color{vscLightCapability}\bfseries,
+	keywordstyle=[6]\color{vscLightNumber}\bfseries,
+	commentstyle=\color{vscLightComment}\itshape,
+	stringstyle=\color{vscLightString},
+	identifierstyle=\color{vscLightText},
+	numbers=left,
+	numberstyle=\tiny\color{vscLightLineNum},
+	numbersep=6pt,
+	tabsize=2,
+	breaklines=true,
+	breakatwhitespace=true,
+	showstringspaces=false,
+	captionpos=b,
+	frame=single,
+	frameround=ffff,
+	framerule=0.5pt,
+	rulecolor=\color{vscLightLineNum},
+	xleftmargin=1em,
+	xrightmargin=1em,
+	aboveskip=1em,
+	belowskip=1em,
+}
+
+% Inline code in prose. Multi-token phrases have to be written as separate
+% \code calls joined with \;, since \lstinline collapses spacing.
+\newcommand{\code}[1]{\lstinline[style=scala3,basicstyle=\ttfamily\small\color{vscLightText},backgroundcolor=\color{white}]{#1}}

@@ -607,9 +607,11 @@ Together, ScaFi, Protelis, FCPP, and XC -- and the aggregate-process, learning-a
 
 \section{Advanced Linguistic Abstractions for Coordination}
 \label{sec:advanced-linguistic-abstractions}
-% NOTE: this section (monads, effects, capabilities) is the background for the
-% [Optional] ScalaTropy section in \cref{chap:language-and-coordination};
-% if ScalaTropy is dropped, reconsider this section too.
+% NOTE: this section (monads, effects, capabilities) is the background for
+% \cref{chap:language-and-coordination}: the capability material feeds \S6.2
+% (Party), the monadic material feeds \S6.5 (ScalaTropy). Both are now written,
+% so this section is load-bearing and should not be trimmed without checking
+% what Chapter 6 cross-references.
 
 The paradigms reviewed in \cref{sec:foundational-paradigms} all eventually have to account for effects:
 sending a message, waiting on a reply, failing partway through a protocol.
@@ -714,8 +716,8 @@ the same goal already pursued by the typed choreographies and placement types re
 %
 \Cref{chap:language-and-coordination} takes up this connection directly:
 it examines how a coordination language for collective systems can draw on aggregate computing, choreographic programming, and multitier programming at once (\cref{sec:foundational-paradigms}),
-and, where the resulting design keeps that scope,
-on monadic communication primitives built from the abstractions just introduced.
+modelling each paradigm as a capability,
+and then how the same unification can be reached instead through monadic communication primitives built from the abstractions just introduced.
 
 \section{Large Language Models for Code Generation and DSLs}
 \label{sec:llms-for-code-generation}

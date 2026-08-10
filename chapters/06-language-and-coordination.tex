@@ -1,6 +1,1278 @@
 \chapter{Language and Coordination Support for Collective Systems}
 \label{chap:language-and-coordination}
 
-% NOTE: the [Optional] ScalaTropy section (monadic communication primitives) is
-% coupled with \cref{sec:advanced-linguistic-abstractions}, which provides
-% its background; if ScalaTropy is dropped, reconsider that section too.
+% NOTE: this chapter gathers two publications. \S6.1--6.4 develop CaMiL
+% ("Capabilities to Catch 'em All", under review at TOPLAS); \S6.5 develops
+% ScalaTropy (COORDINATION 2026), whose background is
+% \cref{sec:advanced-linguistic-abstractions}.
+% The operational semantics of both papers is deliberately not reproduced:
+% \cref{subsec:camil-formalization} states the soundness result and cites the
+% paper for the rules, following the precedent of \cref{chap:pulverization}.
+
+\Cref{chap:pulverization} closed by pointing here.
+%
+The pulverisation model says what a deployable component is and proves that its placement is functionally free,
+but it takes the components as given:
+something has to produce them,
+and \cref{chap:programming-models} showed that three separate paradigms each produce them in their own way.
+%
+Aggregate computing derives them from a field computation over an ensemble,
+choreographic programming from a global protocol projected onto its participants,
+and multitier programming from placement annotations on a single program's lexical scopes.
+%
+Each paradigm carries its own guarantees,
+and the literature has largely developed them in isolation~\cite{DBLP:journals/csur/WeisenburgerWS20,DBLP:journals/csur/Casadei23}.
+
+A real system rarely fits one of them.
+%
+A single application may need a structured protocol between well-defined roles,
+explicit control over where each computation runs,
+and collective coordination across an ensemble whose membership changes --
+and it needs all three at once.
+%
+Today a developer either commits to one paradigm and encodes the others around it,
+or combines separate frameworks and gives up any guarantee about how they interact:
+correct placement does not imply protocol compliance,
+and collective consistency does not imply safe inter-tier communication.
+
+This chapter takes up that problem from the language side.
+%
+\Cref{sec:multiparty-motivation} sets out a scenario that needs all three paradigms and states why combining them ad hoc costs the guarantees each provides on its own.
+%
+\Cref{sec:capabilities-unification} answers with \camil,
+a framework in which each paradigm is modelled as a \emph{capability} -- a value whose possession authorises a class of operations -- and placement types are the interface through which paradigms exchange values.
+%
+\Cref{sec:camil-realisation} shows how Scala~3's contextual abstractions, capture checking, and separation checking make the discipline statically enforceable, and states the soundness result that backs it.
+%
+\Cref{sec:camil-evaluation} reports what the design buys, on 46 use cases from the literature and on two applications that mix paradigms in one program.
+%
+\Cref{sec:scalatropy} reaches the same goal along a different route:
+ScalaTropy unifies choreographic and multitier programming through monadic communication primitives rather than capabilities,
+and adds the differentiated communication schemes neither paradigm offers.
+%
+\Cref{sec:language-coordination-discussion} closes by relating the two designs to each other and to the components of \cref{chap:pulverization}.
+
+\section{One System, Three Paradigms}
+\label{sec:multiparty-motivation}
+
+\cityevt is a city-event system~\cite{Farabegoli:2026:CaMiL}.
+%
+Participants join through a smartphone app,
+and during the event they receive recommendations about nearby points of interest.
+%
+For safety, the system monitors how crowded the event is and reports critical situations to the organisers.
+%
+Participants' positions are never collected:
+the crowding estimate is produced by a decentralised algorithm that reasons only about proximity.
+
+\begin{figure}[t]
+    \centering
+    \def\svgwidth{0.55\textwidth}
+    \input{figures/case-study-diagram.pdf_tex}
+    \caption[The CityEvt architecture]{The \cityevt architecture: smartphones register participants, sense their neighbourhood, and display recommendations; edge servers compute ad hoc recommendations; the cloud stores participant data and collects analytics. Adapted from~\cite{Farabegoli:2026:CaMiL}.}
+    \label{fig:cityevt-architecture}
+\end{figure}
+
+\Cref{fig:cityevt-architecture} shows the three families of hosts involved.
+%
+A cloud service stores participant data, manages registrations, and collects analytics;
+smartphones register, report crowding, and display recommendations;
+edge servers produce the recommendations.
+%
+The system splits into three parts,
+and each part is best served by a different one of the paradigms reviewed in \cref{sec:foundational-paradigms}.
+
+\paragraph{Registration is multitier.}
+Registration is a two-sided interaction with a clear boundary:
+the participant fills a form on the phone, the cloud assigns an identifier, the phone reads it back.
+%
+Multitier programming (\cref{subsec:multitier-programming}) is built for exactly this.
+%
+Its architecture specification names the \emph{peers} on which computation can be placed and the \emph{ties} that say which peers may communicate,
+each tie carrying a cardinality.
+%
+In ScalaLoci~\cite{DBLP:journals/pacmpl/WeisenburgerKS18}, the \cityevt architecture reads as follows.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The CityEvt architecture as a ScalaLoci peer specification.},
+  label={lst:scalaloci-architecture},
+]
+@peer type Cloud <: { type Tie <: Multiple[Phone] & Single[Edge] }(*@\label{line:cloud-peer}@*)
+@peer type Edge  <: { type Tie <: Multiple[Phone] & Single[Cloud] }(*@\label{line:edge-peer}@*)
+@peer type Phone <: { type Tie <: Multiple[Phone] & Single[Cloud] & Multiple[Edge] }(*@\label{line:phone-peer}@*)
+\end{lstlisting}
+
+Each phone is tied to exactly one cloud instance and to many other phones (\cref{line:phone-peer});
+the cloud is tied to many phones and one edge server (\cref{line:cloud-peer}).
+%
+Any access that the ties do not license is a compile-time error,
+so the architecture is not documentation but a checked constraint.
+
+\paragraph{Crowding monitoring is aggregate.}
+The crowding estimate is not a two-sided interaction at all.
+%
+It is a computation over a whole ensemble of phones whose membership changes as participants arrive and leave,
+and no single device holds the information needed to produce it.
+%
+Aggregate computing (\cref{subsec:aggregate-computing}) expresses this as a field computation:
+the program is written once for the ensemble,
+and each device executes it against its own neighbourhood.
+%
+The estimate is built from the standard self-stabilising blocks --
+a gradient from a leader, a convergecast that sums the observations along it, and a second convergecast that measures the region's radius --
+so that the density follows from a count over an area.
+
+\paragraph{Recommendations are choreographic.}
+The recommendation flow is a protocol:
+the phone presents an identifier, the cloud authorises it, the edge server produces a recommendation, the phone displays it.
+%
+The order of those exchanges is the specification.
+%
+Choreographic programming (\cref{subsec:choreographic-programming}) writes that order down once, as a global description, and projects it onto each participant,
+so the endpoint code cannot deviate from the protocol it was projected from.
+
+\subsection{The Cost of Combining Them}
+\label{subsec:multiparty-challenge}
+
+Nothing so far is controversial:
+each paradigm is the right tool for its part of \cityevt.
+%
+The difficulty is that the three parts belong to one system.
+%
+The recommendation protocol needs the registration identifiers that the multitier part produced;
+the organisers' dashboard needs the crowding level that the aggregate part computed.
+
+Combining the paradigms by running three frameworks side by side does not compose their guarantees.
+%
+Each brings its own abstractions and its own assumptions about connectivity,
+and each checks its own properties against its own model of where computation happens.
+%
+At the seams between them there is no model at all:
+a value leaves the choreography as an ordinary value and enters the multitier code as an ordinary value,
+and nothing checks that the peer reading it is a peer that may read it.
+%
+Worse, a paradigm's own guarantees can be broken from outside.
+%
+A choreography is deadlock-free because its projection fixes who sends and who receives;
+place one of its blocks inside a multitier scope belonging to a different peer and the send may never be executed,
+leaving the receiver waiting for a message no one will produce.
+
+What is missing is a common notion of where a value lives and of which operations a given piece of code is entitled to perform.
+%
+The rest of this chapter supplies both.
+
+\section{Capabilities as a Unifying Abstraction}
+\label{sec:capabilities-unification}
+
+\camil models each paradigm as a capability~\cite{Farabegoli:2026:CaMiL}.
+%
+A capability is a value that represents the authority to perform a class of operations:
+code that does not hold it cannot invoke them, and authority therefore flows through explicit program structure rather than through ambient state.
+%
+\Cref{subsec:direct-style-effect-systems} reviewed the line of work this draws on --
+object capabilities as unforgeable references~\cite{miller2003capability},
+capability passing as a language design~\cite{brachthaeuser2020effekt,10.1145/3428194},
+and capture checking, which brings capability tracking into Scala's type system so that what a value may use becomes part of its type~\cite{DBLP:journals/toplas/BoruchGruszeckiOLLB23}.
+
+\begin{table}[t]
+    \centering
+    \caption{The capabilities of CaMiL and the operations each one guards.}
+    \label{tab:camil-capabilities}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Capability} & \textbf{Guarded operations} \\
+        \midrule
+        \texttt{Placement}   & \texttt{on[P]}, \texttt{take} \\
+        \texttt{Multitier}   & \texttt{asLocal}, \texttt{asLocalAll} \\
+        \texttt{Choreography} & \texttt{comm}, \texttt{multicast}, \texttt{broadcast} \\
+        \texttt{Collective}  & \texttt{collective}, \texttt{rep}, \texttt{nbr}, \texttt{branch} \\
+        \midrule
+        \texttt{Scope[L]}, \texttt{PeerScope[P]} & scope tokens gating all of the above \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\Cref{tab:camil-capabilities} lists the capabilities and what each authorises.
+%
+The prototype expresses them as Scala~3 \emph{contextual parameters}:
+a method declares the capabilities it requires with the \code{using} keyword,
+and the type system resolves them from the surrounding lexical context.
+%
+Two consequences follow, and they are the whole design.
+%
+First, an operation of a paradigm is available exactly where that paradigm's capability is,
+so the scopes of different paradigms are separated by construction rather than by convention.
+%
+Second, the separation is not isolation:
+placement types are shared by all four capabilities, and are therefore the designated interface through which paradigms hand values to one another.
+
+\subsection{Placement Types and the Placement Capability}
+\label{subsec:placement-capability}
+
+Placement types were introduced in multitier programming to say where a value resides~\cite{DBLP:journals/pacmpl/WeisenburgerKS18}.
+%
+\camil adopts them across all three paradigms, so that every paradigm reasons about location in the same terms.
+%
+The \code{Placement} capability provides two operations:
+\code{on} places a value on a peer, and \code{take} extracts a value placed on the local peer.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The placement capability: placing a value on a peer and reading it back.},
+  label={lst:placement-capability},
+]
+def helloOnSmartphone(using Placement): String on Phone = on[Phone] { "Hello" }(*@\label{line:placement-on}@*)
+def reply(using Placement): String on Phone = on[Phone]:(*@\label{line:placement-take}@*)
+  val hello: String = take(helloOnSmartphone)
+  s"${(*@hello@*)}, Smartphone!"
+\end{lstlisting}
+
+In \cref{line:placement-on}, \code{on} places the string on the \code{Phone} peer,
+so the result has type \code{String}\;\code{on}\;\code{Phone}.
+%
+In \cref{line:placement-take}, \code{take} reads it back.
+%
+Both functions declare \code{Placement}, and without it neither operation is in scope.
+
+The type system checks that \code{take} is applied on the peer where the value actually resides;
+taking a value placed elsewhere does not compile, and no runtime check is needed.
+%
+On its own the placement capability provides no communication at all:
+it fixes a vocabulary for locations, and the three paradigm capabilities below supply the ways of moving values between them.
+
+\subsection{The Multitier Capability}
+\label{subsec:multitier-capability}
+
+The \code{Multitier} capability guards the two tier-crossing operations.
+%
+\code{asLocal} brings a value from a single remote peer to the local one;
+\code{asLocalAll} aggregates the values of many remote peers into a map.
+%
+In multitier programming, communication may appear anywhere inside a placed scope that needs a remote value,
+which is what distinguishes it from a choreography, where the communication points are the specification.
+%
+\Cref{lst:multitier-registration} is \cityevt's registration under this capability.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={User registration with the multitier capability.},
+  label={lst:multitier-registration},
+]
+def registration(userId: String)(using Placement, Multitier) =
+  val registrationRequest: Form on Phone = on[Phone] { /* fill form */ }(*@\label{line:mt-phone}@*)
+  val ids: Map[Remote[Phone], UUID] on Cloud = on[Cloud]:
+    val request = asLocalAll(registrationRequest)(*@\label{line:mt-cloud}@*)
+    request.view.mapValues(registerUser).toMap
+  val id: UUID on Phone = on[Phone]:
+    val localId = getId(localAddress)
+    asLocal(ids).get(localId)(*@\label{line:mt-aslocal}@*)
+\end{lstlisting}
+
+The request is placed on the phone (\cref{line:mt-phone}).
+%
+The cloud collects the requests of every connected phone with \code{asLocalAll} and registers each one (\cref{line:mt-cloud}).
+%
+Each phone then reads back its own identifier with \code{asLocal} (\cref{line:mt-aslocal}).
+%
+No message is written anywhere in the program:
+the two operations are the only communication, and each is checked against the ties of \cref{lst:scalaloci-architecture}.
+
+\subsection{The Aggregate Capability}
+\label{subsec:aggregate-capability}
+
+The \code{Collective} capability provides the field-calculus constructs \code{rep}, \code{nbr}, and \code{branch} reviewed in \cref{subsubsec:ac-execution-model},
+together with an entry point that opens a collective computation on a peer type and fixes its round duration.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={Crowd density estimation with the collective capability.},
+  label={lst:collective-crowding},
+]
+def crowding(using Placement, Collective): Signal[Double] on Phone =
+  Collective[Phone](1.s):(*@\label{line:coll-scope}@*)
+    // gradient from the leader of a 300-metre region
+    val distanceToLeader = distanceTo(S(300))
+    val people = /* people detected by local sensors */
+    // convergecast the observations, and the extent of the region
+    val count = C(distanceToLeader, people, _ + _)
+    val radius = C(distanceToLeader, distanceToLeader, _ max _)
+    count / (math.Pi * radius * radius)   // density = count / area
+\end{lstlisting}
+
+\Cref{line:coll-scope} opens a collective scope on the \code{Phone} peer type with one-second rounds.
+%
+Inside it the estimate is assembled from the usual self-stabilising blocks, unchanged from how they would be written in ScaFi~\cite{casadei2022scafi}.
+%
+The result has type \code{Signal[Double]}\;\code{on}\;\code{Phone}:
+a stream that emits a fresh density value at every round, placed on the phones that compute it.
+%
+That the result carries a placement type is what later lets other paradigms consume it.
+
+One constraint deserves attention.
+%
+A collective computation requires its peer type to be tied to itself with multiple cardinality.
+%
+This makes explicit an assumption that aggregate computing usually leaves implicit:
+a field computation runs over a homogeneous ensemble of mutually reachable devices,
+not over an arbitrary set of peers.
+
+\subsection{The Choreography Capability}
+\label{subsec:choreography-capability}
+
+The \code{Choreography} capability provides \code{comm}, \code{multicast}, and \code{broadcast}.
+%
+\code{comm} moves a value between one sender and one receiver and requires a single tie in both directions;
+\code{multicast} sends from one peer to many;
+\code{broadcast} makes a value available to all peers.
+%
+\Cref{lst:choreography-recommendation} is the recommendation protocol.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The recommendation protocol with the choreography capability.},
+  label={lst:choreography-recommendation},
+]
+def retrievePreference(using Placement, Choreography) = Choreography:(*@\label{line:chor-scope}@*)
+  val smartphoneToken = on[Phone] { /* get id */ }
+  val cloudToken = comm[Phone, Cloud](smartphoneToken)(*@\label{line:chor-comm1}@*)
+  val isRegistered = on[Cloud] { take(cloudToken) /* registered? */ }
+  val shouldRecommend = comm[Cloud, Edge](isRegistered)
+  val recommendation = on[Edge]:
+    if take(shouldRecommend) then { /* provide recommendation */ }
+  val recommOnSmartphone = comm[Edge, Phone](recommendation)
+  on[Phone] { take(recommOnSmartphone) /* use recommendation */ }
+\end{lstlisting}
+
+The protocol reads top to bottom as a single global description:
+the identifier travels from phone to cloud (\cref{line:chor-comm1}),
+the authorisation from cloud to edge,
+and the recommendation back to the phone.
+%
+Every \code{comm} names both endpoints, and every one of them is checked against the architecture.
+%
+Compared with the multitier code of \cref{lst:multitier-registration}, the difference is where communication appears:
+here it is the skeleton of the program, and the placed computations hang off it.
+
+\subsection{Composing Paradigms}
+\label{subsec:paradigm-composition}
+
+Each capability opens a scope in which its own operations, and only its own, are available.
+%
+The scopes do not leak into one another,
+but values do, and they do so through placement types.
+%
+Multitier code reaches a remote placed value with \code{asLocal};
+choreographic code moves one between peers with \code{comm};
+a collective computation emits a stream of placed values, one per round, that either of the others can consume.
+%
+Because \code{Placement} is available in all three scopes,
+a value produced under one capability can be read under another without leaving the placement discipline,
+and the architecture constrains who may read it regardless of which paradigm created it.
+
+\Cref{lst:composition-recommendation} combines choreographic and multitier code in \cityevt's recommendation workflow.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={CityEvt's recommendation workflow, combining choreographic and multitier code.},
+  label={lst:composition-recommendation},
+]
+object RecommendationSystem:
+  def recomm(smartphoneToken: Token on Phone)
+            (using Placement, Choreography, Multitier) =(*@\label{line:comp-caps}@*)
+    Multitier:
+      val authRequests = on[Edge] { asLocalAll(smartphoneToken) }
+      val authPeers = Choreography:(*@\label{line:comp-chor}@*)
+        val requests = comm[Edge, Cloud](authRequests)(*@\label{line:comp-comm}@*)
+        val authGranted = on[Cloud] { /* grant access */ }
+        comm[Cloud, Edge](authGranted)
+      val recommendations = on[Edge]:
+        createRecommendations(take(authPeers))(*@\label{line:comp-take}@*)
+      on[Phone]:
+        asLocal(recommendations).subscribe: recommendation => /* display */(*@\label{line:comp-aslocal}@*)
+\end{lstlisting}
+
+The function declares all three capabilities it needs (\cref{line:comp-caps}), which is what makes them available in its body.
+%
+A choreographic scope is nested inside a multitier one (\cref{line:comp-chor}).
+%
+Two values cross the boundary, in opposite directions:
+the authentication requests, gathered by multitier code, are communicated inside the choreography (\cref{line:comp-comm}),
+and the result of the choreography is read back by multitier code (\cref{line:comp-take}).
+%
+Both crossings are ordinary placed values, and both are type-checked as such.
+
+\Cref{lst:composition-crowding} does the same for the collective part.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={Reporting the collectively computed crowding level to the cloud.},
+  label={lst:composition-crowding},
+]
+def crowdingLevelAndCloud(using Placement, Collective, Multitier) =
+  val level: Signal[Double] on Phone = Collective[Phone](1.s):(*@\label{line:comp-collective}@*)
+    /* compute crowding level */
+  Multitier:
+    on[Cloud]:
+      asLocalAll(level).values.foreach: signal =>(*@\label{line:comp-collect-all}@*)
+        signal.subscribe: level =>
+          /* monitor crowding level on the cloud */
+\end{lstlisting}
+
+The collective scope produces a signal placed on the phones (\cref{line:comp-collective}),
+each of which computes its own local estimate.
+%
+The multitier scope then gathers those signals at the cloud with \code{asLocalAll} and subscribes to each (\cref{line:comp-collect-all}).
+%
+Two execution models meet here -- rounds on one side, tier-crossing access on the other --
+and the placed signal is what mediates between them:
+the collective side decides when a value is produced, the multitier side decides who observes it.
+
+\subsection{Safety Properties}
+\label{subsec:capability-safety}
+
+Three properties follow from the discipline, and each rules out a class of error that the paradigms do not rule out when combined informally.
+
+\paragraph{Safe boundaries.}
+In \cref{lst:composition-recommendation,lst:composition-crowding}, the paradigms meet only at placed values.
+%
+Inside a scope, the type system enforces the interactions that paradigm licenses;
+across scopes, the only channel is a placed value, whose type states where it lives.
+%
+There is no third regime in which the two paradigms interact directly and neither one's rules apply.
+
+\paragraph{Leak prevention.}
+A closure can capture a placed value.
+%
+If that closure is then shipped to another peer and invoked there, it will try to read a value that does not exist where it is running.
+%
+\Cref{lst:leak-prevention} is the pattern.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={A placed closure that captures a value from its own peer and is then communicated away.},
+  label={lst:leak-prevention},
+]
+def choreograph(*@@*)y(using Placement, Choreography): Unit = Choreography:
+  val valueOnSmartphone: String on Phone = on[Phone]:(*@\label{line:leak-value}@*)
+    "Hello from Smartphone!"
+  val funAtSmartphone: (() => String) on Phone = on[Phone]:(*@\label{line:leak-closure}@*)
+    () => take(valueOnSmartphone)
+  val msgAtCloud: (() => String) on Cloud = comm[Phone, Cloud](funAtSmartphone)(*@\label{line:leak-comm}@*)
+  on[Cloud]:
+    val f: () => String = take(msgAtCloud)
+    f()(*@\label{line:leak-call}@*)
+\end{lstlisting}
+
+A string is placed on the phone (\cref{line:leak-value}) and captured by a function also placed there (\cref{line:leak-closure}).
+%
+The function is sent to the cloud (\cref{line:leak-comm}) and invoked (\cref{line:leak-call}),
+where the captured string is not reachable.
+%
+The peer-specific capability the closure needs to perform its \code{take} is tracked in the closure's type,
+so \camil rejects the program at compile time rather than failing at run time.
+
+\paragraph{Deadlock avoidance.}
+An \code{on} block executes its body only on the peer its type names, and skips it everywhere else --
+including any block nested inside it.
+%
+Two nested \code{on} blocks naming different peers therefore have a body that never runs,
+and if that body was supposed to produce a value someone else awaits, the system deadlocks.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={Nested placed blocks naming different peers, the shape that deadlocks.},
+  label={lst:deadlock-avoidance},
+]
+def choreograph(*@@*)y(using Placement, Choreography): String = Choreography:
+  val msgAtSmartphone: String on Phone = on[Phone]:(*@\label{line:dl-outer}@*)
+    val onCloud: String on Cloud = on[Cloud]:(*@\label{line:dl-inner}@*)
+      "Hello from Cloud!"
+    val onSmartphone: String on Phone = comm[Cloud, Phone](onCloud)(*@\label{line:dl-comm}@*)
+    take(onSmartphone)
+\end{lstlisting}
+
+The cloud never runs the inner block of \cref{line:dl-inner},
+because it sits inside a block the cloud skips (\cref{line:dl-outer}).
+%
+The phone then waits on \cref{line:dl-comm} for a value that is never produced.
+%
+\camil rejects this at compile time too, and \cref{subsec:scala3-machinery} explains by what mechanism.
+
+\section{Realisation}
+\label{sec:camil-realisation}
+
+\subsection{Type-level Machinery in Scala 3}
+\label{subsec:scala3-machinery}
+
+Three language features carry the design, and Scala~3 happens to have all three.
+
+The first is a way to declare that an operation requires a capability.
+%
+Scala~3's contextual abstractions -- context parameters, written \code{using}, and context functions, written \code{?=>} -- let a capability be an argument the compiler synthesises at the call site from the lexical context.
+%
+\camil gives each paradigm a marker for its own scope and gates its operations on that marker.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The base capability and the per-paradigm scope capability.},
+  label={lst:scope-capabilities},
+]
+trait Multiparty extends SharedCapability
+trait Scope[L] extends SharedCapability
+\end{lstlisting}
+
+\code{Multiparty} is the base capability for the whole framework;
+\code{Scope[L]} is the capability standing for one paradigm's lexical scope.
+%
+Each paradigm's companion object then supplies an \code{apply} that opens its scope,
+as \cref{lst:multitier-object} shows for the multitier case.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The multitier capability: a scope marker, an operation gated on it, and the entry point that supplies it.},
+  label={lst:multitier-object},
+]
+object Multitier:
+  sealed trait MultitierScope extends Erased(*@\label{line:mt-scope}@*)
+
+  def asLocal[L <: TiedSingleWith[R], R <: Peer: PeerTag, V, SC](
+    using Multitier, PeerScope[L], Scope[SC], SC =:= MultitierScope)((*@\label{line:mt-evidence}@*)
+    value: V on R): V
+
+  def apply[A](using Multitier)(multitie(*@@*)r: Scope[MultitierScope] ?=> A): A(*@\label{line:mt-apply}@*)
+  ... // other operations
+\end{lstlisting}
+
+\Cref{line:mt-scope} declares the scope marker.
+%
+It extends \code{Erased}, so it exists only for type-level tracking and has no runtime representation.
+%
+The operations require a \code{Scope[SC]} together with evidence that \code{SC} is exactly \code{MultitierScope} (\cref{line:mt-evidence}),
+which is what confines them to the innermost multitier scope.
+%
+The only way to obtain that capability is \code{apply} (\cref{line:mt-apply}),
+which hands it to the block through a context function, and which itself requires \code{Multitier} to be available.
+%
+\code{Collective} and \code{Choreography} have the same shape.
+
+The second feature is a way to stop a capability escaping its scope.
+%
+Scala~3's capture checking tracks captured capabilities in types~\cite{DBLP:journals/toplas/BoruchGruszeckiOLLB23},
+and \camil relies on it twice.
+%
+Declaring \code{Scope[L]} a capability means the compiler will not let it escape the block passed to \code{apply};
+returning it from that block is a capture error, so a paradigm's authority cannot be smuggled out of its scope.
+%
+The same mechanism handles the leak of \cref{lst:leak-prevention}:
+the peer-specific capability the closure needs is part of the closure's type,
+so shipping it to a peer that cannot supply that capability does not type-check.
+
+The third feature is a way to stop a capability being aliased.
+%
+Scala~3's separation checking distinguishes read-only capabilities, which may be shared freely, from capabilities with side effects, which may not~\cite{DBLP:journals/pacmpl/XuBO24}.
+%
+\camil declares \code{Placement} mutable, as \cref{lst:placement-mutable} shows.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The placement capability is mutable, so it cannot be aliased.},
+  label={lst:placement-mutable},
+]
+trait Placement extends Mutable:
+  update def on[P <: Peer][V](body: PeerScope[P] ?=> V): V on P
+\end{lstlisting}
+
+\code{on} mutates the capability, because it has to produce a fresh identifier for every placed value.
+%
+A mutable capability cannot be aliased,
+and a nested \code{on} block would need a second reference to the same one.
+%
+The deadlock of \cref{lst:deadlock-avoidance} is therefore not caught by a bespoke check but falls out of separation checking:
+the shape that deadlocks is exactly the shape that aliases \code{Placement}.
+
+\subsection{Formal Account}
+\label{subsec:camil-formalization}
+
+A core calculus models the four capabilities together and fixes what their combination means~\cite{Farabegoli:2026:CaMiL}.
+%
+As in \cref{subsec:pulverization-execution-model}, the rules themselves are not reproduced here;
+what follows is what the calculus fixes and what it proves.
+
+The expression language is the simply-typed lambda calculus extended with the placement expressions \code{on} and \code{take},
+and with a \code{handle} construct that serves as an execution entry point by supplying a capability.
+%
+Function types carry a capability set:
+the type $\mptype[1] \rightarrow_{\capset} \mptype[2]$ is a function whose invocation incurs the capabilities in $\capset$,
+and an empty set marks a pure function.
+%
+The four paradigm capabilities appear as elements of that set,
+alongside peer capabilities that restrict an operation to a specific peer type.
+%
+Peers are the peer types of the architecture specification,
+and a placement type $\ton{\mptype}{\pfam}$ pairs a type with the peer where its values reside.
+
+Two judgements carry the semantics.
+%
+Typing is capability-annotated,
+\[
+    \typing{\Gamma}{\mpexpr}{\mptype}{\capset},
+\]
+read as: under the architecture $\arch$ and the environment $\Gamma$, the expression $\mpexpr$ has type $\mptype$ and requires the capabilities $\capset$.
+%
+Reduction is annotated with the peer instance that performs the step,
+\[
+    \redn{\peerconf;\vmstate}{\mpexpr}{\peerconf';\vmstate'}{\mpexpr'}{\peerinst[i]{\pfam}},
+\]
+where $\peerconf$ maps each peer type to its live instances and $\vmstate$ holds the aggregate virtual machine's state.
+%
+A single global thread of execution annotated with peer instances is enough,
+the same device already used to give multitier programs a semantics~\cite{DBLP:journals/pacmpl/WeisenburgerKS18,Zakhour:2023:TypeSafe}.
+
+Each paradigm contributes its own constructs and its own rules on top of this core:
+\code{asLocal} and \code{asLocalAll} for multitier,
+\code{comm}, \code{multicast}, and \code{broadcast} for choreography,
+and \code{collective}, \code{rep}, \code{nbr}, and \code{branch} for aggregate computing,
+the last of these reading and updating $\vmstate$.
+%
+One detail of the typing is worth stating, because it is where the capability discipline does its work:
+the rule for \code{on} removes the placement capability from the context of the body and adds the capability for the peer being entered.
+%
+Peer-specific authority is therefore consumed rather than propagated,
+which is what makes the leak of \cref{lst:leak-prevention} ill-typed instead of merely unwise.
+
+The calculus is well behaved under two conditions:
+the peer configuration must satisfy the architecture --
+every peer type has at least one instance, every single tie is realised by exactly one link, and every multiple tie by at least one --
+and the virtual-machine state must be consistent with the collective computations in progress.
+
+\begin{theorem}[Soundness]
+    \label{thm:camil-soundness}
+    Let $\peerconf \vDash \arch$ be an architecture-satisfying peer configuration with consistent virtual-machine states,
+    and let $\mpexpr$ be an expression at a peer instance $\peerinst[i]{\pfam}$ with $\typing{\Gamma}{\mpexpr}{\mptype}{\capset}$.
+    Then $\mpexpr$ is either a value or it reduces, and the expression it reduces to has the same type and requires no more capabilities,
+    again under consistent virtual-machine states.
+\end{theorem}
+
+The proof is the standard progress-and-preservation argument,
+by induction on the typing derivation and on the reduction rules respectively;
+both, and the rules they range over, are given in the paper.
+%
+Two consequences matter for this chapter.
+%
+Architecture conformance: every step that performs a \code{comm}, an \code{asLocal}, or an \code{asLocalAll} does so along a tie that the architecture declares,
+since the corresponding typing rules require that tie as a premise.
+%
+Inter-paradigm safety: because the capability sets of the three paradigms are disjoint,
+a well-typed program cannot reach a state in which one paradigm's operation is applied under another's rules.
+%
+The composition of \cref{subsec:paradigm-composition} is safe not because the paradigms were checked to be compatible,
+but because there is no well-typed way for them to interact except through placed values.
+
+\section{Evaluation}
+\label{sec:camil-evaluation}
+
+\subsection{Expressivity and Safety}
+\label{subsec:camil-expressivity}
+
+The first question is whether one capability-based framework can express what three separate paradigms express.
+%
+\Cref{tab:camil-use-cases} lists 46 use cases collected from the multitier, choreographic, and aggregate literature,
+across seven domains,
+each of which was reimplemented in \camil~\cite{Farabegoli:2026:CaMiL}.
+
+\begin{table}[t]
+    \centering
+    \caption{Use cases reimplemented in CaMiL, with the paradigm each one exercises.}
+    \label{tab:camil-use-cases}
+    \scriptsize
+    \begin{minipage}[t]{0.49\textwidth}
+        \vspace{0pt}
+        \begin{tabular}[t]{@{}llc@{}}
+            \toprule
+            \textbf{Class} & \textbf{Use case} & \textbf{Parad.} \\
+            \midrule
+            Communic. & Basic Chat & \emph{Multi.} \\
+                      & Chat Application & \emph{Multi.} \\
+                      & Chirper & \emph{Multi.} \\
+                      & Chirper Inc & \emph{Multi.} \\
+                      & Haste Chatbox & \emph{Multi.} \\
+                      & Email Application & \emph{Chor.} \\
+                      & Email System & \emph{Multi.} \\
+                      & Vitals Streaming & \emph{Chor.} \\
+                      & Ping-Pong & \emph{Chor.} \\
+                      & Multicast & \emph{Chor.} \\
+                      & Broadcasting & \emph{Aggr.} \\
+                      & Channel & \emph{Aggr.} \\
+            \midrule
+            Coordin.  & Book Seller & \emph{Chor.} \\
+                      & Buyer-Seller-Shipper & \emph{Chor.} \\
+                      & Fan-in & \emph{Chor.} \\
+                      & Fan-out & \emph{Chor.} \\
+                      & GMW & \emph{Chor.} \\
+                      & Main-Worker & \emph{Multi.} \\
+                      & Token Ring & \emph{Multi.} \\
+                      & Remote Function & \emph{Chor.} \\
+                      & Hello Roles & \emph{Chor.} \\
+            \midrule
+            Security  & Diffie-Hellman & \emph{Chor.} \\
+                      & Distributed Auth. & \emph{Chor.} \\
+                      & DPrio & \emph{Chor.} \\
+                      & Ticket Trader & \emph{Multi.} \\
+            \bottomrule
+        \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.49\textwidth}
+        \vspace{0pt}
+        \begin{tabular}[t]{@{}llc@{}}
+            \toprule
+            \textbf{Class} & \textbf{Use case} & \textbf{Parad.} \\
+            \midrule
+            Games       & Card Game & \emph{Chor.} \\
+                        & Lottery & \emph{Chor.} \\
+                        & Tic-Tac-Toe & \emph{Chor.} \\
+                        & Guess a Number & \emph{Multi.} \\
+            \midrule
+            Data/Serv.  & Key-value Store & \emph{Chor.} \\
+                        & Shopping List & \emph{Multi.} \\
+                        & Graffiti RPC & \emph{Multi.} \\
+                        & Graffiti WebSockets & \emph{Multi.} \\
+                        & Tweet Processing & \emph{Multi.} \\
+                        & Consume Items & \emph{Chor.} \\
+            \midrule
+            Algo./Comp. & Karatsuba & \emph{Chor.} \\
+                        & Merge Sort & \emph{Chor.} \\
+                        & Quicksort & \emph{Chor.} \\
+                        & Collection & \emph{Aggr.} \\
+                        & Collection IDs & \emph{Aggr.} \\
+                        & Count Neighbours & \emph{Aggr.} \\
+                        & Gradient Explicit Fields & \emph{Aggr.} \\
+                        & Max ID & \emph{Aggr.} \\
+                        & Neighbor Counter & \emph{Aggr.} \\
+            \midrule
+            Spatial     & Neighbor Distances & \emph{Aggr.} \\
+                        & Neighbor Dist. Obstacle & \emph{Aggr.} \\
+            \bottomrule
+        \end{tabular}
+    \end{minipage}
+\end{table}
+
+The reimplementations total 3874 lines of \camil code:
+2012 for the choreographic use cases, 1425 for the multitier ones, and 437 for the aggregate ones.
+%
+Every use case was expressible,
+which is the evidence that modelling a paradigm as a capability does not cost expressivity relative to a language dedicated to it.
+
+The same use cases exercise the safety properties of \cref{subsec:capability-safety} paradigm by paradigm.
+%
+Within each setting, \camil statically rejects the uses of a paradigm's constructs that the paradigm itself would consider ill-formed:
+communication along a tie the architecture does not declare,
+extraction of a placed value on the wrong peer,
+a collective computation over peers that are not mutually tied.
+%
+What is new is not the individual checks -- a dedicated language performs its own -- but that one type system performs all of them.
+
+\subsection{Inter-paradigm Integration}
+\label{subsec:inter-paradigm}
+
+The second question is whether the paradigms hold up when they share a program.
+%
+\Cref{tab:camil-integration} summarises three applications that mix them.
+
+\begin{table}[t]
+    \centering
+    \caption{Applications combining several paradigms, and what each paradigm contributes.}
+    \label{tab:camil-integration}
+    \scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Application} & \textbf{Multitier} & \textbf{Choreographic} & \textbf{Collective} \\
+        \midrule
+        CityEvt & User registration and recommendation delivery across phones, edge, and cloud. & Recommendation protocol between edge nodes and the cloud. & Crowding-level monitoring from nearby phones. \\
+        \addlinespace
+        SmrtMob & Vehicle registration, credential distribution, and edge-side traffic-light coordination. & Route recommendation protocol across vehicles, edge nodes, and the cloud. & Traffic sensing from nearby vehicles to derive local traffic probes. \\
+        \addlinespace
+        Nebula & Dashboard reporting of learning progress and network status. & Round coordination for training, aggregation, and lifecycle management. & Distance-based neighbour selection for topology-aware participation. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\cityevt, developed through this chapter, spans three peer families, three subsystems, and two explicit cross-paradigm accesses.
+%
+\smrtmob was built from scratch to stress the combination:
+vehicles sense roadway conditions while moving, edge nodes summarise local congestion and coordinate traffic lights, and the cloud computes route recommendations from a wider snapshot.
+%
+Its four phases use three different capabilities --
+registration and traffic-light coordination are multitier,
+traffic sensing is collective,
+route recommendation is choreographic --
+with five explicit cross-paradigm accesses, in about 500 lines.
+
+Nebula is the more demanding case, because it was not designed for any of this.
+%
+It is an open-source platform for decentralised federated learning with a public codebase of about 132\,000 lines~\cite{beltran2023decentralized,MartinezBeltran:fedstellar:2024,Nebula},
+built as a dashboard, an orchestrating controller, and a learning engine running on distributed nodes.
+%
+Three of its parts were reimplemented in \camil:
+round coordination as a choreographic protocol between the coordinator and the participants,
+the distance-based neighbour policy as an aggregate program,
+and dashboard reporting as multitier code.
+%
+The aggregate layer computes topology information, which the choreographic protocol uses to decide who participates in a round and the dashboard uses to report status;
+the choreographic layer produces the global model and the round summaries, which the dashboard consumes.
+
+Three measurements make the difference concrete.
+%
+The round lifecycle, spread across 22 message callbacks in the original,
+becomes one choreographic protocol with no callbacks and no inversion of control.
+%
+The 57 direct dependencies between the neighbour-policy code and the communication infrastructure
+become a single aggregate program, with neighbour discovery and message exchange left to the collective runtime.
+%
+The 60 kinds of message and action the original networking layer needs to express communication across hosts
+become seven explicit cross-host communication terms.
+%
+None of these is a performance result:
+what they measure is how much coordination code disappears when the coordination structure is stated in the language rather than assembled from callbacks.
+
+\section{Monadic Communication Primitives}
+\label{sec:scalatropy}
+
+\camil reaches the unification through capabilities:
+a paradigm's operations are available where its capability is, and placement types carry values across the boundaries.
+%
+ScalaTropy reaches a narrower version of the same goal along a different route~\cite{Farabegoli:2026:ScalaTropy}.
+%
+It unifies choreographic and multitier programming through the monadic sequencing of \cref{subsec:monadic-effects}:
+a coordination program is a pipeline of communication steps composed with bind,
+and the interpreter chosen for that pipeline decides whether the steps are real network exchanges or a local simulation.
+%
+Along the way it addresses something neither paradigm handles well:
+both offer point-to-point communication and little else,
+so sending a different message to each of several recipients has to be encoded, usually by broadcasting and filtering.
+
+\subsection{Communication Patterns in Multiparty Languages}
+\label{subsec:communication-patterns}
+
+The starting point is a classification of what a multiparty language may need to send.
+%
+An architecture is specified as in the multitier tradition:
+peer types, and ties between them carrying a cardinality.
+%
+Writing $\pfam$ for a peer type, an architecture is generated by
+\[
+    \arch ::= \{\pfam\} \;\mid\; \arch \cup \arch \;\mid\; \tieSingle{\pfam[1]}{\pfam[2]} \;\mid\; \tieMult{\pfam[3]}{\pfam[4]},
+\]
+where $\tieSingle{\pfam[1]}{\pfam[2]}$ is a tie to exactly one instance and $\tieMult{\pfam[3]}{\pfam[4]}$ a tie to many.
+%
+At run time a configuration $\peerconf$ records the live instances $\peerinst[n]{\pfam}$ of each peer type and the links between them.
+
+\begin{definition}[Architecture satisfaction]
+    \label{def:arch-satisfaction}
+    A configuration $\peerconf$ satisfies an architecture $\arch$, written $\peerconf \vDash \arch$, when
+    every peer type of $\arch$ has at least one instance in $\peerconf$,
+    every tie $\tieSingle{\pfam[1]}{\pfam[2]}$ is realised by exactly one link from each instance of $\pfam[1]$,
+    and every tie $\tieMult{\pfam[3]}{\pfam[4]}$ by at least one link from each instance of $\pfam[3]$.
+\end{definition}
+
+Against a satisfying configuration, four patterns exhaust the ways a message can be addressed.
+
+\begin{definition}[Point-to-point communication]
+    \label{def:point-to-point}
+    One sender transmits a message $m$ to one receiver: $\peerinst{\pfam[s]} \xrightarrow{m} \peerinst{\pfam[r]}$.
+\end{definition}
+
+\begin{definition}[Isotropic communication]
+    \label{def:isotropic}
+    One sender transmits the \emph{same} message $m$ to every instance $\peerinst[1]{\pfam[r]},\dots,\peerinst[n]{\pfam[r]}$ of the receiving peer type.
+\end{definition}
+
+\begin{definition}[Anisotropic communication]
+    \label{def:anisotropic}
+    One sender transmits a \emph{different} message $m_i$ to each instance $\peerinst[i]{\pfam[r]}$ of the receiving peer type.
+\end{definition}
+
+\begin{definition}[Co-anisotropic communication]
+    \label{def:co-anisotropic}
+    Each instance $\peerinst[i]{\pfam[s]}$ of the sending peer type transmits its own message $m_i$ to a single receiver.
+\end{definition}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.23\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{point-to-point.pdf}
+        \caption{Point-to-point}
+        \label{fig:comm-point-to-point}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{isotropic-comm.pdf}
+        \caption{Isotropic}
+        \label{fig:comm-isotropic}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \centering
+        \def\svgwidth{\textwidth}
+        \input{figures/anisotropic-comm.pdf_tex}
+        \caption{Anisotropic}
+        \label{fig:comm-anisotropic}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.23\textwidth}
+        \centering
+        \def\svgwidth{\textwidth}
+        \input{figures/coanisotropic-comm.pdf_tex}
+        \caption{Co-anisotropic}
+        \label{fig:comm-co-anisotropic}
+    \end{subfigure}
+    \caption[Communication patterns in multiparty languages]{The four communication patterns. Isotropic communication sends one message to many receivers; anisotropic communication sends a different message to each; co-anisotropic communication collects a different message from each sender. Adapted from~\cite{Farabegoli:2026:ScalaTropy}.}
+    \label{fig:comm-patterns}
+\end{figure}
+
+\Cref{fig:comm-patterns} shows the four.
+%
+The distinction that matters is between the isotropic case, where one message reaches many recipients, and the anisotropic case, where each recipient receives its own.
+%
+A leader pushing one configuration update to its replicas is isotropic;
+a coordinator assigning a distinct task to each of its workers is anisotropic;
+sensors reporting their own readings to an aggregator is the fan-in dual of the anisotropic case, and is co-anisotropic.
+
+\begin{table}[t]
+    \centering
+    \caption{Communication operations of three multiparty languages.}
+    \label{tab:comm-operations}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{@{}Xlll@{}}
+        \toprule
+        \textbf{Pattern} & \textbf{HasChor} & \textbf{ScalaLoci} & \textbf{ScalaTropy} \\
+        \midrule
+        Point-to-point & \texttt{\char`\~>} & \texttt{asLocal} & \texttt{comm} \\
+        Isotropic      & --- & \texttt{asLocalFromAllSeq} & \texttt{isotropicComm} \\
+        Anisotropic    & --- & \texttt{V per P on R} & \texttt{anisotropicComm} \\
+        Co-anisotropic & --- & \texttt{V per R on P} & \texttt{coAnisotropicComm} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\Cref{tab:comm-operations} compares how three languages express these patterns.
+%
+HasChor, a monadic choreographic language in Haskell, provides only the point-to-point case~\cite{10.1145/3607849}.
+%
+ScalaLoci covers all four, but the differentiated ones are expressed at the type level rather than by a communication operation,
+which makes them read indirectly:
+an anisotropic assignment is a value of type \code{Signal[Task] per Worker on Master}, built by a function from a remote reference to a signal,
+and the reader has to reconstruct the communication pattern from the type.
+%
+ScalaTropy gives each pattern its own primitive.
+
+\subsection{The ScalaTropy DSL}
+\label{subsec:scalatropy-dsl}
+
+ScalaTropy distinguishes two kinds of architecture.
+%
+Choreographic languages typically assume a \emph{weak} architecture, in which any participant may address any other;
+multitier languages assume a \emph{strong} one, in which the ties fix who may talk to whom.
+%
+ScalaTropy adopts the strong reading, and encodes it with Scala~3 structural types.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={A three-peer architecture as a type-level specification.},
+  label={lst:scalatropy-architecture},
+]
+// Clients can communicate with a single Server
+type Client <: { type Tie <: Single[Server] }
+// Servers can communicate with a single Database and multiple Clients
+type Server <: { type Tie <: Single[Database] & Multiple[Client] }
+// The Database can communicate with one Server
+type Database <: { type Tie <: Single[Server] }
+\end{lstlisting}
+
+The cardinalities of \cref{def:arch-satisfaction} become an enumeration indexed by the peer type,
+and the two refinements a program actually writes are given names.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={Tie cardinalities and the refinements built from them.},
+  label={lst:scalatropy-ties},
+]
+enum Quantifier[-P <: Peer]:
+  case Single()
+  case Multiple()
+
+type TiedSingle[P <: Peer] = { type Tie <: Single[P] }
+type TiedMultiple[P <: Peer] = { type Tie <: Multiple[P] }
+\end{lstlisting}
+
+Placement types are borrowed, as in \camil, from the multitier tradition:
+choreographies speak of located values and multitier programs of placed values, and ScalaTropy uses ScalaLoci's infix \code{V}\;\code{on}\;\code{P} for both.
+%
+A value of type \code{V}\;\code{on}\;\code{P} is a value of type \code{V} residing at the instances of peer type \code{P}.
+
+Every operation lives in a single trait, parameterised by the monad \code{F} that will sequence the computation.
+%
+\Cref{lst:scalatropy-multiparty} gathers the primitives that the paper introduces one at a time.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The MultiParty trait: placed computation and the four communication primitives.},
+  label={lst:scalatropy-multiparty},
+]
+trait MultiParty[F[_]]:
+  type Remote[P <: Peer]
+  type Anisotropic[P <: Peer, V]
+
+  // Placed computation
+  def on[L <: Peer, V](body: Label[L] ?=> F[V]): F[V on L](*@\label{line:st-on}@*)
+  def take[L <: Peer](using Label[L])[V](placed: V on L): F[V]
+  def takeAll[L <: Peer, R <: Peer](using Label[L])[V](
+    placed: Anisotropic[R, V] on L): F[Map[Remote[R], V]]
+  def reachablePeers[R <: Peer]: F[NonEmptyList[Remote[R]]](*@\label{line:st-reachable}@*)
+
+  // Communication
+  def comm[S <: TiedSingle[R], R <: TiedSingle[S], V](value: V on S): F[V on R](*@\label{line:st-comm}@*)
+  def isotropicComm[S <: TiedMultiple[R], R <: TiedSingle[S], V](
+    value: V on S): F[V on R](*@\label{line:st-isotropic}@*)
+  def anisotropicMessage[S <: TiedMultiple[R], R <: TiedSingle[S], V](using Label[S])(
+    value: Map[Remote[R], V], default: V): F[Anisotropic[R, V]](*@\label{line:st-aniso-msg}@*)
+  def anisotropicComm[S <: TiedMultiple[R], R <: TiedSingle[S], V](
+    value: Anisotropic[R, V] on S): F[V on R](*@\label{line:st-aniso}@*)
+  def coAnisotropicComm[S <: TiedSingle[R], R <: TiedMultiple[S], V](
+    value: V on S): F[Anisotropic[S, V] on R](*@\label{line:st-coaniso}@*)
+\end{lstlisting}
+
+The type bounds are where the architecture is enforced.
+%
+\code{comm} (\cref{line:st-comm}) demands that sender and receiver be tied to each other with single cardinality, in both directions,
+so a point-to-point exchange between peers the architecture does not pair is not merely discouraged but untypeable.
+%
+\code{isotropicComm} (\cref{line:st-isotropic}) requires a multiple tie on the sender's side and a single tie on the receiver's,
+which is what makes it a one-to-many operation.
+%
+The anisotropic case needs two steps:
+\code{anisotropicMessage} (\cref{line:st-aniso-msg}) builds a per-recipient payload from a map, with a default for recipients the map omits,
+and \code{anisotropicComm} (\cref{line:st-aniso}) sends it, delivering to each receiver the entry addressed to it.
+%
+\code{coAnisotropicComm} (\cref{line:st-coaniso}) is the dual, collecting a distinct value from each sender into one \code{Anisotropic} value at the receiver.
+%
+\code{reachablePeers} (\cref{line:st-reachable}) is what makes the anisotropic map constructible without knowing the participants statically.
+
+\Cref{lst:scalatropy-isotropic} shows the shape a program takes.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={An isotropic exchange: one update, every client.},
+  label={lst:scalatropy-isotropic},
+]
+def isotropicExample[F[_]: Monad](using MultiParty[F]): F[Unit] = for
+  updateFromServer <- on[Server] { "Update available." }
+  updateAtClients <- isotropicComm[Server, Client](updateFromServer)(*@\label{line:st-iso-send}@*)
+  _ <- on[Client]:
+    take(updateAtClients).map(update => println(s"Client received: $update"))(*@\label{line:st-iso-recv}@*)
+yield ()
+\end{lstlisting}
+
+The program is a \code{for} comprehension, which is to say a chain of binds in the monad \code{F}.
+%
+The single \code{isotropicComm} of \cref{line:st-iso-send} stands for as many transmissions as there are clients,
+and \cref{line:st-iso-recv} is written once for all of them.
+%
+Nothing in the program names a participant:
+the placement types name peer \emph{types}, and the instances are supplied at run time.
+
+\subsection{Monadic Realisation}
+\label{subsec:scalatropy-monad}
+
+Abstracting over the monad \code{F}, rather than fixing one,
+is the tagless-final encoding~\cite{DBLP:journals/jfp/CaretteKS09}:
+a program is written against the abstract interface of \cref{lst:scalatropy-multiparty}, and an interpreter supplies the meaning of each operation.
+%
+This is the separation \cref{subsec:monadic-effects} described for Cloud Haskell's process monad,
+put to the same use:
+the production interpreter runs the pipeline over a real network, and a test interpreter runs the identical program as a pure in-memory computation,
+with no second code path for either.
+%
+The alternative -- a free monad -- would require the semantics to be respecified for each interpreter;
+tagless final avoids that at the cost of committing to a fixed set of operations.
+
+Placement is where the encoding becomes concrete.
+%
+A placed value is an algebraic data type with two constructors:
+\code{Local}, carrying a deterministic identifier and the value itself,
+and \code{Remote}, carrying only the identifier.
+%
+Executing \code{on[P]} compares \code{P} with the peer type of the host actually running the program:
+on a match, the body runs and its result is wrapped as \code{Local};
+otherwise the body is skipped and a \code{Remote} is returned.
+%
+A communication primitive sends when it holds a \code{Local} and pulls from the network when it holds a \code{Remote}.
+%
+This is endpoint projection performed at run time rather than by a compiler,
+the same strategy that census-polymorphic choreographic programming uses to avoid fixing the participants at compile time~\cite{DBLP:journals/pacmpl/BatesKJSKN25}.
+
+Underneath sits a network capability with a deliberately small interface:
+send a value to an address, receive one from an address, report the live instances of a peer type, and name the local host.
+%
+The prototype implements it over MQTT, but nothing in the language depends on that choice;
+HTTP or gRPC would serve equally.
+%
+The one requirement that shapes the rest is that the live-instances query returns a non-empty list,
+which is what lets the anisotropic and co-anisotropic primitives work against a topology whose membership changes.
+
+\subsection{Case Studies and Communication Cost}
+\label{subsec:scalatropy-evaluation}
+
+\Cref{lst:scalatropy-master-worker} is a master-worker application, the standard example of the multitier literature~\cite{DBLP:journals/pacmpl/WeisenburgerKS18}, written in ScalaTropy.
+
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={A master-worker application in ScalaTropy.},
+  label={lst:scalatropy-master-worker},
+]
+object MasterWorker:
+  type Master <: { type Tie <: Multiple[Worker] }
+  type Worker <: { type Tie <: Single[Master] }
+
+  case class Task(x: Int) { def compute: Int = x * x }
+
+  def masterWorkerProgram[F[_]: MonadThrow](using MultiParty[F]): F[Unit] = for
+    tasks <- on[Master]:
+      for
+        peers <- reachablePeers[Worker](*@\label{line:mw-peers}@*)
+        allocation = peers.map(_ -> Task(Random.nextInt(100))).toList.toMap
+        message <- anisotropicMessage[Master, Worker](allocation, Task(0))(*@\label{line:mw-message}@*)
+      yield message
+    taskOnWorker <- anisotropicComm[Master, Worker](tasks)(*@\label{line:mw-scatter}@*)
+    partialResult <- on[Worker]:
+      for
+        t <- take(taskOnWorker)
+        res <- t.compute.pure[F]
+      yield res
+    allResults <- coAnisotropicComm[Worker, Master](partialResult)(*@\label{line:mw-gather}@*)
+    result <- on[Master] { takeAll(allResults).map(_.values.sum) }(*@\label{line:mw-reduce}@*)
+  yield ()
+\end{lstlisting}
+
+The master discovers the workers currently reachable (\cref{line:mw-peers}) and builds one task per worker (\cref{line:mw-message}).
+%
+The scatter is a single \code{anisotropicComm} (\cref{line:mw-scatter}), the gather a single \code{coAnisotropicComm} (\cref{line:mw-gather}).
+%
+The gather also acts as a barrier:
+the master cannot reduce (\cref{line:mw-reduce}) until every worker has contributed, because the co-anisotropic value is not complete before then.
+%
+Synchronisation is therefore a consequence of the communication pattern, not a separate mechanism.
+%
+A second case study, a primary-backup replicated key-value store ported from HasChor, adds a third peer type and a tail-recursive loop over requests;
+its interest is that it works for any number of backups,
+where a choreographic implementation would need the replica count fixed statically~\cite{Farabegoli:2026:ScalaTropy}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.85\textwidth]{communication-overhead.pdf}
+    \caption[Communication overhead of broadcast versus selective communication]{Bytes transmitted by the master in a matrix-vector product, as the number of workers grows, under a broadcast variant and a selective one. Data from~\cite{Farabegoli:2026:ScalaTropy}.}
+    \label{fig:communication-overhead}
+\end{figure}
+
+Differentiated primitives are not only a matter of how the program reads.
+%
+\Cref{fig:communication-overhead} measures what they cost on the wire,
+using a matrix-vector product over a fixed $50\times50$ matrix in which the master partitions the rows and distributes a distinct block to each worker.
+%
+The broadcast variant grows linearly in the number of workers,
+since every worker receives the whole matrix and discards what is not its own;
+the selective variant stays nearly flat, growing only with the per-worker metadata and the vector each worker needs.
+
+The comparison is between two ScalaTropy implementations of the same application,
+differing only in the primitive the scatter uses:
+\code{isotropicComm} in one, \code{anisotropicComm} in the other.
+%
+It is therefore evidence about the cost of encoding a selective pattern as broadcast-and-filter,
+not a comparison against HasChor or ScalaLoci,
+and it measures bytes rather than time.
+%
+Two further arguments for the same primitives are qualitative:
+sending each recipient only what it needs is least privilege applied to communication,
+and stating the pattern in the operation makes the intent legible where ScalaLoci's type-level encoding does not.
+
+\section{Discussion}
+\label{sec:language-coordination-discussion}
+
+The two designs answer the same question and disagree about the mechanism.
+%
+\camil makes authority the primitive:
+a paradigm is a capability, and what a piece of code may do follows from what it holds.
+%
+ScalaTropy makes sequencing the primitive:
+a coordination program is a monadic pipeline, and what a piece of code may do follows from the operations its interface offers.
+%
+They agree on the interface between paradigms.
+%
+Both adopt placement types from multitier programming and both encode the architecture as ties with cardinalities,
+which is a point worth stating plainly:
+of the three paradigms of \cref{sec:foundational-paradigms}, it is multitier programming that supplies the vocabulary the others are expressed in,
+because it is the only one that already reifies location.
+
+Their scope differs.
+%
+\camil covers all three paradigms and proves that the combination is sound;
+ScalaTropy covers two and defers its metatheory, but supplies the differentiated communication primitives that \camil, like the paradigms it unifies, does not provide.
+%
+The two are complementary rather than competing:
+nothing in \camil's capability design requires point-to-point communication as its only choreographic primitive,
+and the four patterns of \cref{subsec:communication-patterns} would be a natural extension of its \code{Choreography} capability.
+
+Both designs have a cost, and it is the same one.
+%
+\camil rejects nested placed scopes, which existing multitier languages allow;
+that restriction is what buys deadlock avoidance, since the nesting it forbids is exactly the nesting that deadlocks,
+but it does rule out programs a multitier language would accept.
+%
+ScalaTropy's strong architecture makes the same trade in a milder form:
+a choreography that assumes everyone can reach everyone has to be given an architecture before it can be written.
+
+For this thesis, the connection back to \cref{chap:pulverization} is the point of the chapter.
+%
+The pulverisation model needs a macro-program presented as a graph of components, each with declared inputs and outputs, and each independently deployable.
+%
+The three paradigms produce such components, but they produce them in incompatible terms,
+which is why a system built from more than one of them cannot be pulverised as a whole.
+%
+Expressing all of them over one notion of placement removes that obstacle:
+a placement type states where a component's value resides,
+the architecture states which placements may exchange values,
+and both are exactly the information the deployment of \cref{sec:pulverization-abstractions} needs in order to decide where a component may run.
+%
+What neither design supplies is the decision itself.
+%
+The architecture says which deployments are admissible;
+\cref{chap:deployment-and-reconfiguration} takes up the question of which one to choose, and of who revises it as the infrastructure changes.
+
+One further gap remains on the language side.
+%
+Both designs still require the developer to write in a language --
+a capability-annotated Scala program, a monadic pipeline, a field program, or a choreography.
+%
+\Cref{chap:language-based-macroprogramming} asks whether that step can itself be supported,
+by generating macro-programs from a specification given in natural language.

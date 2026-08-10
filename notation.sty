@@ -37,3 +37,25 @@
 \newcommand{\envmap}[2]{#1\mapsto #2}          % map entry
 % Single-round judgment: device; neighbour states; sensor state |- C(inputs) => state
 \newcommand{\bsopsem}[5]{#1;#2;#3\vdash #4\Downarrow #5}
+
+%----------------------------------------------------------------------------------------
+% MULTIPARTY LANGUAGES (Chapter 6)
+%----------------------------------------------------------------------------------------
+% Shared by the two source papers, whose own formalism.sty files overlap.
+% Only the symbols the chapter actually prints are kept: the inference-rule
+% machinery of the papers is deliberately not carried over.
+\newcommand{\arch}{\mathcal{A}}                     % architecture specification
+\newcommand{\pfam}[1][]{\mathsf{P}_{#1}}            % a peer type
+\newcommand{\peerinst}[2][]{\pi_{#1}^{#2}}          % an instance of peer type #2
+\newcommand{\peerconf}{\Omega}                      % runtime peer configuration
+\newcommand{\vmstate}{\sigma}                       % aggregate VM state
+\newcommand{\tieSingle}[2]{#1\mapsto^{1}#2}         % single tie
+\newcommand{\tieMult}[2]{#1\mapsto^{*}#2}           % multiple tie
+\newcommand{\capset}[1][]{\mathsf{C}_{#1}}          % a capability set
+\newcommand{\mptype}[1][]{\mathsf{T}_{#1}}          % a type
+\newcommand{\mpexpr}[1][]{\mathsf{e}_{#1}}          % an expression
+\newcommand{\ton}[2]{#1\;\mathsf{on}\;#2}           % placement type: T on P
+% Capability-annotated typing judgment: A; G |- e : T with C
+\newcommand{\typing}[4]{\arch;#1\vdash #2 : #3\;\mathsf{with}\;#4}
+% Reduction: Omega; sigma |> e ->^pi Omega'; sigma' |> e'
+\newcommand{\redn}[5]{#1\triangleright #2\;\rightarrow^{#5}\;#3\triangleright #4}

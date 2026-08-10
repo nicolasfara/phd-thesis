@@ -7,11 +7,17 @@
 % amsmath and amsthm must be loaded before cleveref, or cleveref does not pick up
 % the theorem environments declared below.
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{notation}
 \usepackage{lipsum}
 \usepackage{bookmark}
 \usepackage{import}
+\usepackage{xspace}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{threeparttable}
+\usepackage{subcaption}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric,decorations.pathreplacing}
 \usepackage[edges]{forest}
@@ -23,6 +29,8 @@
 
 % Theorem environments (cleveref derives its own names from these).
 \newtheorem{theorem}{Theorem}[chapter]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
 
 \graphicspath{{figures/}}
 

@@ -1,2 +1,788 @@
 \chapter{Macroprogramming IoT Systems with Large Language Models}
 \label{chap:language-based-macroprogramming}
+
+% NOTE: this chapter develops one publication: "A Language-based Approach to
+% Macroprogramming for IoT Systems through Large Language Models" (ACM Trans.
+% Internet Things 6(4), 2025, doi 10.1145/3758326, key
+% DBLP:journals/tiot/AguzziFV25). Its background is \cref{sec:llms-for-code-generation}
+% (code generation for DSLs) and \cref{subsec:aggregate-computing} (fields,
+% alignment, self-stabilisation), neither of which is re-explained here.
+% Deliberately not reproduced: the paper's survey of macroprogramming paradigms,
+% covered by \cref{sec:macro-programming}; its per-test-case result tables and
+% the full sixteen-model matrix, summarised and cited instead. The scenario is
+% \cityevt's crowding requirement from \cref{sec:multiparty-motivation} rather
+% than a second one, since the paper's marathon case is the same problem.
+
+\Cref{chap:language-and-coordination} removed a choice, not a step.
+%
+Whichever of its two designs a developer adopts,
+a program still has to be written:
+a capability-annotated Scala program under \camil,
+a monadic pipeline in ScalaTropy,
+or, for the collective part of either, a field program in ScaFi or Protelis.
+%
+Macroprogramming changes what has to be written --
+one description of the collective instead of one description per device --
+but not that someone has to write it,
+in a language whose operators carry a semantics that must be learned before the first program runs.
+
+That learning cost is the practical obstacle.
+%
+The abstractions of \cref{subsec:aggregate-computing} are what make a collective specification short;
+they are also what a newcomer has to acquire before the shortness is available to them,
+and the acquisition is not incremental,
+because a field operator does not behave like its sequential namesake.
+%
+\Cref{sec:llms-for-code-generation} reviewed the technique that has changed this calculation for mainstream languages,
+in which an \ac{LLM} trained on source code turns a description of intended behaviour into a program that passes its tests.
+%
+The same section identified why a \ac{DSL} is the hard instance:
+it barely appears in the corpora these models are pretrained on,
+so fluency in Python or Scala does not carry over to it.
+
+This chapter takes a macroprogramming \ac{DSL} as the target and asks what a general-purpose model can produce for it,
+and what it has to be given in order to produce it.
+%
+The answer developed here needs neither fine-tuning nor a constrained decoder:
+what the model lacks is not decoding discipline but the abstraction ladder itself,
+and supplying that ladder in context is enough to move models that produce nothing usable to models that solve most of the tasks put to them~\cite{DBLP:journals/tiot/AguzziFV25}.
+
+\Cref{sec:llm-macroprogramming-motivation} states why aggregate computing is the target worth generating for,
+and fixes the questions the rest of the chapter answers.
+%
+\Cref{sec:body-of-knowledge} defines the \emph{body of knowledge}:
+the operational account of the language that is placed in the model's context, and how it is arrived at.
+%
+\Cref{sec:llm-pipeline} describes how a program is generated from it and what has to hold before that program is trusted.
+%
+\Cref{sec:llm-evaluation} reports what sixteen models do with it,
+where they fail, and where they compose abstractions into solutions they were not shown.
+%
+\Cref{sec:llm-macroprogramming-discussion} states what the result licenses and what it does not.
+
+\section{Natural Language as the Entry Point}
+\label{sec:llm-macroprogramming-motivation}
+
+Any macroprogramming language could be the target of generation.
+%
+Aggregate computing is chosen here for four properties,
+three of which \cref{subsec:aggregate-computing} already established and one of which \cref{chap:pulverization} contributed.
+
+The first is the global-to-local perspective:
+a program describes the behaviour of the collective,
+and the per-device behaviour is derived from it rather than written.
+%
+This is what makes a natural-language specification a plausible input at all,
+because a description of what the system as a whole should do is what a domain expert can state without knowing how the devices coordinate.
+%
+The second is self-stabilisation.
+%
+A generated program inherits the convergence guarantee of the blocks it is built from,
+so a program assembled out of self-stabilising building blocks recovers a correct output after perturbation
+even though no one reasoned about the recovery when writing it.
+%
+The third is space-time universality:
+the field calculus can express every computation over a space-time event structure that is computable at all,
+which means a generation target chosen for aggregate computing is not a narrow one~\cite{DBLP:conf/coordination/AudritoBDV18}.
+%
+The fourth is deployment independence,
+proved for the pulverisation model in \cref{thm:deployment-independence}.
+%
+A generated aggregate program is,
+by construction,
+a program whose components can be pulverised and placed anywhere the infrastructure admits,
+so nothing about the way it was produced constrains where it will run.
+
+The consequence matters more than the individual properties.
+%
+Everything Part~II establishes about aggregate programs holds of a generated one,
+because the artefact is an ordinary program in the language and not a special object requiring its own theory.
+
+\subsection{The Task}
+\label{subsec:llm-crowding-task}
+
+\Cref{sec:multiparty-motivation} described \cityevt and its three parts,
+and treated one of them as given:
+the crowding monitor,
+which estimates how dense the crowd is around each participant and reports critical situations to the organisers.
+%
+That part is the aggregate one,
+and it is the part a developer cannot write without the operators of \cref{subsec:aggregate-computing}.
+%
+Its requirements are the ones already fixed in \cref{sec:multiparty-motivation}:
+density is estimated from proximity between participants' phones,
+never from their positions,
+and an alert has to reach the region around a crowded area rather than the whole system.
+%
+Written as a specification a non-expert would state, the task is one sentence --
+mark the areas where devices are packed more densely than a threshold, and tell every device how far it is from the nearest such area.
+%
+Written in ScaFi it is five lines,
+and those five lines require knowing that neighbour counting is a fold over the neighbourhood,
+that the fold has a variant excluding the device itself,
+and that distance-to-a-region is a gradient rather than a broadcast.
+
+The rest of the chapter is about closing the gap between the one sentence and the five lines.
+
+\subsection{Generation, Not Orchestration}
+\label{subsec:llm-positioning}
+
+Most work placing \acp{LLM} in \ac{IoT} systems puts the model in the loop at runtime,
+as an orchestrator that reads sensor data,
+decides what the devices should do,
+and issues the commands~\cite{DBLP:journals/diot/ZongHGLK25}.
+%
+The approach taken here uses the model once,
+before deployment,
+and its output is a program.
+%
+Nothing of the model remains in the running system:
+what runs is the aggregate runtime executing a text a person can read,
+compile,
+and simulate.
+
+The distinction is what makes the approach usable in the setting this thesis targets.
+%
+An orchestrator's decision cannot be checked before the situation that produced it arises,
+and it cannot be checked at all except by observing its effects.
+%
+A program can be type-checked,
+executed against assertions on its emergent behaviour,
+and --
+because it is an aggregate program --
+deployed by the machinery of \cref{chap:pulverization} without any of that machinery knowing how it was written.
+
+Three questions organise what follows.
+%
+The first is whether a state-of-the-art model produces valid aggregate code when given nothing but the task.
+%
+The second is whether prompting alone can convey the paradigm's abstractions,
+separating the temporal ones, the spatial ones, and the spatio-temporal ones that require composing both.
+%
+The third is whether a model that has been given the vocabulary composes it into solutions it was not shown.
+
+\section{The Body of Knowledge}
+\label{sec:body-of-knowledge}
+
+What the model is missing is not the ability to write Scala.
+%
+ScaFi is a Scala \ac{DSL} (\cref{subsec:cas-platforms}),
+so its surface syntax is one the models handle fluently;
+what they lack is the meaning of the dozen operators that make it a field language~\cite{casadei2022scafi}.
+%
+The \emph{body of knowledge} is the artefact that supplies that meaning:
+a short operational manual, placed in the model's context at generation time,
+that introduces the operators through executable examples rather than through definitions.
+
+\subsection{Structure}
+\label{subsec:bok-structure}
+
+The body of knowledge is a progressive sequence of entries,
+each introducing one operator on top of the ones already introduced.
+%
+An entry has three slots:
+a one-line scenario saying what problem the operator solves,
+the operator's signature with its parameters named,
+and a minimal program using it together with the values that program produces over successive rounds.
+%
+\Cref{lst:bok-entry} is the entry for temporal evolution,
+the first one in the sequence.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  numbers=none,
+  frame=single,
+  captionpos=b,
+  basicstyle=\ttfamily\scriptsize,
+  caption={The body-of-knowledge entry for temporal evolution.},
+  label={lst:bok-entry},
+]
+# Temporal Evolution allows devices to maintain and update state over time #
+
+# The rep construct allows stateful computation:
+def rep[A](init: => A)(evolve: A => A): A
+- init: The initial value
+- evolve: Function that takes the current value and returns the next value
+
+# Example: Creating a counter that increases by 1 each round
+def main(): Int = rep(0)(_ + 1)
+When executed repeatedly:
+Round 1: 0
+Round 2: 1
+Round 3: 2
+\end{lstlisting}
+\end{minipage}
+
+The round-by-round trace in the third slot is the part that does the work.
+%
+It states the operator's semantics in the only terms that distinguish a field operator from an ordinary one:
+what the value is at each device, at each round.
+%
+A definition of \code{rep} in prose would leave open whether the state is per-device or global,
+which is exactly the confusion the traces close.
+
+\Cref{tab:scafi-operators} lists the operators the sequence covers.
+%
+The first group is the field-calculus core:
+sensing, state across rounds, access to neighbours' values, folding over the neighbourhood, and the two conditionals.
+%
+The second group is the self-organising building blocks of \cref{subsec:aggregate-computing},
+which are not primitive --
+each is a composition of the first group --
+but which raise the level at which a program is written from operators to patterns.
+
+% The signature column is a fixed-width paragraph column: at \textwidth the
+% longest signatures would otherwise squeeze the meaning column to a strip and
+% push the table past the bottom of the page. Line breaks are placed by hand so
+% a signature never wraps inside a parameter.
+\begin{table}[t]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.15}
+    \caption[The ScaFi operators covered by the body of knowledge]{The ScaFi operators covered by the body of knowledge. The first group is the field-calculus core; the second is the self-organising building blocks, each a composition of the first.}
+    \label{tab:scafi-operators}
+    \begin{tabularx}{\textwidth}{@{}>{\ttfamily\scriptsize}p{0.52\textwidth} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \multicolumn{1}{@{}l}{\textbf{Signature}} & \textbf{Meaning} \\
+        \midrule
+        sense[A](name: String): A
+            & Reads a named sensor into a field. \\
+        rep[A](init: A)(evolve: A => A): A
+            & Carries per-device state from one round to the next. \\
+        nbr[A](expr: => A): A
+            & Observes the value of \texttt{expr} at each aligned neighbour. \\
+        foldhood[A](init: A)(acc: (A,A) => A)\newline\hspace*{1em}(expr: => A): A
+            & Folds those neighbour values with a binary operator; \texttt{minHood} and \texttt{maxHood} are the common specialisations, and their \texttt{Plus} variants exclude the device itself. \\
+        branch[A](cnd: => Boolean)\newline\hspace*{1em}(th: => A)(el: => A): A
+            & Splits the network into two domains that do not exchange messages. \\
+        mux[A](cnd: => Boolean)(th: A)(el: A): A
+            & Selects one of two values, leaving the domain intact. \\
+        \midrule
+        G[V](source: Boolean, field: V,\newline\hspace*{1em}acc: V => V, metric: () => Double): V
+            & Gradient cast: propagates a value outwards from the source region, accumulating along the way. \\
+        C[P,V](potential: P, acc: (V,V) => V,\newline\hspace*{1em}local: V, empty: V): V
+            & Collect cast: aggregates values down a potential field towards its sources. \\
+        S(grain: Double,\newline\hspace*{1em}metric: () => Double): Boolean
+            & Sparse choice: elects leaders at a mean distance of \texttt{grain}, partitioning the network into regions. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+The split between the two groups is not editorial.
+%
+The evaluation varies three knowledge levels --
+no body of knowledge, the field-calculus core alone, and the core together with the building blocks --
+and \cref{sec:llm-evaluation} reports that the third level does not dominate the second for every model.
+
+\subsection{Co-design}
+\label{subsec:bok-codesign}
+
+The body of knowledge is not written once and then measured.
+%
+It is produced by a loop:
+the current version is used to generate code for the test cases,
+an expert reads the failures,
+and the entry that would have prevented each failure is added or rewritten.
+%
+The expert is shown the four things needed to diagnose a failure --
+the body of knowledge used, the task, the code the model produced, and the reference program --
+and answers a single question: which concept was misunderstood.
+
+The loop is what makes the artefact small.
+%
+Entries are added because a failure demanded them,
+so the result is the minimum that made the tests pass rather than a manual of the language.
+%
+The constraint that governs it is that an entry must raise the abstraction available to the model without containing the solution to a test case.
+%
+An entry showing how to compute a gradient is legitimate;
+an entry showing how to compute a gradient that avoids obstacles is not,
+because a test case asks for exactly that.
+%
+Automating the loop is conceivable,
+by treating the body of knowledge as a parameter optimised against test outcomes,
+but the distinction between raising the abstraction and giving away the answer is the one a human is needed for,
+and it is the distinction on which the evaluation's meaning rests.
+
+\section{Generation and Validation}
+\label{sec:llm-pipeline}
+
+\Cref{fig:llm-pipeline} shows how the two roles fit together.
+%
+On the left, the body of knowledge is built against test cases in the co-design loop of \cref{subsec:bok-codesign};
+on the right, a practitioner writes a task in natural language and receives a program.
+%
+The left side is done once, by someone who knows the paradigm;
+the right side is done by someone who does not.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{llm-pipeline.pdf}
+    \caption[Generating aggregate programs from natural language]{Generating aggregate programs from natural language. The body of knowledge is refined against test cases by an expert (left) and then used, unchanged, to answer a practitioner's task description (right). Adapted from~\cite{DBLP:journals/tiot/AguzziFV25}.}
+    \label{fig:llm-pipeline}
+\end{figure}
+
+\subsection{The Prompt}
+\label{subsec:llm-prompt}
+
+The prompt is fixed across every model, task, and knowledge level,
+so that what varies between runs is the body of knowledge and the task, and nothing else.
+%
+\Cref{lst:prompt-template} gives it in full.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  numbers=none,
+  frame=single,
+  captionpos=b,
+  basicstyle=\ttfamily\scriptsize,
+  caption={The prompt template. Only the two placeholders vary between runs.},
+  label={lst:prompt-template},
+]
+You are an expert in Aggregate Computing and the ScaFi programming language.
+I will give you a programming task, and you should provide a solution in ScaFi.
+
+Body of Knowledge:
+{BOK}
+
+TASK:
+{TASK_DESCRIPTION}
+
+FORMAT REQUIREMENTS:
+- Return ONLY a single ScaFi function with signature "def main(): Any"
+- Do not include explanations, comments, or additional text
+- Ensure the code is syntactically valid and correctly implements the
+  requested behavior
+
+Your answer:
+\end{lstlisting}
+\end{minipage}
+
+The format requirements are not presentation.
+%
+Every response has the same shape, \code{def}\;\code{main(): Any},
+so it can be compiled without being edited first,
+which is what allows a failure to be attributed to the model rather than to the harness that wrapped its output.
+
+\subsection{Test Cases}
+\label{subsec:llm-test-cases}
+
+A test case is four things.
+%
+A task description in natural language, which is the text substituted into the prompt.
+%
+A reference program written by an expert, which fixes what correct behaviour is and is itself run to confirm the assertions are satisfiable.
+%
+An initial state: a network graph whose nodes are devices carrying positions, sensor values, and identifiers, and whose edges are communication links.
+%
+And a set of assertions.
+
+The assertions are what distinguishes this from ordinary benchmarking of code generation.
+%
+They check local values at named devices,
+but they also check emergent properties of the whole field --
+that a gradient's values increase with distance from the source, that every device in a region agrees on its region's average --
+and they are evaluated only after enough rounds for the computation to stabilise.
+%
+A program that computes the right value once and then diverges fails,
+which is the correct outcome for a paradigm whose claim is self-stabilisation.
+
+\subsection{From Program to Deployment}
+\label{subsec:llm-validation}
+
+A generated program passes three stages before it is trusted.
+%
+The ScaFi compiler rejects what is not syntactically valid or not well typed,
+which is where a model's inventions about the API are caught.
+%
+Simulation in Alchemist (\cref{subsec:cas-platforms}) runs the program over a configured network and checks its emergent behaviour against the assertions~\cite{DBLP:journals/jos/PianiniMV13}.
+%
+Deployment then places it on real infrastructure with runtime instrumentation,
+since neither of the first two stages says anything about conditions the simulation did not reproduce.
+
+Each stage is available only because the artefact is a program.
+%
+This is the point of \cref{subsec:llm-positioning} restated as a pipeline:
+an orchestration decision has no compiler to reject it and no simulation to run it in,
+whereas a field program can be inspected before anything is deployed,
+and can then be deployed by the model of \cref{chap:pulverization} exactly as a hand-written one would be.
+
+\section{Evaluation}
+\label{sec:llm-evaluation}
+
+\subsection{Setup and Metrics}
+\label{subsec:llm-setup}
+
+Eleven test cases were built, in three groups.
+%
+Five exercise a single dimension:
+counting down from a fixed value, which needs only \code{rep};
+counting neighbours, with and without the device itself;
+gathering neighbours' identifiers;
+and computing the minimum distance to a neighbour.
+%
+Three require both dimensions at once:
+the maximum identifier over the whole network,
+the gradient from a source,
+and the same gradient with obstacles to route around.
+%
+Three are stated at the level of the building blocks:
+a channel between a source and a destination,
+the same channel with obstacles,
+and an area-wise alarm that partitions the network into regions and raises an alert in any region whose average temperature exceeds a threshold.
+
+Sixteen models were run against all eleven cases at each of the three knowledge levels,
+twenty times per combination,
+with the reference programs run alongside as a control~\cite{DBLP:journals/tiot/AguzziFV25}.
+%
+Two metrics summarise the outcome.
+%
+\emph{pass@k}, defined in \cref{sec:llms-for-code-generation}, is the probability that at least one of $k$ sampled programs passes the assertions.
+%
+\emph{compile@k} is its syntactic counterpart,
+computed identically but counting programs that compile rather than programs that pass,
+and the gap between the two separates a model that cannot write the language from one that writes it fluently and means the wrong thing.
+
+\subsection{What the Body of Knowledge Buys}
+\label{subsec:llm-results}
+
+\Cref{tab:llm-pass-rates} reports seven representative models;
+\cref{fig:llm-knowledge-improvement} shows the same movement for ten of the sixteen, together with their average.
+
+\begin{table}[t]
+    \centering
+    \small
+    \caption[Pass and compile rates by knowledge level]{Pass and compile rates at $k=10$ for seven representative models, at the three knowledge levels. Data from~\cite{DBLP:journals/tiot/AguzziFV25}, which reports all sixteen models and $k \in \{1, 5, 10\}$.}
+    \label{tab:llm-pass-rates}
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{@{}lcccccc@{}}
+        \toprule
+        & \multicolumn{2}{c}{\textbf{No knowledge}} & \multicolumn{2}{c}{\textbf{Core operators}} & \multicolumn{2}{c}{\textbf{+ Building blocks}} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+        \textbf{Model} & pass@10 & comp@10 & pass@10 & comp@10 & pass@10 & comp@10 \\
+        \midrule
+        Gemini 2.5 Pro      & 0.50 & 0.77 & 0.73 & 0.99 & 0.84 & 1.00 \\
+        Gemini 2.0 Flash    & 0.07 & 0.07 & 0.71 & 0.91 & 0.86 & 0.95 \\
+        Claude 3.7 Sonnet   & 0.17 & 0.62 & 0.80 & 1.00 & 0.79 & 1.00 \\
+        GPT-4.1 Mini        & 0.13 & 0.45 & 0.61 & 0.99 & 0.61 & 0.94 \\
+        Llama 3.3 70B       & 0.00 & 0.11 & 0.75 & 0.97 & 0.61 & 0.80 \\
+        Llama 4 Maverick    & 0.00 & 0.05 & 0.55 & 0.90 & 0.50 & 0.80 \\
+        Mistral 8B          & 0.00 & 0.42 & 0.00 & 0.90 & 0.05 & 0.90 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{llm-knowledge-improvement.pdf}
+    \caption[Pass rate against knowledge level]{Pass rate at $k=10$ against knowledge level. Every model gains from the core operators; the building blocks separate the models that exploit them from those they overload. Data from~\cite{DBLP:journals/tiot/AguzziFV25}.}
+    \label{fig:llm-knowledge-improvement}
+\end{figure}
+
+Without a body of knowledge, aggregate code is essentially out of reach.
+%
+Twelve of the sixteen models never pass a single test case at any $k$,
+and the failures are dominated by code that does not compile:
+ten attempts yield a compiling program 11\% of the time for Llama 3.3 70B,
+5\% for Llama 4 Maverick.
+%
+Two models do better than nothing.
+%
+Gemini 2.5 Pro passes half the cases at $k=10$,
+and Claude 3.7 Sonnet a sixth,
+which is enough to show that some aggregate computing is present in these models' training data --
+successful gradient attempts produce the canonical formulation,
+\code{rep} over a \code{mux} on the source sensor with \code{minHoodPlus} of the neighbours' distances --
+but not enough to reach it reliably.
+%
+The knowledge is there; what is missing is a way to reach it on demand.
+
+Supplying the core operators changes the picture for every model.
+%
+Compile rates rise in every case, most of them into the nineties:
+GPT-4.1 Mini goes from 0.45 to 0.99,
+Claude 3.7 Sonnet from 0.62 to 1.00.
+%
+Pass rates follow, though less far.
+%
+Of the twelve models that were at zero, nine end between 0.45 and 0.75;
+the remaining three stay below 0.30, and Mistral 8B never rises above 0.05 at any level.
+%
+The finding is the size of that jump against the cost of producing it:
+a short manual, no weights touched, no decoder constrained.
+%
+What the body of knowledge does is not teach the language but make the model's existing fragments of it addressable,
+which is why the models with more aggregate computing in their pretraining gain the most from the smallest input.
+
+Adding the building blocks does not continue the trend.
+%
+The two Gemini models gain another 11 and 15 points of pass@10,
+and Gemini 2.5 Pro reaches 0.76 on the channel with obstacles and 0.70 on the area-wise alarm,
+the two tasks on which the core-operator level left every model weak.
+%
+Three models move the other way:
+Llama 3.3 70B falls from 0.75 to 0.61 and its compile rate from 0.97 to 0.80,
+Llama 4 Maverick from 0.55 to 0.50,
+and Claude 3.7 Sonnet stays where it was.
+%
+The regression is not noise, and it is not a property of the blocks.
+%
+A larger vocabulary enlarges the space of programs the model has to choose within,
+and a block is the parsimonious choice only for some tasks;
+the failures at this level include programs that reach for \code{G} where \code{foldhood} over \code{nbr} was all the task needed.
+%
+Deciding when an abstraction applies is a harder problem than using it,
+and it is the one that separates the models here.
+
+\subsection{Where the Abstractions Fail}
+\label{subsec:llm-failure-modes}
+
+The failures that survive a full body of knowledge are semantic, not syntactic,
+and two of them recur across models.
+
+The first is reading \code{nbr} as a collection.
+%
+\Cref{lst:nbr-misuse} is a gradient attempt from Gemini 2.0 Flash that compiles and is wrong.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={A gradient in which \texttt{nbr} is mistaken for a collection.},
+  label={lst:nbr-misuse},
+]
+rep[Option[Double]](
+  if (sense[Boolean]("source")) Some(0.0) else None
+) { distance =>
+  mux(distance.isDefined && !sense[Boolean]("obstacle")) {
+    minHood(nbr(distance).map(_ + nbrRange()))(*@\label{line:nbr-map}@*)
+  } { distance }
+}.getOrElse(Double.PositiveInfinity)
+\end{lstlisting}
+\end{minipage}
+
+The \code{map} on \cref{line:nbr-map} gives the mistake away.
+%
+\code{nbr(distance)} does not return the neighbours' distances as a collection to be traversed;
+it makes the surrounding expression be evaluated once per aligned neighbour,
+and \code{minHood} is what folds those evaluations.
+%
+The model has produced a program in which the collection is imagined and the fold is applied to it,
+which is a coherent reading of the code as Scala and an incoherent one as a field computation.
+
+The second is using \code{branch} where \code{mux} is meant,
+as in \cref{lst:branch-misuse}.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={A gradient that partitions the network instead of selecting a value.},
+  label={lst:branch-misuse},
+]
+rep(Double.MaxValue) { dist =>
+  branch(sense[Boolean]("source")) { 0.0 } {
+    minHood(nbr(dist) + nbrRange())
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+Read as a conditional this is correct: sources take zero, everyone else takes the minimum over their neighbours.
+%
+Read as a field computation it is not,
+because \code{branch} puts sources and non-sources into domains that do not exchange messages,
+so the non-sources fold over neighbours that are no longer visible to them and the gradient never forms.
+%
+\code{mux} evaluates both arms and selects between the values, leaving alignment intact.
+
+Both errors have the same shape.
+%
+The model applies the sequential reading of a construct whose field reading is different,
+and nothing in the syntax signals the difference.
+%
+This is what makes the round-by-round traces of \cref{subsec:bok-structure} the load-bearing part of the body of knowledge:
+they are where the field reading is stated in terms a model cannot resolve into the sequential one.
+
+\subsection{Composition Beyond the Manual}
+\label{subsec:llm-novelty}
+
+The third question was whether a model given the vocabulary composes it into something it was not shown.
+%
+Two results from Gemini 2.5 Pro say that it does.
+
+The first is the channel with obstacles.
+%
+The body of knowledge builds channels the standard way,
+from gradients,
+and handles regions to avoid with \code{branch}.
+%
+The generated solution does neither.
+%
+It builds a potential with \code{G} and then uses the collect cast \code{C} to propagate a boolean back from the destination along that potential,
+which marks the connecting region without ever computing a second gradient;
+and it avoids obstacles by returning an infinite value from the metric at obstacle devices,
+so the potential routes around them by construction.
+%
+Neither move appears in the manual.
+%
+The second is more striking, because the pattern it reconstructs has a name.
+%
+\Cref{lst:scr-rediscovery} is the model's answer to the area-wise alarm.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The area-wise temperature alarm, as generated with the building blocks available.},
+  label={lst:scr-rediscovery},
+]
+val isLeader = S(2, nbrRange)(*@\label{line:scr-leader}@*)
+val temperature = sense[Double]("temperature")
+val potential = G(isLeader, 0.0, _ + nbrRange(), nbrRange)(*@\label{line:scr-potential}@*)
+val areaTemperature = C[Double, Double](potential, _ + _, temperature, 0.0)
+val areaSize = C[Double, Int](potential, _ + _, 1, 0)(*@\label{line:scr-collect}@*)
+val averageTemperature =
+  if (areaSize > 0) areaTemperature / areaSize else 0.0
+val alarm = averageTemperature > 30.0
+G(isLeader, alarm, (a: Boolean) => a, nbrRange)(*@\label{line:scr-broadcast}@*)
+\end{lstlisting}
+\end{minipage}
+
+This is the self-organising coordination regions pattern~\cite{DBLP:journals/fgcs/PianiniCVN21}.
+%
+Leaders are elected at a fixed grain (\cref{line:scr-leader}),
+a potential from each leader defines its region (\cref{line:scr-potential}),
+two collect casts bring the sum and the count of the region's readings to its leader (\cref{line:scr-collect}),
+and the leader's decision is cast back over the same region (\cref{line:scr-broadcast}).
+%
+The pattern was not in the body of knowledge;
+only the three blocks it is made of were.
+%
+The variable names are the corroborating detail:
+\code{isLeader}, \code{potential}, \code{areaTemperature} are the names someone who understood the decomposition would choose,
+not names carried over from an example.
+
+The reading this supports is narrow but useful.
+%
+The building blocks are not merely a shorter notation for programs the model could otherwise write --
+with the core operators alone, no model produced a working solution for this task --
+but the level at which the distance between a sentence describing a collective behaviour and a program realising it becomes small enough to cross.
+
+\subsection{The Crowding Monitor}
+\label{subsec:llm-case-study}
+
+The eleven test cases are small by construction.
+%
+The task of \cref{subsec:llm-crowding-task} is not:
+it is stated as one sentence by someone who does not know the language,
+and it has to work on a network that moves.
+%
+\Cref{lst:crowding-monitor} is what the best-performing model produced for it.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[
+  style=scala3,
+  escapeinside={(*@}{@*)},
+  caption={The generated crowding monitor: local density, then distance to the nearest crowded area.},
+  label={lst:crowding-monitor},
+]
+val DENSITY_THRESHOLD_COUNT = 50
+val localNeighboringDeviceCount = foldhoodPlus(0)(_ + _)(nbr(1))(*@\label{line:crowd-count}@*)
+val isLocallyOvercrowded =
+  localNeighboringDeviceCount >= DENSITY_THRESHOLD_COUNT
+G[Double](
+  source = isLocallyOvercrowded,(*@\label{line:crowd-source}@*)
+  field  = 0.0,
+  acc    = pathDistanceSoFar => pathDistanceSoFar + nbrRange(),
+  metric = nbrRange
+)
+\end{lstlisting}
+\end{minipage}
+
+The program is the two-part decomposition the task calls for.
+%
+\Cref{line:crowd-count} estimates local density by folding a constant over the neighbourhood,
+using the \code{foldhoodPlus} variant so a device does not count itself,
+which is proximity-based and needs no positions --
+the privacy constraint of \cref{sec:multiparty-motivation} is met by the choice of operator, not by a separate mechanism.
+%
+The gradient cast from \cref{line:crowd-source} then turns the boolean field of overcrowded devices into a distance field,
+so every device knows how far the nearest crowded area is
+and an alert can be scoped to the devices within a given distance of one.
+
+The program was run in Alchemist on mobility traces from a city marathon,
+with about 300 mobile devices, realistic movement, and modelled Bluetooth propagation~\cite{DBLP:journals/computer/BealPV15}.
+%
+Crowded areas are identified as they form,
+the distance field propagates the information into the surrounding region,
+and both track the crowd as participants move,
+which is the self-stabilisation of \cref{subsec:aggregate-computing} doing its work in a program no one wrote by hand.
+%
+The full sequence of simulation snapshots is in the original evaluation~\cite{DBLP:journals/tiot/AguzziFV25}.
+
+\section{Discussion}
+\label{sec:llm-macroprogramming-discussion}
+
+The chapter set out to test whether natural language can be the entry point to a macroprogramming \ac{DSL},
+and the answer is conditional on one thing.
+%
+The condition is not model scale:
+the largest model in the study, Llama 3.1 405B, leads at no knowledge level,
+and with the core operators it is outscored by Llama 3.3 70B, roughly six times smaller, 0.75 against 0.66.
+%
+That is what one expects if the deciding factor is how much aggregate computing a model saw during pretraining rather than how large it is.
+%
+The condition is the abstraction ladder.
+%
+Given the operators with their round-by-round semantics, models that produced nothing usable solve most of the tasks;
+given the building blocks on top, the strongest models solve tasks that were out of reach at the level below,
+and compose the blocks into a published pattern they were not shown.
+%
+This is a cheaper intervention than the two \cref{sec:llms-for-code-generation} surveyed:
+no fine-tuning, and no constrained decoder built against the target grammar.
+%
+It also addresses a different failure.
+%
+Constrained decoding guarantees a program is in the grammar;
+what \cref{subsec:llm-failure-modes} shows is that the surviving errors are inside the grammar,
+and no decoder that enforces syntax would have rejected either of them.
+
+For the thesis, the result closes the language side of Part~II.
+%
+\Cref{chap:language-and-coordination} reduced three paradigms to one set of abstractions but left a program to be written;
+what is written now can start from a sentence.
+%
+And because the output is an ordinary aggregate program,
+it is a graph of components in the sense of \cref{sec:pulverization-abstractions},
+deployable under \cref{thm:deployment-independence} with no special treatment.
+
+Three limits bound the claim.
+%
+The body of knowledge was refined against the same test cases it is evaluated on,
+so the reported rates measure how well a co-designed manual transfers within its own task family,
+not how it transfers to a new one.
+%
+\emph{pass@k} counts programs that satisfy assertions,
+which is a proxy for correctness and a weak one for quality:
+a program that passes may be needlessly expensive to evaluate,
+and a program that passes by accident is scored as a success.
+%
+And the numbers are attached to hosted models that are revised without notice,
+so they date in a way the method does not.
+%
+The persistent finding is not the ranking but the shape of the failures:
+they are misreadings of field semantics that a syntactic guarantee cannot catch,
+which is why validation by simulation stays in the pipeline of \cref{subsec:llm-validation} rather than being replaced by it.
+
+Part~II ends here.
+%
+A macro-program can now be produced --
+written under \cref{chap:language-and-coordination}'s abstractions or generated from a description --
+and \cref{chap:pulverization} says how its components may be spread over the infrastructure,
+and that any admissible spreading computes the same thing.
+%
+What remains unanswered is which of the admissible deployments to pick,
+and who revises it when the devices move, drain, or fail.
+%
+\Cref{chap:deployment-and-reconfiguration} takes up that question.

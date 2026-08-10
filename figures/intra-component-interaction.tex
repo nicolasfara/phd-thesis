@@ -1,0 +1,61 @@
+% Intra-component interaction between instances of the same collective component
+% at neighbouring devices, and what that interaction becomes once one of the two
+% instances is offloaded to a surrogate.
+% Requires in the preamble: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+%   \usepackage{notation}  (for \component, \deviceId, \vtree, \envmap)
+% Include with a normal figure environment, e.g.
+%   \input{figures/intra-component-interaction}
+\begin{tikzpicture}[
+  >=Latex,
+  font=\small,
+  collcomp/.style={draw,rounded corners,thick,double,double distance=0.6pt,
+                   fill=orange!10,draw=orange!55!black,
+                   minimum width=15mm,minimum height=8mm,align=center},
+  ghost/.style={draw=gray!35,rounded corners,fill=gray!4,text=gray!55,
+                minimum width=15mm,minimum height=8mm,align=center},
+  appdev/.style={draw,thick,rounded corners,fill=gray!2,inner sep=4mm},
+  infdev/.style={draw,thick,dashed,gray!55,rounded corners,fill=gray!2,inner sep=4mm},
+  msg/.style={<->,thick,black!75},
+  fwd/.style={->,thick,black!75},
+]
+
+% ==================== (a) both instances run at their owners ====================
+\node[collcomp] (a0) at (0,0)   {$\component_2^0$};
+\node[collcomp] (a1) at (3.6,0) {$\component_2^1$};
+
+\begin{scope}[on background layer]
+  \node[appdev,fit=(a0)] (ad0) {};
+  \node[appdev,fit=(a1)] (ad1) {};
+\end{scope}
+
+\node[anchor=north,font=\scriptsize] at (ad0.south) {$\deviceId_0$};
+\node[anchor=north,font=\scriptsize] at (ad1.south) {$\deviceId_1$};
+
+\draw[msg] (ad0.east) -- node[midway,above,font=\scriptsize] {$\vtree$} (ad1.west);
+
+\node[font=\small] at (1.8,-1.5) {(a)};
+
+% ==================== (b) one instance offloaded to a surrogate ====================
+\begin{scope}[xshift=7.2cm]
+  \node[ghost]    (b0) at (0,0)   {$\component_2^0$};
+  \node[collcomp] (b1) at (3.6,0) {$\component_2^1$};
+  \node[collcomp] (b2) at (0,2.4) {$\component_2^0$};
+
+  \begin{scope}[on background layer]
+    \node[appdev,fit=(b0)] (bd0) {};
+    \node[appdev,fit=(b1)] (bd1) {};
+    \node[infdev,fit=(b2)] (bd2) {};
+  \end{scope}
+
+  \node[anchor=north,font=\scriptsize] at (bd0.south) {$\deviceId_0$};
+  \node[anchor=north,font=\scriptsize] at (bd1.south) {$\deviceId_1$};
+  \node[anchor=south,font=\scriptsize] at (bd2.north) {$\deviceId_2$ (surrogate)};
+
+  \draw[msg] (bd0.east) -- node[midway,above,font=\scriptsize] {$\vtree$} (bd1.west);
+  \draw[fwd] (bd0.north) -- node[midway,right,font=\scriptsize] {$\envmap{\overline\deviceId}{\overline\vtree}$} (bd2.south);
+
+  \node[font=\small] at (1.8,-1.5) {(b)};
+\end{scope}
+
+\end{tikzpicture}

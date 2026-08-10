@@ -4,3 +4,24 @@
 % NOTE: this chapter gathers three publications (macro-programming for the
 % continuum, dynamic IoT reconfiguration, declarative green planning); open with
 % a section that states the unifying arc before diving into each contribution.
+
+% NOTE: material moved out of Chapter 5 and destined here, from the ACSOS 2024
+% paper \cite{DBLP:conf/acsos/FarabegoliVC24}. Chapter 5 keeps the model, the
+% deployment-independence theorem, and the functional validation (gradient, SCR);
+% the non-functional side belongs to this chapter, where deployment is a runtime
+% control problem. What was removed, verbatim from ffcee29:
+%   - figure asset: figures/power-consumption.pdf (unused until reinstated here),
+%     caption "Average battery level (left) and cumulative messages exchanged
+%     (right) by application devices, under a monolithic and an offloaded
+%     deployment.", label fig:power-consumption;
+%   - the finding: offloading leaves application devices with more battery over
+%     the run, at the cost of a modest increase in messages exchanged -- the
+%     price of the extra hops, paid in bandwidth rather than energy;
+%   - the offloading policy that produced it: each device starts with a random
+%     battery level; when it drops below 30% the Emergency Service component is
+%     offloaded to the nearest edge server, switching server when the connection
+%     is lost;
+%   - the power model: smartphone reference Snapdragon 888 (TDP 5 W), edge
+%     reference Xeon Platinum P-8124 (TDP 220 W), battery 4500 mAh at 3.7 V;
+%   - Chapter 5's \S5.4 already forward-references this chapter for these
+%     numbers, so the claim has to land somewhere in here.

@@ -1,8 +1,9 @@
-% A macro-program deployed across an application device and an infrastructural
-% device acting as a surrogate: one component is forwarded along a forwarding
-% chain, everything else stays local.
+% A macro-program deployed across an application device and two infrastructural
+% devices: one component is forwarded along a two-hop forwarding chain, in which
+% the intermediate device only relays, and everything else stays local.
 % Requires in the preamble: \usepackage{tikz}
 %   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+%   \usepackage{notation}  (for \component and \deviceId)
 % Include with a normal figure environment, e.g.
 %   \resizebox{\textwidth}{!}{\input{figures/pulverization-forwarding}}
 \begin{tikzpicture}[
@@ -11,6 +12,7 @@
   comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=18mm,minimum height=8mm,align=center},
   collcomp/.style={comp,double,double distance=0.6pt,fill=orange!10,draw=orange!55!black},
   ghost/.style={draw=gray!35,rounded corners,fill=gray!4,text=gray!55,minimum width=18mm,minimum height=8mm,align=center},
+  relay/.style={draw,thick,dashed,gray!55,rounded corners,fill=gray!2,minimum width=24mm,minimum height=14mm,align=center},
   port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
   ghostport/.style={draw=gray!35,fill=gray!20,minimum width=2mm,minimum height=2mm,inner sep=0pt},
   bind/.style={->,thick,black!75},
@@ -18,10 +20,10 @@
 ]
 
 % ================= application device (left) =================
-\node[comp]     (c1) at (0,2.9)    {$c_1$};
-\node[collcomp] (c3) at (-1.1,1.5) {$c_3$};
-\node[ghost]    (c2) at (1.1,1.5)  {$c_2$};
-\node[comp]     (c4) at (0,0)      {$c_4$};
+\node[comp]     (c1) at (0,2.9)    {$\component_1$};
+\node[collcomp] (c3) at (-1.1,1.5) {$\component_3$};
+\node[ghost]    (c2) at (1.1,1.5)  {$\component_2$};
+\node[comp]     (c4) at (0,0)      {$\component_4$};
 
 \node[port]      (c1o)  at (c1.south) {};
 \node[port]      (c3i)  at (c3.north) {};
@@ -39,16 +41,22 @@
 \begin{scope}[on background layer]
   \node[draw,thick,rounded corners,fill=gray!2,fit=(c1)(c2)(c3)(c4),inner sep=5mm] (appdev) {};
 \end{scope}
-\node[anchor=south,font=\small\bfseries] at (appdev.north) {application device};
+\node[anchor=south,font=\small\bfseries] at (appdev.north) {application device $\deviceId_0$};
+
+% ================= relay device (middle) =================
+% An intermediate hop of the chain: it passes the component's messages on
+% without ever executing the component itself.
+\node[relay] (relay) at (4.75,1.5) {$\deviceId_1$};
+\node[anchor=north,font=\scriptsize,gray!60,align=center] at (relay.south) {relays without\\executing};
 
 % ================= infrastructural device / surrogate (right) =================
 % Mirrored left-right relative to the application device, so the forwarded
 % component (c2) sits nearest the incoming forwarding chain instead of behind c3.
-\begin{scope}[xshift=7cm]
-  \node[ghost]    (c1r) at (0,2.9)    {$c_1$};
-  \node[collcomp] (c2r) at (-1.1,1.5) {$c_2$};
-  \node[ghost]    (c3r) at (1.1,1.5)  {$c_3$};
-  \node[ghost]    (c4r) at (0,0)      {$c_4$};
+\begin{scope}[xshift=9.5cm]
+  \node[ghost]    (c1r) at (0,2.9)    {$\component_1$};
+  \node[collcomp] (c2r) at (-1.1,1.5) {$\component_2$};
+  \node[ghost]    (c3r) at (1.1,1.5)  {$\component_3$};
+  \node[ghost]    (c4r) at (0,0)      {$\component_4$};
 
   \node[ghostport] (c1ro)  at (c1r.south) {};
   \node[port]      (c2ri)  at (c2r.north) {};
@@ -67,11 +75,12 @@
     \node[draw,thick,dashed,gray!55,rounded corners,fill=gray!2,fit=(c1r)(c2r)(c3r)(c4r),inner sep=5mm] (infdev) {};
   \end{scope}
 \end{scope}
-\node[anchor=south,font=\small\bfseries] at (infdev.north) {infrastructural device (surrogate)};
+\node[anchor=south,font=\small\bfseries] at (infdev.north) {infrastructural device $\deviceId_2$};
 
 % ================= forwarding chain =================
 \draw[bind] (c2.east) to[out=0,in=180]
   node[midway,above,font=\scriptsize,align=center] {forwarding\\chain}
-  (c2r.west);
+  (relay.west);
+\draw[bind] (relay.east) to[out=0,in=180] (c2r.west);
 
 \end{tikzpicture}

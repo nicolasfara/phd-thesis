@@ -1,0 +1,39 @@
+% Notation for the pulverization model (Chapter 5, reused in Chapter 6).
+% Adopted from the ACSOS 2024 paper "Flexible Self-organisation for the
+% Cloud-Edge Continuum: a Macro-programming Approach", so that the thesis and
+% the published formalisation use the same symbols.
+% Requires amsmath (loaded in the main preamble, before cleveref).
+
+%----------------------------------------------------------------------------------------
+% DEVICES AND TOPOLOGY
+%----------------------------------------------------------------------------------------
+\newcommand{\deviceId}{\delta}                 % a device
+\newcommand{\hostIdSet}{\mathbf{D}_P}          % physical devices
+\newcommand{\deviceIdSet}{\mathbf{D}}          % application devices
+\newcommand{\ihostIdSet}{\mathbf{D}_{I}}       % infrastructural devices
+\newcommand{\pnbrhood}{\mathcal{N}_P}          % physical neighbourhood relation
+\newcommand{\nbrhood}{\mathcal{N}}             % application neighbourhood relation
+\newcommand{\neigh}{\mathit{neigh}}            % neigh(d) = neighbours of d, d included
+\newcommand{\Sens}{\mathit{sense}}             % sense(d) = sensor state at d
+\newcommand{\senstate}{\sigma}                 % sensor state
+
+%----------------------------------------------------------------------------------------
+% MACRO-PROGRAM STRUCTURE
+%----------------------------------------------------------------------------------------
+\newcommand{\macroProgram}{\mathtt{MP}}        % the macro-program
+\newcommand{\component}{\mathtt{C}}            % a component
+\newcommand{\port}{\mathtt{p}}                 % a port
+\newcommand{\compLinks}{\mathtt{B}}            % a binding
+\newcommand{\compdef}{\mathit{component}}      % the component connection relation
+\newcommand{\compDef}[3]{\compdef(#1,#2,#3)}   % component(outPort, component, inPorts)
+
+%----------------------------------------------------------------------------------------
+% COMPONENT STATE, ROUNDS, AND DEPLOYMENT
+%----------------------------------------------------------------------------------------
+\newcommand{\vtree}{\theta}                    % state produced by a round
+\newcommand{\anyvalue}{\mathtt{v}}             % a value
+\newcommand{\val}{\mathit{val}}                % val(state) = observable value
+\newcommand{\deploy}{\mathit{deploy}}          % deployment predicate (forwarding chain)
+\newcommand{\envmap}[2]{#1\mapsto #2}          % map entry
+% Single-round judgment: device; neighbour states; sensor state |- C(inputs) => state
+\newcommand{\bsopsem}[5]{#1;#2;#3\vdash #4\Downarrow #5}

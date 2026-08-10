@@ -4,6 +4,11 @@
 \usepackage{code-lstlistings}
 \usepackage{notes}
 \usepackage{shortcuts}
+% amsmath and amsthm must be loaded before cleveref, or cleveref does not pick up
+% the theorem environments declared below.
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{notation}
 \usepackage{lipsum}
 \usepackage{bookmark}
 \usepackage{import}
@@ -15,6 +20,9 @@
 % Drop the option if a list of acronyms is added to the front matter.
 \usepackage[nohyperlinks]{acronym}
 \input{acronyms}
+
+% Theorem environments (cleveref derives its own names from these).
+\newtheorem{theorem}{Theorem}[chapter]
 
 \graphicspath{{figures/}}
 

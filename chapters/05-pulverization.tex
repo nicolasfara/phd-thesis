@@ -32,8 +32,12 @@ the macro-program itself as a directed acyclic graph of independently deployable
 the distinction between components that compute in isolation and components whose result depends on their neighbours,
 and the forwarding mechanism that maps components onto physical devices.
 %
-\Cref{sec:pulverization-semantics} closes the chapter with the model's execution semantics and its central formal guarantee:
-that, under stated conditions, a macro-program's observable behaviour does not depend on how its components are deployed.
+\Cref{sec:pulverization-semantics} states the model's execution semantics,
+proves its central guarantee -- that, under stated conditions, a macro-program's observable behaviour does not depend on how its components are deployed --
+and reports the simulations that confirm it.
+%
+\Cref{sec:pulverization-discussion} closes the chapter by relating the model to the pulverisation it generalises,
+and by stating what it deliberately leaves open.
 
 \section{Motivation and Design Goals}
 \label{sec:pulverization-motivation}
@@ -82,77 +86,125 @@ A macro-program decomposes into as many independently deployable components as i
 connected in an arbitrary graph rather than assigned one of five fixed slots,
 and each component is classified by whether its computation genuinely needs to coordinate with neighbouring devices or not,
 independently of what part of the original five-role catalogue it would have corresponded to.
+
+The rescue operation the model was first developed for shows why the difference matters.
+Citizens carry wearables that sample biometric data;
+rescuers carry smart devices that have to be guided towards whoever needs help.
+Acquiring biometric data is a local computation tied to the sensors of one device,
+while locating emergencies and steering rescuers towards them are collective computations a nearby edge server could run just as well.
+A decomposition that assigns all of this to one behaviour component cannot express any of these differences.
 %
-\Cref{sec:pulverization-abstractions} develops this partitioning in detail;
-\cref{sec:pulverization-semantics} then shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
+Three goals follow.
+First, the partitioning of a macro-program should follow the macro-program's own data-flow structure,
+not a catalogue of execution concerns fixed before the application is written.
+Second, each component should be able to state its own requirements,
+and to be deployed and executed independently of the others.
+Third, what the macro-program computes should not depend on which of the admissible deployments was chosen.
+%
+\Cref{sec:pulverization-abstractions} develops the partitioning that meets the first two goals;
+\cref{sec:pulverization-semantics} proves the third,
+and so shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
 
 \section{Core Abstractions}
 \label{sec:pulverization-abstractions}
+
+The four subsections that follow fix the model's vocabulary in the order the concepts depend on one another:
+the devices a macro-program runs on and those that can support it,
+the structure of the macro-program itself,
+the classification of its components by whether they need their neighbours,
+and the mapping of components onto devices.
+%
+The notation is the one of the model's original formulation~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+An overbar denotes a sequence,
+so $\overline\deviceId$ stands for $\deviceId_1,\dots,\deviceId_n$.
+Two overbarred variables occurring in the same term have the same length and are read element-wise:
+a map written $\envmap{\overline\deviceId}{\overline{x}}$ denotes $\envmap{\deviceId_1}{x_1},\dots,\envmap{\deviceId_n}{x_n}$,
+and is always functional, associating no element on the left with two distinct elements on the right.
 
 \subsection{Application and Infrastructural Devices}
 \label{subsec:application-infrastructural-devices}
 
 The model is stated over a \emph{physical system}:
-a set of physical devices connected by a reflexive,
-symmetric \emph{physical neighbourhood} relation,
-which holds between two devices exactly when they can exchange messages directly.
+a set $\hostIdSet$ of physical devices connected by a reflexive,
+symmetric \emph{physical neighbourhood} relation $\pnbrhood$,
+with $(\deviceId,\deviceId') \in \pnbrhood$ holding exactly when $\deviceId$ and $\deviceId'$ can exchange messages directly.
 %
 Two roles are then singled out among these devices,
 not by any physical property but by the part they play in a given deployment.
 %
-\emph{Application devices} are the devices that jointly execute a macro-program --
+\emph{Application devices} $\deviceIdSet \subseteq \hostIdSet$ are the devices that jointly execute a macro-program --
 robots in a swarm,
-sensor and actuator nodes of an \ac{IoT} ecosystem -- and their neighbourhood relation,
+sensor and actuator nodes of an \ac{IoT} ecosystem.
+Their neighbourhood relation $\nbrhood \subseteq \pnbrhood$,
 inherited from the physical one,
-defines a macro-program's own notion of neighbour interaction.
+defines a macro-program's own notion of neighbour interaction;
+$\neigh(\deviceId) = \overline\deviceId$ denotes the application devices neighbouring $\deviceId$,
+which always include $\deviceId$ itself.
 %
-\emph{Infrastructural devices} are physical devices able to support the execution of some part of a macro-program on behalf of application devices,
+\emph{Infrastructural devices} $\ihostIdSet \subseteq \hostIdSet$ are physical devices able to support the execution of some part of a macro-program on behalf of application devices,
 such as an edge server or a base station,
 without necessarily being targets of the application themselves.
 %
-The two roles are not a partition of the physical devices:
-a device can be both,
+The two roles cover the physical devices, $\deviceIdSet \cup \ihostIdSet = \hostIdSet$, but do not partition them:
+$\deviceIdSet \cap \ihostIdSet$ need not be empty,
 as when a more capable robot in a swarm also executes computation on behalf of a weaker neighbour,
 though application devices such as swarm robots and infrastructural devices such as edge servers or cloud hosts are, in the common case, disjoint.
 %
 Devices in the application role are additionally assumed to expose a set of \emph{sensors},
-whose readings make up the device's \emph{sensor state},
+queried as $\Sens(\deviceId) = \senstate$ to obtain the device's \emph{sensor state} $\senstate$,
 and,
 dually,
 a set of actuators through which the macro-program acts back on the physical process it monitors.
 
+What is fixed here and what moves shapes everything that follows.
+The two device sets $\deviceIdSet$ and $\ihostIdSet$ are assumed fixed,
+whereas $\pnbrhood$ -- and with it $\nbrhood$ -- evolves in time as devices move.
+A deployment is therefore stated against a topology that changes underneath it,
+which is what makes the guarantee of \cref{subsec:deployment-independence} something to prove rather than something to assume.
+
 \subsection{The Macro-program as a DAG of Components}
 \label{subsec:macroprogram-dag}
 
-A macro-program is a set of \emph{components} connected by \emph{bindings}.
+A macro-program $\macroProgram$ is a pair $(\overline\component,\overline\compLinks)$ of a set of \emph{components} and a set of \emph{bindings}.
 %
 Each component is an atomic,
 functional fragment of the macro-program:
 it takes a list of input values, received through named input \emph{ports},
 and produces a single output value on its output port.
 %
-A binding connects the output port of one component to an input port of another,
-composing components the way ordinary functions compose.
+A binding $\compLinks$ has the form $\compDef{\port}{\component}{\overline\port}$,
+recording that component $\component$ has output port $\port$ and input ports $\overline\port$.
+Components are connected not by an edge drawn between two ports,
+but by the reuse of one port in different bindings:
+naming $\port$ among the input ports of a downstream component is what makes that component read whatever the owner of output port $\port$ produced.
 %
-A macro-program is \emph{well-formed} when every component has a distinct output port,
-every input port of a downstream component is bound to the output port of some upstream one,
-and the resulting graph of components is acyclic -- a \ac{DAG}.
+A macro-program is \emph{well-formed} when
+\emph{(i)} different components have different output ports,
+\emph{(ii)} every input port of a downstream component is the output port of some upstream one,
+and \emph{(iii)} the transitive closure of the resulting input-to-output relation is a \ac{DAG}.
 %
-Output ports left unbound by any input are the macro-program's \emph{global output ports},
+Output ports named by no input port are the macro-program's \emph{global output ports},
 the values the rest of the system observes as the macro-program's result.
 %
-\Cref{fig:macro-program-dag} shows this structure for a macro-program of four components.
+\Cref{fig:macro-program-dag} shows this structure for a macro-program of four components,
+whose bindings are
+$\compDef{\port_1}{\component_1}{\emptyset}$,
+$\compDef{\port_2}{\component_2}{\port_1}$,
+$\compDef{\port_3}{\component_3}{\port_1}$,
+and $\compDef{\port_4}{\component_4}{\port_3\port_2}$:
+$\port_1$ is read by two downstream components, and $\port_4$ is the single global output port.
 
 \begin{figure}[t]
     \centering
     \input{figures/macro-program-dag}
-    \caption[A macro-program as a DAG of components]{A macro-program as a DAG of four components. Curved arrows are bindings, each connecting an upstream component's output port to a downstream component's input port; $c_4$'s unbound output port is the macro-program's global output port.}
+    \caption[A macro-program as a DAG of components]{A macro-program as a DAG of four components. Each curved arrow is a binding, labelled with the port the two components it connects have in common; the output port $\port_1$ of $\component_1$ is read by both $\component_2$ and $\component_3$. $\port_4$ is named by no input port, and is therefore the macro-program's global output port.}
     \label{fig:macro-program-dag}
 \end{figure}
 
 Because a macro-program is executed jointly by the set of application devices,
 each component is instantiated once per application device:
-each instantiation yields a \emph{component instance},
+each of the $|\deviceIdSet|$ instantiations yields a \emph{component instance},
+written $\component_i^j$ for the instance of $\component_i$ instantiated for device $\deviceId_j$,
 and component instances,
 not components,
 are the model's actual units of execution and deployment.
@@ -184,7 +236,7 @@ or agreeing on a shared partition of the network into regions -- is collective.
 \begin{figure}[t]
     \centering
     \input{figures/local-collective-components}
-    \caption[Local and collective components in the same macro-program]{The same macro-program, with each component classified as local or collective. $c_1$ and $c_4$ are local: each computes purely from its own inputs. $c_2$ and $c_3$ are collective, marked with a double border: computing an instance of either also requires the states of the same component's instances at neighbouring devices.}
+    \caption[Local and collective components in the same macro-program]{The same macro-program, with each component classified as local or collective. $\component_1$ and $\component_4$ are local: each computes purely from its own inputs. $\component_2$ and $\component_3$ are collective, marked with a double border: computing an instance of either also requires the states of the same component's instances at neighbouring devices.}
     \label{fig:local-collective-components}
 \end{figure}
 
@@ -197,15 +249,41 @@ exactly as the bindings of \cref{subsec:macroprogram-dag} prescribe.
 \emph{Intra-component} interaction happens between instances of the \emph{same} collective component at \emph{neighbouring} devices,
 letting that component's result cohere across the network rather than being computed device by device in isolation.
 %
-Correspondingly, a component instance's round of computation consumes up to four things:
+Correspondingly, a component instance's round of computation produces a new state $\vtree$,
+from which the value $\val(\vtree) = \anyvalue$ read by downstream instances is extracted.
+A round consumes up to four things:
 its own state from the previous round;
-the values received from its upstream instances at the same device;
-the local sensor state;
+the values $\overline\anyvalue$ received from its upstream instances at the same device;
+the local sensor state $\senstate$;
 and,
 only if the component is collective,
-the latest available states of the same component's instances at neighbouring devices --
+the latest available states $\overline\vtree$ of the same component's instances at the neighbouring devices $\neigh(\deviceId)$ --
 the same ingredients aggregate computing's \texttt{nbr}/\texttt{rep} constructs combine in a single, undivided program (\cref{subsubsec:ac-execution-model}),
 here made available separately to each component of a decomposed one.
+
+A round is summarised by the judgment
+\[
+    \bsopsem{\deviceId}{\envmap{\overline\deviceId}{\overline\vtree}}{\senstate}{\component(\overline\anyvalue)}{\vtree}
+\]
+read as: at device $\deviceId$, component $\component$ applied to the inputs $\overline\anyvalue$,
+with the neighbour states $\envmap{\overline\deviceId}{\overline\vtree}$ and the sensor state $\senstate$,
+yields the state $\vtree$.
+%
+What the judgment leaves unsaid is deliberate.
+The model fixes how rounds compose, not how a component computes:
+any language whose programs can be given as such a judgment can supply the components,
+which is what lets \cref{chap:language-and-coordination} obtain them from aggregate computing, choreographies, and multitier programs alike.
+%
+\Cref{fig:intra-component-interaction} shows this interaction where both instances run at their own device,
+and -- anticipating \cref{subsec:forwarding-chains} -- where one of them has been moved elsewhere,
+so that the whole map of neighbour states has to travel with it.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/intra-component-interaction}
+    \caption[Intra-component interaction, before and after offloading]{Intra-component interaction between instances of the collective component $\component_2$ at two neighbouring application devices. In (a) each instance runs at its own device and the two exchange states $\vtree$ directly. In (b) the instance owned by $\deviceId_0$ has been offloaded to a surrogate: $\deviceId_0$ still receives its neighbour's state, but has to pass the whole map of neighbour states on to the device that executes the component on its behalf.}
+    \label{fig:intra-component-interaction}
+\end{figure}
 
 Because collectiveness is a property of individual components rather than of a logical device as a whole,
 a single macro-program can freely mix components that behave like self-organising, field-based services with components that behave like ordinary, non-coordinating ones,
@@ -215,12 +293,12 @@ The original pulverisation model has no equivalent distinction:
 its behaviour component may internally run a collective computation,
 but that computation's own local and collective parts are never exposed as separately deployable units.
 
-\subsection{Forward Chains to Physical Devices}
+\subsection{Forwarding Chains to Physical Devices}
 \label{subsec:forwarding-chains}
 
 Deploying a macro-program means deciding, for every pair of a component and the application device that instantiates it, on which physical device that component instance actually runs.
 %
-Each such pair identifies a component instance together with its \emph{owner} -- the application device it was instantiated for.
+Each such pair identifies a component instance $\component_i^j$ together with its \emph{owner} $\deviceId_j$ -- the application device it was instantiated for.
 %
 By default, an instance runs at its owner.
 %
@@ -233,7 +311,7 @@ while the rest of the owner's components may stay local or be offloaded elsewher
 \begin{figure}[t]
     \centering
     \resizebox{\textwidth}{!}{\input{figures/pulverization-forwarding}}
-    \caption[A macro-program deployed across an application device and a surrogate]{A deployment of the same macro-program across two physical devices. $c_1$, $c_3$, and $c_4$ execute on their owner, the application device; $c_2$ is forwarded along a forwarding chain to an infrastructural device acting as its surrogate. Faded components mark where a component sits in the macro-program's structure without executing there.}
+    \caption[A macro-program deployed along a two-hop forwarding chain]{A deployment of the same macro-program across three physical devices. $\component_1$, $\component_3$, and $\component_4$ execute on their owner $\deviceId_0$; $\component_2$ is forwarded along the chain $\deviceId_0\deviceId_1\deviceId_2$, in which $\deviceId_1$ only relays messages and $\deviceId_2$ acts as surrogate. Faded components mark where a component sits in the macro-program's structure without executing there.}
     \label{fig:pulverization-forwarding}
 \end{figure}
 
@@ -243,10 +321,20 @@ the deployment of a component instance is captured, in general, by a \emph{forwa
 hop by hop,
 to the device that finally executes it.
 %
-A deployment is \emph{correct} when every component of every application device is assigned such a chain,
-and every chain both starts at its owner and contains no cycle --
+The \emph{deployment predicate} records these chains:
+$\deploy(\deviceId_1, \component, \deviceId_1\dots\deviceId_n)$ states that component $\component$ at application device $\deviceId_1$ is forwarded through $\deviceId_1\dots\deviceId_n$,
+so a chain containing $\deviceId_1$ alone means the component is not forwarded at all,
+and otherwise $\deviceId_1$ forwards to $\deviceId_2$, which forwards to $\deviceId_3$, and so on until $\deviceId_n$ executes it.
+%
+A deployment is \emph{correct} with respect to a well-formed macro-program when
+\emph{(i)} every pair of an application device and a component of the macro-program is deployed,
+and \emph{(ii)} whenever $\deploy(\deviceId, \component, \overline\deviceId)$ holds,
+the chain $\overline\deviceId$ starts with $\deviceId$ and contains no cycle --
 the same acyclicity requirement \cref{subsec:macroprogram-dag} places on the macro-program itself,
 now placed on its physical realisation.
+%
+The deployment of \cref{fig:pulverization-forwarding} thus reads $\deploy(\deviceId_0, \component_2, \deviceId_0\deviceId_1\deviceId_2)$ for the forwarded component,
+and $\deploy(\deviceId_0, \component_i, \deviceId_0)$ for $i \in \{1,3,4\}$.
 %
 Component instances carry no state of their own beyond what their round-inputs supply (\cref{subsec:local-collective-components}),
 so a surrogate that ends up hosting the same component forwarded by several owners -- as commonly happens when many devices forward the same component to a shared cloud host -- can treat those instances as one, without losing any owner-specific behaviour to collapse.
@@ -261,6 +349,14 @@ rather than by a static tier annotation written by the programmer.
 \section{Semantics and Guarantees}
 \label{sec:pulverization-semantics}
 
+The abstractions of \cref{sec:pulverization-abstractions} say what a deployment is;
+they do not yet say what a deployed macro-program does,
+nor what a deployment is allowed to change about it.
+%
+\Cref{subsec:pulverization-execution-model} fixes how rounds and messages proceed,
+\cref{subsec:deployment-independence} states and proves the guarantee that follows,
+and \cref{subsec:pulverization-validation} reports the simulations that confirm it on two collective services.
+
 \subsection{Execution Model}
 \label{subsec:pulverization-execution-model}
 
@@ -269,24 +365,30 @@ its rounds of computation can proceed on their own timeline,
 asynchronously with respect to other instances at the same device and to instances of the same component at other devices,
 in the same time-fluid sense already established for aggregate computing (\cref{subsubsec:ac-execution-model}).
 %
-A round produces a new state from the four ingredients \cref{subsec:local-collective-components} listed,
-and the value read off that state becomes available to whichever instances are bound to consume it --
+A round produces a new state $\vtree$ from the four ingredients \cref{subsec:local-collective-components} listed,
+and the value $\val(\vtree)$ read off that state becomes available to whichever instances are bound to consume it --
 downstream instances at the same device directly,
 or, if the component is offloaded, only once it has travelled the forwarding chain of \cref{subsec:forwarding-chains} in both directions:
 inputs and neighbour context outward to the surrogate, the result back to the owner.
 
-This informal picture is backed by a small-step operational semantics,
-stated as a set of rules over a global network configuration mapping devices to the messages pending for them.
+Precisely, this is a small-step operational semantics over a global network configuration,
+which maps each device to the messages currently pending for it,
+and which extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along the two axes this chapter has introduced:
+a configuration carries the states of many components composed in a \ac{DAG} rather than of one flat program,
+and messages travel one hop at a time along a forwarding chain rather than being exchanged only between owners.
 %
-It extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along exactly the two axes this chapter has introduced:
-a network configuration now carries the state of many components composed in a \ac{DAG}, not one flat program,
-and dedicated rules relay messages one hop at a time along a forwarding chain,
-rather than assuming a component always executes at the device that owns it.
+Five families of transition suffice.
+A component instance \emph{fires}, consuming the four round-inputs and depositing the resulting state;
+a \emph{communication} step ships that state to an aligned neighbour running the same component;
+a \emph{forwarding} step moves the inputs an offloaded instance needs one hop onward,
+and a \emph{backwarding} step returns its result one hop back,
+so a chain of any length is covered by iterating a single-hop rule.
 %
-Firing a component instance produces a state message for its neighbours;
-a communication rule ships that message to an aligned neighbour of the same component;
-and forwarding and backwarding rules copy, respectively, the inputs an offloaded instance needs and the result it produces one step along its chain,
-so that a chain of arbitrary length is handled by iterating the same single-hop rule.
+The fifth carries the map of neighbour states -- the field the collective component reads -- onward to the surrogate,
+and it is the one that makes collective components offloadable at all:
+without it, a component whose result depends on its neighbours could only ever run where its owner sits.
+The rules themselves are given in the model's original formulation~\cite{DBLP:conf/acsos/FarabegoliVC24};
+what the proof below needs of them is only the effect just described for each family.
 
 \subsection{Deployment Independence}
 \label{subsec:deployment-independence}
@@ -295,22 +397,53 @@ The model's central result concerns \emph{self-stabilising} components,
 in the sense already fixed for field computations in \cref{subsec:aggregate-computing}:
 a computation is self-stabilising if every fair execution -- one in which each device keeps firing -- eventually reaches, and keeps recovering, the same output once the effects of transient perturbations such as message loss, topology changes, or node churn have faded~\cite{DBLP:journals/tomacs/ViroliABDP18}.
 %
-Given a well-formed macro-program whose components are all self-stabilising, and a correct deployment in which the sensor state feeding any given component stays uniform along its entire forwarding chain,
-the behaviour observed at the macro-program's global output ports is itself self-stabilising,
-and it stabilises to the same value regardless of which components are forwarded and to which surrogate~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+One further condition has to be spelled out before the result can be stated.
+A surrogate reads its own sensors, not the owner's:
+what a forwarded component actually sees is $\Sens(\deviceId)$ at the device that executes it.
+Requiring the sensor state to be \emph{uniform along a forwarding chain} is requiring that this substitution make no difference --
+that what the surrogate samples be indistinguishable, as far as the component is concerned, from what the owner would have sampled.
+The requirement bites unevenly:
+a component reading a quantity that varies with the owner's own position is pinned to the owner,
+whereas one reading a quantity uniform over the chain can be placed anywhere along it.
 
-The argument behind this result composes two facts already available separately.
-%
-Without forwarding, the macro-program's output is a functional composition of its components along the \ac{DAG},
-and self-stabilisation is preserved by functional composition:
-upstream components stabilise first, and downstream ones follow once their inputs have~\cite{DBLP:journals/tomacs/ViroliABDP18}.
-%
-Forwarding does not break this, because a forwarding chain only relays the same input, neighbour-context, and result messages that a local execution would exchange internally, one hop at a time;
-under a fair schedule, those relays eventually deliver every message,
-so the extra hops a chain introduces are themselves just another transient effect that the components' own self-stabilisation already absorbs.
-%
-Simulation confirms the guarantee empirically,
-using as running cases the same two collective services \cref{subsec:local-collective-components} introduced to illustrate what a collective component is:
+\begin{theorem}[Deployment independence]
+    \label{thm:deployment-independence}
+    Let $\macroProgram = (\overline\component,\overline\compLinks)$ be well-formed,
+    and let its deployment over the application devices $\deviceIdSet$ be correct.
+    If \emph{(i)} every component in $\overline\component$ implements a self-stabilising computation,
+    and \emph{(ii)} the sensor state is uniform along every forwarding chain,
+    then the behaviour observed at the macro-program's global output ports is self-stabilising,
+    and it stabilises to a value that does not depend on the deployment.
+\end{theorem}
+
+\begin{proof}
+    The argument is the one given for the model's original formulation~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+    Assume first that every forwarding chain has length one,
+    so nothing is offloaded and only the firing and communication rules apply.
+    Their joint effect is that of the firing rule of the field calculus network model,
+    so for a macro-program of a single component -- necessarily one with no input ports -- the claim follows from hypothesis \emph{(i)} alone.
+    With several components, the behaviour at the global output ports is the functional composition of the components along the \ac{DAG},
+    and eventual behaviour is preserved by functional composition~\cite{DBLP:journals/tomacs/ViroliABDP18}:
+    the upstream components stabilise first, and the downstream ones follow once their inputs have.
+
+    It remains to show that longer chains change nothing.
+    A chain only relays messages that a local execution would have exchanged internally.
+    Fair application of the forwarding rules eventually delivers both the inputs and the map of neighbour states to the executing device,
+    and the backwarding rule eventually returns the result to the owner;
+    messages dropped because the rules are selected non-deterministically are dropped only transiently.
+    The result that arrives is the one a local execution would have produced,
+    because the inputs eventually coincide and, by hypothesis \emph{(ii)}, so does the sensor state.
+    The extra hops are therefore one further transient perturbation,
+    of exactly the kind the components' own self-stabilisation already absorbs.
+\end{proof}
+
+\subsection{Empirical Validation}
+\label{subsec:pulverization-validation}
+
+\Cref{thm:deployment-independence} is stated over fair executions and eventual behaviour,
+so it says nothing about how long convergence takes or how far apart two deployments are meanwhile.
+Simulation answers both questions,
+using as cases the same two collective services \cref{subsec:local-collective-components} introduced to illustrate what a collective component is:
 a gradient propagating a value outward from a source,
 and a service partitioning the network into self-organising coordination regions~\cite{DBLP:conf/acsos/FarabegoliVC24}.
 %
@@ -320,6 +453,11 @@ and 200 mobile nodes that move for the first part of the simulation and are stop
 comparing a monolithic deployment,
 in which every component runs on its owner,
 against one that offloads some components to infrastructural devices.
+%
+The collective components are written in ScaFi and the runs are simulated in Alchemist (\cref{subsec:cas-platforms}),
+with an integration that enacts the execution model of \cref{subsec:pulverization-execution-model} --
+component instances scheduled independently of one another, messages relayed hop by hop --
+in place of the single, undivided round per device that plain aggregate computing assumes~\cite{casadei2022scafi,DBLP:journals/jos/PianiniMV13}.
 
 \begin{figure}[t]
     \centering
@@ -353,25 +491,36 @@ Larger networks take longer to agree on a stable partition and produce noisier e
 but every network size drives the offloaded deployment onto the same region count as the monolithic one once movement stops,
 regardless of how many components were forwarded and to which surrogate.
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\textwidth]{power-consumption.pdf}
-    \caption[Battery level and messages exchanged, monolithic vs. offloaded]{Average battery level (left) and cumulative messages exchanged (right) by application devices, under a monolithic and an offloaded deployment. Data from~\cite{DBLP:conf/acsos/FarabegoliVC24}.}
-    \label{fig:power-consumption}
-\end{figure}
+\section{Discussion}
+\label{sec:pulverization-discussion}
 
-\Cref{fig:power-consumption} isolates the non-functional side of the same experiment:
-offloading components to infrastructural devices leaves application devices with more battery over the course of the run,
-at the cost of a modest increase in the number of messages exchanged --
-the price of the extra hops a forwarding chain introduces,
-paid in bandwidth rather than in energy or correctness.
+The partitioning developed here and the original five-component one cut along different axes.
+Casadei et al.\ divide a logical device by the stages of its execution cycle -- sensing, actuation, behaviour, state, communication -- and obtain the same five deployable units for every application~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+This chapter divides a macro-program by its own data flow, and obtains one unit per component of that flow.
+The two cuts are orthogonal rather than competing:
+a component of the \ac{DAG} is itself a small logical device, with its own sensing, state, and communication concerns,
+so the five-role decomposition can be applied inside a component once the data-flow decomposition has fixed what the components are.
+Nothing in the model forbids this, and the middleware built for the five-role case already places units of exactly that kind~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
 
-Because deployment independence holds for any correct deployment,
-the mapping from components to devices can safely be revised while the system runs,
-not only once at release time,
-and the choice between deployments can then be driven entirely by non-functional concerns -- capability, load, energy -- without risking the application's correctness.
+The model has three limits.
+First, component instances are assumed to carry no state beyond what their round-inputs supply,
+which is what allows a surrogate to serve many owners as one and a chain to be extended without bookkeeping;
+a component holding private state across rounds would break that collapsing, not the theorem.
+Second, \cref{thm:deployment-independence} is a statement about eventual behaviour.
+It licenses any correct deployment as functionally equivalent to any other, and says nothing about how fast each converges,
+so a deployment chosen on non-functional grounds can still be a poor one on timing grounds.
+Third, and most consequential for the rest of the thesis, the deployment is here taken as given.
+The model says which deployments are admissible and that the choice among them is functionally free;
+it does not say how the choice is made, nor who revises it as the infrastructure drifts.
+
+That freedom is what makes the choice worth automating.
+Because deployment independence holds for every correct deployment,
+the mapping from components to devices can be revised while the system runs, not only fixed at release time,
+and the revision can be driven entirely by non-functional concerns -- capability, load, energy --
+without putting the application's correctness at stake.
 %
-\Cref{chap:deployment-and-reconfiguration} exploits this same property, on top of the model defined here, to turn deployment into an explicit runtime control problem.
+\Cref{chap:deployment-and-reconfiguration} takes up that problem on top of the model defined here,
+turning deployment into an explicit runtime control problem and measuring what offloading buys in energy terms.
 %
-\Cref{chap:language-and-coordination} returns to the paradigms surveyed in \cref{chap:programming-models} from the other side,
+\Cref{chap:language-and-coordination} approaches the same model from the other side,
 unifying how aggregate computing, choreographic programming, and multitier programming each produce the kind of deployable component this chapter has defined.

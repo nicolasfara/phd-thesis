@@ -1,6 +1,7 @@
 % A macro-program as a DAG of components, with ports and bindings labelled.
 % Requires in the preamble: \usepackage{tikz}
 %   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+%   \usepackage{notation}  (for \component and \port)
 % Include with a normal figure environment, e.g. \input{figures/macro-program-dag}.
 \begin{tikzpicture}[
   >=Latex,
@@ -11,10 +12,10 @@
 ]
 
 % ---------- components ----------
-\node[comp] (c1) at (0,3.4)     {$c_1$};
-\node[comp] (c3) at (-1.5,1.7)  {$c_3$};
-\node[comp] (c2) at (1.5,1.7)   {$c_2$};
-\node[comp] (c4) at (0,0)       {$c_4$};
+\node[comp] (c1) at (0,3.4)     {$\component_1$};
+\node[comp] (c3) at (-1.5,1.7)  {$\component_3$};
+\node[comp] (c2) at (1.5,1.7)   {$\component_2$};
+\node[comp] (c4) at (0,0)       {$\component_4$};
 
 % ---------- ports ----------
 \node[port] (c1o)  at (c1.south) {};
@@ -26,15 +27,16 @@
 \node[port] (c4ir) at ([xshift=4mm]c4.north) {};
 \node[port] (c4o)  at (c4.south) {};
 
-% ---------- bindings ----------
-\draw[bind] (c1o) to[out=200,in=90]  (c3i);
-\draw[bind] (c1o) to[out=-20,in=90]  (c2i);
-\draw[bind] (c3o) to[out=-90,in=160] (c4il);
-\draw[bind] (c2o) to[out=-90,in=20]  (c4ir);
+% ---------- bindings (labelled with the port they share) ----------
+\draw[bind] (c1o) to[out=200,in=90]  node[midway,left,font=\scriptsize]  {$\port_1$} (c3i);
+\draw[bind] (c1o) to[out=-20,in=90]  node[midway,right,font=\scriptsize] {$\port_1$} (c2i);
+\draw[bind] (c3o) to[out=-90,in=160] node[midway,left,font=\scriptsize]  {$\port_3$} (c4il);
+\draw[bind] (c2o) to[out=-90,in=20]  node[midway,right,font=\scriptsize] {$\port_2$} (c4ir);
 
 % ---------- global output port ----------
 \draw (c4o) -- ++(0,-3mm);
 \draw ([yshift=-3mm]c4o) ++(-2mm,0) -- ++(4mm,0);
+\node[anchor=east,font=\scriptsize] at ([xshift=-1mm,yshift=-2mm]c4o) {$\port_4$};
 
 % ---------- enclosing macro-program box ----------
 \begin{scope}[on background layer]

@@ -1,6 +1,7 @@
 % The same macro-program, with each component classified as local or collective.
 % Requires in the preamble: \usepackage{tikz}
 %   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+%   \usepackage{notation}  (for \component)
 % Include with a normal figure environment, e.g. \input{figures/local-collective-components}.
 \begin{tikzpicture}[
   >=Latex,
@@ -13,10 +14,10 @@
 ]
 
 % ---------- components ----------
-\node[comp]     (c1) at (0,3.4)     {$c_1$};
-\node[collcomp] (c3) at (-1.5,1.7)  {$c_3$};
-\node[collcomp] (c2) at (1.5,1.7)   {$c_2$};
-\node[comp]     (c4) at (0,0)       {$c_4$};
+\node[comp]     (c1) at (0,3.4)     {$\component_1$};
+\node[collcomp] (c3) at (-1.5,1.7)  {$\component_3$};
+\node[collcomp] (c2) at (1.5,1.7)   {$\component_2$};
+\node[comp]     (c4) at (0,0)       {$\component_4$};
 
 % ---------- ports ----------
 \node[port] (c1o)  at (c1.south) {};

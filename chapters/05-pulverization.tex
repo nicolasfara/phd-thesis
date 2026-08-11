@@ -22,9 +22,10 @@ a model of what the unit being mapped actually is.
 
 This chapter supplies that model.
 %
-\Cref{sec:pulverization-motivation} recalls why the original, fixed-role pulverisation and its declarative,
+\Cref{sec:pulverization-motivation} recalls why the original,
+fixed-role pulverisation and its declarative,
 runtime-reconfigurable extension are not enough on their own,
-and states the more general, orthogonal partitioning this thesis develops instead.
+and states the more general, orthogonal partitioning this approach develops instead.
 %
 \Cref{sec:pulverization-abstractions} gives that partitioning its core abstractions:
 the physical devices a macro-program runs on and the infrastructure that can support it,
@@ -51,41 +52,44 @@ so a generic pulverisation middleware can be built once and reused across applic
 %
 The same fixed decomposition is also a limitation.
 %
-A logical device's behaviour component can itself be arbitrarily complex,
-for instance an entire aggregate-computing program combining several collective computations,
-yet the original model can only ever place that whole component as one unit,
+A logical device's behaviour component can itself be arbitrarily complex:
+it may be an entire aggregate-computing program combining several collective computations.
+%
+The original model can only place that whole component as one unit,
 regardless of whether its internal parts have different resource needs,
 different degrees of collectiveness,
 or different natural hosts.
 
 PulvReAKt, the runtime and pair of \acp{DSL} developed in this thesis' own prior work,
-closes one half of this gap without touching the other~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+makes the component-to-host assignment revisable at runtime,
+but leaves the fixed five-role partitioning unchanged~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
 %
 It attaches a \emph{capability} to every pulverised component and to every host,
-so that a component can only be deployed where the host's capabilities are a superset of what the component requires,
-and it lets that assignment be revised at runtime,
+so that a component can only be deployed where the host's capabilities are a superset of what the component requires.
+%
+A decentralised middleware revises that assignment at runtime,
 declaratively and without touching the application logic,
-through a decentralised middleware that relocates components as capabilities change --
-for instance,
-moving a behaviour component off a device whose battery is degrading and onto a nearby host that still has the capability to run it.
+relocating components as capabilities change.
 %
-This is an advance on the runtime-flexibility side of the problem:
-a pulverised system can now adapt its own deployment as conditions change,
-rather than being fixed at release time.
+The middleware might, for instance, move a behaviour component off a device whose battery is degrading and onto a nearby host that still has the capability to run it.
 %
-It leaves the partitioning itself untouched, however:
+A pulverised system built this way can adapt its own deployment as conditions change,
+rather than have that deployment fixed at release time.
+%
+What stays fixed is the partitioning itself:
 every logical device still decomposes into exactly the same five roles,
 so the number and kind of deployable units a system offers never varies with what the application actually computes,
-and each logical device still corresponds, in essence, to a single physical device to be relocated as a whole.
+and each logical device still corresponds to a single physical device, relocated as a whole.
 
 The model this thesis develops for the rest of Part II generalises pulverisation along an orthogonal axis:
 instead of a catalogue of execution concerns fixed once and for all,
 it partitions a macro-program along its own data-flow structure~\cite{DBLP:conf/acsos/FarabegoliVC24}.
 %
 A macro-program decomposes into as many independently deployable components as its own logic warrants,
-connected in an arbitrary graph rather than assigned one of five fixed slots,
-and each component is classified by whether its computation genuinely needs to coordinate with neighbouring devices or not,
-independently of what part of the original five-role catalogue it would have corresponded to.
+connected in an arbitrary graph rather than assigned one of five fixed slots.
+%
+Each component is then classified by whether its computation needs to coordinate with neighbouring devices,
+independently of which part of the original five-role catalogue it would have corresponded to.
 
 The rescue operation the model was first developed for shows why the difference matters.
 Citizens carry wearables that sample biometric data;
@@ -94,6 +98,15 @@ Acquiring biometric data is a local computation tied to the sensors of one devic
 while locating emergencies and steering rescuers towards them are collective computations a nearby edge server could run just as well.
 A decomposition that assigns all of this to one behaviour component cannot express any of these differences.
 %
+\Cref{fig:rescue-case-study} shows the resulting five-component macro-program, with Emergency Service and Steering Service marked as collective.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/rescue-case-study}
+    \caption[The rescue case study as a five-component macro-program]{The macro-program behind the rescue scenario, drawn from~\cite{DBLP:conf/acsos/FarabegoliVC24}. \emph{Biometrics Acquisition} is local and is the macro-program's source. \emph{Emergency Service} and \emph{Steering Service}, both collective, detect emergencies and steer rescuers towards them using neighbouring devices' data. \emph{Navigation System} and \emph{Data Analysis} are local sinks, each with a global output port: the former drives the rescuer's actuator, the latter persists data in the cloud.}
+    \label{fig:rescue-case-study}
+\end{figure}
+
 Three goals follow.
 First, the partitioning of a macro-program should follow the macro-program's own data-flow structure,
 not a catalogue of execution concerns fixed before the application is written.
@@ -102,8 +115,9 @@ and to be deployed and executed independently of the others.
 Third, what the macro-program computes should not depend on which of the admissible deployments was chosen.
 %
 \Cref{sec:pulverization-abstractions} develops the partitioning that meets the first two goals;
-\cref{sec:pulverization-semantics} proves the third,
-and so shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
+\cref{sec:pulverization-semantics} proves the third.
+%
+Proving the third shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
 
 \section{Core Abstractions}
 \label{sec:pulverization-abstractions}
@@ -156,7 +170,6 @@ and,
 dually,
 a set of actuators through which the macro-program acts back on the physical process it monitors.
 
-What is fixed here and what moves shapes everything that follows.
 The two device sets $\deviceIdSet$ and $\ihostIdSet$ are assumed fixed,
 whereas $\pnbrhood$ -- and with it $\nbrhood$ -- evolves in time as devices move.
 A deployment is therefore stated against a topology that changes underneath it,
@@ -231,7 +244,7 @@ A component that turns one device's own readings into a per-device classificatio
 a component whose output at one device depends on the same computation running at its neighbours -- propagating a value outward from a source,
 or agreeing on a shared partition of the network into regions -- is collective.
 %
-\Cref{fig:local-collective-components} marks the distinction on the same four-component macro-program of \cref{fig:macro-program-dag}.
+\Cref{fig:local-collective-components} marks the distinction on the same four-component macro-program of \Cref{fig:macro-program-dag}.
 
 \begin{figure}[t]
     \centering

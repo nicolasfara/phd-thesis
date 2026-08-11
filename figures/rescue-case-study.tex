@@ -1,0 +1,63 @@
+% The rescue case study as a five-component macro-program, with each
+% component named after its role in the scenario rather than drawn with the
+% abstract $\component_i$ notation of figures/macro-program-dag.tex and
+% figures/local-collective-components.tex. Structure taken from Farabegoli,
+% Viroli, and Casadei (ACSOS 2024).
+% Requires in the preamble: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+% Include with a normal figure environment, e.g. \input{figures/rescue-case-study}.
+\begin{tikzpicture}[
+  >=Latex,
+  font=\small,
+  comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=22mm,minimum height=9mm,align=center},
+  collcomp/.style={comp,double,double distance=0.6pt,fill=orange!10,draw=orange!55!black},
+  port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
+  bind/.style={->,thick,black!75},
+]
+
+% ---------- components ----------
+\node[comp]     (ba) at (-1.5,5.0)  {\begin{tabular}[c]{c}Biometrics\\Acquisition\end{tabular}};
+\node[collcomp] (es) at (-1.5,3.3)  {\begin{tabular}[c]{c}Emergency\\Service\end{tabular}};
+\node[collcomp] (ss) at (-1.5,1.6)  {\begin{tabular}[c]{c}Steering\\Service\end{tabular}};
+\node[comp]     (ns) at (-1.5,-0.1) {\begin{tabular}[c]{c}Navigation\\System\end{tabular}};
+\node[comp]     (da) at (2.1,2.45)  {\begin{tabular}[c]{c}Data\\Analysis\end{tabular}};
+
+% ---------- ports ----------
+\node[port] (bao)  at (ba.south) {};
+\node[port] (esi)  at (es.north) {};
+\node[port] (eso)  at (es.south) {};
+\node[port] (ssi)  at (ss.north) {};
+\node[port] (sso)  at (ss.south) {};
+\node[port] (nsi)  at (ns.north) {};
+\node[port] (nso)  at (ns.south) {};
+\node[port] (dai1) at ([yshift=4mm]da.west)  {};
+\node[port] (dai2) at ([yshift=-4mm]da.west) {};
+\node[port] (dao)  at (da.south) {};
+
+% ---------- bindings ----------
+\draw[bind] (bao) -- (esi);
+\draw[bind] (eso) -- (ssi);
+\draw[bind] (sso) -- (nsi);
+\draw[bind] (bao) to[out=0,in=180]   (dai1);
+\draw[bind] (eso) to[out=-15,in=180] (dai2);
+
+% ---------- global output ports ----------
+\draw (nso) -- ++(0,-3mm);
+\draw ([yshift=-3mm]nso) ++(-2mm,0) -- ++(4mm,0);
+\draw (dao) -- ++(0,-3mm);
+\draw ([yshift=-3mm]dao) ++(-2mm,0) -- ++(4mm,0);
+
+% ---------- enclosing macro-program box ----------
+\begin{scope}[on background layer]
+  \node[draw,rounded corners,fill=gray!3,fit=(ba)(es)(ss)(ns)(da),inner sep=6mm] (mp) {};
+\end{scope}
+\node[anchor=south,font=\small] at (mp.north) {macro-program};
+
+% ---------- legend ----------
+% This figure appears before \subsec{local-collective-components} formally
+% defines the double-border convention, so a one-line reminder is kept here
+% (unlike the abstract-notation figures later in the chapter, which rely on
+% that earlier definition and carry no legend of their own).
+\node[anchor=north,font=\scriptsize,gray!60] at ([yshift=-2mm]mp.south) {double border marks a collective component};
+
+\end{tikzpicture}

@@ -40,14 +40,17 @@ This chapter takes up that problem from the language side.
 \Cref{sec:multiparty-motivation} sets out a scenario that needs all three paradigms and states why combining them ad hoc costs the guarantees each provides on its own.
 %
 \Cref{sec:capabilities-unification} answers with \camil,
-a framework in which each paradigm is modelled as a \emph{capability} -- a value whose possession authorises a class of operations -- and placement types are the interface through which paradigms exchange values.
+a framework in which each paradigm is modelled as a \emph{capability}: a value whose possession authorises a class of operations.
+%
+Placement types are the interface through which paradigms exchange values.
 %
 \Cref{sec:camil-realisation} shows how Scala~3's contextual abstractions, capture checking, and separation checking make the discipline statically enforceable, and states the soundness result that backs it.
 %
 \Cref{sec:camil-evaluation} reports what the design buys, on 46 use cases from the literature and on two applications that mix paradigms in one program.
 %
 \Cref{sec:scalatropy} reaches the same goal along a different route:
-ScalaTropy unifies choreographic and multitier programming through monadic communication primitives rather than capabilities,
+ScalaTropy does not model a paradigm as a capability;
+it unifies choreographic and multitier programming through monadic communication primitives,
 and adds the differentiated communication schemes neither paradigm offers.
 %
 \Cref{sec:language-coordination-discussion} closes by relating the two designs to each other and to the components of \cref{chap:pulverization}.
@@ -155,9 +158,10 @@ and nothing checks that the peer reading it is a peer that may read it.
 %
 Worse, a paradigm's own guarantees can be broken from outside.
 %
-A choreography is deadlock-free because its projection fixes who sends and who receives;
-place one of its blocks inside a multitier scope belonging to a different peer and the send may never be executed,
-leaving the receiver waiting for a message no one will produce.
+A choreography is deadlock-free because its projection fixes who sends and who receives.
+%
+That guarantee breaks if one of its blocks is nested inside a multitier scope belonging to a different peer:
+the send may then never execute, leaving the receiver waiting for a message no one will produce.
 
 What is missing is a common notion of where a value lives and of which operations a given piece of code is entitled to perform.
 %
@@ -169,12 +173,17 @@ The rest of this chapter supplies both.
 \camil models each paradigm as a capability~\cite{Farabegoli:2026:CaMiL}.
 %
 A capability is a value that represents the authority to perform a class of operations:
-code that does not hold it cannot invoke them, and authority therefore flows through explicit program structure rather than through ambient state.
+code that does not hold it cannot invoke them.
 %
-\Cref{subsec:direct-style-effect-systems} reviewed the line of work this draws on --
+Authority therefore flows through explicit program structure alone;
+no ambient state can grant it.
+%
+\Cref{subsec:direct-style-effect-systems} reviewed the line of work this draws on:
 object capabilities as unforgeable references~\cite{miller2003capability},
 capability passing as a language design~\cite{brachthaeuser2020effekt,10.1145/3428194},
-and capture checking, which brings capability tracking into Scala's type system so that what a value may use becomes part of its type~\cite{DBLP:journals/toplas/BoruchGruszeckiOLLB23}.
+and capture checking~\cite{DBLP:journals/toplas/BoruchGruszeckiOLLB23}.
+%
+Capture checking brings capability tracking into Scala's type system, so that what a value may use becomes part of its type.
 
 \begin{table}[t]
     \centering
@@ -203,7 +212,8 @@ and the type system resolves them from the surrounding lexical context.
 Two consequences follow, and they are the whole design.
 %
 First, an operation of a paradigm is available exactly where that paradigm's capability is,
-so the scopes of different paradigms are separated by construction rather than by convention.
+so the scopes of different paradigms are separated by construction.
+No convention has to keep them apart.
 %
 Second, the separation is not isolation:
 placement types are shared by all four capabilities, and are therefore the designated interface through which paradigms hand values to one another.
@@ -313,8 +323,6 @@ a stream that emits a fresh density value at every round, placed on the phones t
 %
 That the result carries a placement type is what later lets other paradigms consume it.
 
-One constraint deserves attention.
-%
 A collective computation requires its peer type to be tied to itself with multiple cardinality.
 %
 This makes explicit an assumption that aggregate computing usually leaves implicit:
@@ -431,9 +439,10 @@ each of which computes its own local estimate.
 %
 The multitier scope then gathers those signals at the cloud with \code{asLocalAll} and subscribes to each (\cref{line:comp-collect-all}).
 %
-Two execution models meet here -- rounds on one side, tier-crossing access on the other --
-and the placed signal is what mediates between them:
-the collective side decides when a value is produced, the multitier side decides who observes it.
+Two execution models meet here: rounds on one side, tier-crossing access on the other.
+%
+The placed signal mediates between them:
+the collective side decides when a value is produced, and the multitier side decides who observes it.
 
 \subsection{Safety Properties}
 \label{subsec:capability-safety}
@@ -478,7 +487,8 @@ The function is sent to the cloud (\cref{line:leak-comm}) and invoked (\cref{lin
 where the captured string is not reachable.
 %
 The peer-specific capability the closure needs to perform its \code{take} is tracked in the closure's type,
-so \camil rejects the program at compile time rather than failing at run time.
+so \camil rejects the program at compile time.
+It never reaches a state where the \code{take} fails at run time.
 
 \paragraph{Deadlock avoidance.}
 An \code{on} block executes its body only on the peer its type names, and skips it everywhere else --
@@ -506,7 +516,7 @@ because it sits inside a block the cloud skips (\cref{line:dl-outer}).
 %
 The phone then waits on \cref{line:dl-comm} for a value that is never produced.
 %
-\camil rejects this at compile time too, and \cref{subsec:scala3-machinery} explains by what mechanism.
+\camil rejects this at compile time too; \cref{subsec:scala3-machinery} explains the mechanism that catches it.
 
 \section{Realisation}
 \label{sec:camil-realisation}
@@ -562,8 +572,8 @@ It extends \code{Erased}, so it exists only for type-level tracking and has no r
 The operations require a \code{Scope[SC]} together with evidence that \code{SC} is exactly \code{MultitierScope} (\cref{line:mt-evidence}),
 which is what confines them to the innermost multitier scope.
 %
-The only way to obtain that capability is \code{apply} (\cref{line:mt-apply}),
-which hands it to the block through a context function, and which itself requires \code{Multitier} to be available.
+The only way to obtain that capability is \code{apply} (\cref{line:mt-apply}).
+It hands the capability to the block through a context function, and it itself requires \code{Multitier} to be available.
 %
 \code{Collective} and \code{Choreography} have the same shape.
 
@@ -647,11 +657,14 @@ Each paradigm contributes its own constructs and its own rules on top of this co
 and \code{collective}, \code{rep}, \code{nbr}, and \code{branch} for aggregate computing,
 the last of these reading and updating $\vmstate$.
 %
-One detail of the typing is worth stating, because it is where the capability discipline does its work:
+One detail of the typing is where the capability discipline does its work:
 the rule for \code{on} removes the placement capability from the context of the body and adds the capability for the peer being entered.
 %
-Peer-specific authority is therefore consumed rather than propagated,
-which is what makes the leak of \cref{lst:leak-prevention} ill-typed instead of merely unwise.
+Peer-specific authority is therefore consumed:
+the rule discards it once the body's scope closes, and never carries it into whatever the body returns.
+%
+This is what makes the leak of \cref{lst:leak-prevention} ill-typed.
+The program is not merely unwise; the type system rejects it.
 
 The calculus is well behaved under two conditions:
 the peer configuration must satisfy the architecture --
@@ -689,9 +702,8 @@ but because there is no well-typed way for them to interact except through place
 
 The first question is whether one capability-based framework can express what three separate paradigms express.
 %
-\Cref{tab:camil-use-cases} lists 46 use cases collected from the multitier, choreographic, and aggregate literature,
-across seven domains,
-each of which was reimplemented in \camil~\cite{Farabegoli:2026:CaMiL}.
+\Cref{tab:camil-use-cases} lists 46 use cases collected from the multitier, choreographic, and aggregate literature across seven domains;
+each use case was reimplemented in \camil~\cite{Farabegoli:2026:CaMiL}.
 
 \begin{table}[t]
     \centering
@@ -832,8 +844,10 @@ round coordination as a choreographic protocol between the coordinator and the p
 the distance-based neighbour policy as an aggregate program,
 and dashboard reporting as multitier code.
 %
-The aggregate layer computes topology information, which the choreographic protocol uses to decide who participates in a round and the dashboard uses to report status;
-the choreographic layer produces the global model and the round summaries, which the dashboard consumes.
+The aggregate layer computes topology information:
+the choreographic protocol uses it to decide who participates in a round, and the dashboard uses it to report status.
+%
+The choreographic layer, in turn, produces the global model and the round summaries that the dashboard consumes.
 
 Three measurements make the difference concrete.
 %
@@ -846,8 +860,10 @@ become a single aggregate program, with neighbour discovery and message exchange
 The 60 kinds of message and action the original networking layer needs to express communication across hosts
 become seven explicit cross-host communication terms.
 %
-None of these is a performance result:
-what they measure is how much coordination code disappears when the coordination structure is stated in the language rather than assembled from callbacks.
+None of these is a performance result.
+%
+What they measure is how much coordination code disappears once the coordination structure is stated directly in the language.
+The original expressed that same structure by assembling it from callbacks.
 
 \section{Monadic Communication Primitives}
 \label{sec:scalatropy}
@@ -861,7 +877,7 @@ It unifies choreographic and multitier programming through the monadic sequencin
 a coordination program is a pipeline of communication steps composed with bind,
 and the interpreter chosen for that pipeline decides whether the steps are real network exchanges or a local simulation.
 %
-Along the way it addresses something neither paradigm handles well:
+ScalaTropy also addresses something neither paradigm handles well:
 both offer point-to-point communication and little else,
 so sending a different message to each of several recipients has to be encoded, usually by broadcasting and filtering.
 
@@ -975,8 +991,8 @@ sensors reporting their own readings to an aggregator is the fan-in dual of the 
 %
 HasChor, a monadic choreographic language in Haskell, provides only the point-to-point case~\cite{10.1145/3607849}.
 %
-ScalaLoci covers all four, but the differentiated ones are expressed at the type level rather than by a communication operation,
-which makes them read indirectly:
+ScalaLoci covers all four, but the differentiated ones are expressed at the type level, not by a dedicated communication operation.
+This makes them read indirectly:
 an anisotropic assignment is a value of type \code{Signal[Task] per Worker on Master}, built by a function from a remote reference to a signal,
 and the reader has to reconstruct the communication pattern from the type.
 %
@@ -1104,9 +1120,10 @@ the placement types name peer \emph{types}, and the instances are supplied at ru
 \subsection{Monadic Realisation}
 \label{subsec:scalatropy-monad}
 
-Abstracting over the monad \code{F}, rather than fixing one,
-is the tagless-final encoding~\cite{DBLP:journals/jfp/CaretteKS09}:
-a program is written against the abstract interface of \cref{lst:scalatropy-multiparty}, and an interpreter supplies the meaning of each operation.
+\Cref{lst:scalatropy-multiparty} leaves the monad \code{F} abstract.
+%
+This is the tagless-final encoding~\cite{DBLP:journals/jfp/CaretteKS09}:
+a program is written against the abstract interface, and an interpreter supplies the meaning of each operation.
 %
 This is the separation \cref{subsec:monadic-effects} described for Cloud Haskell's process monad,
 put to the same use:
@@ -1128,8 +1145,9 @@ otherwise the body is skipped and a \code{Remote} is returned.
 %
 A communication primitive sends when it holds a \code{Local} and pulls from the network when it holds a \code{Remote}.
 %
-This is endpoint projection performed at run time rather than by a compiler,
-the same strategy that census-polymorphic choreographic programming uses to avoid fixing the participants at compile time~\cite{DBLP:journals/pacmpl/BatesKJSKN25}.
+This is endpoint projection performed at run time: no compiler projects the choreography onto its participants ahead of time.
+%
+It is the same strategy that census-polymorphic choreographic programming uses to avoid fixing the participants at compile time~\cite{DBLP:journals/pacmpl/BatesKJSKN25}.
 
 Underneath sits a network capability with a deliberately small interface:
 send a value to an address, receive one from an address, report the live instances of a peer type, and name the local host.
@@ -1195,9 +1213,9 @@ where a choreographic implementation would need the replica count fixed statical
     \label{fig:communication-overhead}
 \end{figure}
 
-Differentiated primitives are not only a matter of how the program reads.
+The case for differentiated primitives made so far rests on how the program reads.
 %
-\Cref{fig:communication-overhead} measures what they cost on the wire,
+\Cref{fig:communication-overhead} adds a second argument: what they cost on the wire,
 using a matrix-vector product over a fixed $50\times50$ matrix in which the master partitions the rows and distributes a distinct block to each worker.
 %
 The broadcast variant grows linearly in the number of workers,
@@ -1209,8 +1227,8 @@ differing only in the primitive the scatter uses:
 \code{isotropicComm} in one, \code{anisotropicComm} in the other.
 %
 It is therefore evidence about the cost of encoding a selective pattern as broadcast-and-filter,
-not a comparison against HasChor or ScalaLoci,
-and it measures bytes rather than time.
+not a comparison against HasChor or ScalaLoci.
+It measures bytes; no timing result is reported.
 %
 Two further arguments for the same primitives are qualitative:
 sending each recipient only what it needs is least privilege applied to communication,
@@ -1229,9 +1247,9 @@ a coordination program is a monadic pipeline, and what a piece of code may do fo
 %
 They agree on the interface between paradigms.
 %
-Both adopt placement types from multitier programming and both encode the architecture as ties with cardinalities,
-which is a point worth stating plainly:
-of the three paradigms of \cref{sec:foundational-paradigms}, it is multitier programming that supplies the vocabulary the others are expressed in,
+Both adopt placement types from multitier programming and both encode the architecture as ties with cardinalities.
+%
+Of the three paradigms of \cref{sec:foundational-paradigms}, it is multitier programming that supplies the vocabulary the others are expressed in,
 because it is the only one that already reifies location.
 
 Their scope differs.
@@ -1239,15 +1257,18 @@ Their scope differs.
 \camil covers all three paradigms and proves that the combination is sound;
 ScalaTropy covers two and defers its metatheory, but supplies the differentiated communication primitives that \camil, like the paradigms it unifies, does not provide.
 %
-The two are complementary rather than competing:
-nothing in \camil's capability design requires point-to-point communication as its only choreographic primitive,
+The two designs are complementary.
+%
+Nothing in \camil's capability design requires point-to-point communication as its only choreographic primitive,
 and the four patterns of \cref{subsec:communication-patterns} would be a natural extension of its \code{Choreography} capability.
 
 Both designs have a cost, and it is the same one.
 %
-\camil rejects nested placed scopes, which existing multitier languages allow;
-that restriction is what buys deadlock avoidance, since the nesting it forbids is exactly the nesting that deadlocks,
-but it does rule out programs a multitier language would accept.
+\camil rejects nested placed scopes, which existing multitier languages allow.
+%
+That restriction is what buys deadlock avoidance: the nesting it forbids is exactly the nesting that deadlocks.
+%
+It also rules out programs a multitier language would accept.
 %
 ScalaTropy's strong architecture makes the same trade in a milder form:
 a choreography that assumes everyone can reach everyone has to be given an architecture before it can be written.

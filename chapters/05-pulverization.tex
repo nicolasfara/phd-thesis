@@ -73,8 +73,8 @@ relocating components as capabilities change.
 %
 The middleware might, for instance, move a behaviour component off a device whose battery is degrading and onto a nearby host that still has the capability to run it.
 %
-A pulverised system built this way can adapt its own deployment as conditions change,
-rather than have that deployment fixed at release time.
+A pulverised system built this way can adapt its own deployment as conditions change.
+The deployment is not fixed at release time.
 %
 What stays fixed is the partitioning itself:
 every logical device still decomposes into exactly the same five roles,
@@ -86,7 +86,8 @@ instead of a catalogue of execution concerns fixed once and for all,
 it partitions a macro-program along its own data-flow structure~\cite{DBLP:conf/acsos/FarabegoliVC24}.
 %
 A macro-program decomposes into as many independently deployable components as its own logic warrants,
-connected in an arbitrary graph rather than assigned one of five fixed slots.
+connected in an arbitrary graph.
+No component is assigned one of five fixed slots.
 %
 Each component is then classified by whether its computation needs to coordinate with neighbouring devices,
 independently of which part of the original five-role catalogue it would have corresponded to.
@@ -122,18 +123,18 @@ Proving the third shows that generalising the partitioning this way does not cos
 \section{Core Abstractions}
 \label{sec:pulverization-abstractions}
 
-The four subsections that follow fix the model's vocabulary in the order the concepts depend on one another:
+The four subsections that follow introduce the model's vocabulary in the order the concepts build on one another:
 the devices a macro-program runs on and those that can support it,
 the structure of the macro-program itself,
 the classification of its components by whether they need their neighbours,
 and the mapping of components onto devices.
 %
-The notation is the one of the model's original formulation~\cite{DBLP:conf/acsos/FarabegoliVC24}.
-An overbar denotes a sequence,
-so $\overline\deviceId$ stands for $\deviceId_1,\dots,\deviceId_n$.
-Two overbarred variables occurring in the same term have the same length and are read element-wise:
-a map written $\envmap{\overline\deviceId}{\overline{x}}$ denotes $\envmap{\deviceId_1}{x_1},\dots,\envmap{\deviceId_n}{x_n}$,
-and is always functional, associating no element on the left with two distinct elements on the right.
+The notation follows the model's original formulation~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+An overbar denotes a sequence:
+$\overline\deviceId$ stands for $\deviceId_1,\dots,\deviceId_n$.
+When two overbarred variables occur in the same term, they have the same length and are read element-wise.
+A map written $\envmap{\overline\deviceId}{\overline{x}}$ thus denotes $\envmap{\deviceId_1}{x_1},\dots,\envmap{\deviceId_n}{x_n}$.
+Such a map is always functional: no element on the left is associated with two distinct elements on the right.
 
 \subsection{Application and Infrastructural Devices}
 \label{subsec:application-infrastructural-devices}
@@ -143,8 +144,8 @@ a set $\hostIdSet$ of physical devices connected by a reflexive,
 symmetric \emph{physical neighbourhood} relation $\pnbrhood$,
 with $(\deviceId,\deviceId') \in \pnbrhood$ holding exactly when $\deviceId$ and $\deviceId'$ can exchange messages directly.
 %
-Two roles are then singled out among these devices,
-not by any physical property but by the part they play in a given deployment.
+Two roles are then singled out among these devices.
+Each role reflects the part a device plays in a given deployment, not any physical property of the device itself.
 %
 \emph{Application devices} $\deviceIdSet \subseteq \hostIdSet$ are the devices that jointly execute a macro-program --
 robots in a swarm,
@@ -172,8 +173,8 @@ a set of actuators through which the macro-program acts back on the physical pro
 
 The two device sets $\deviceIdSet$ and $\ihostIdSet$ are assumed fixed,
 whereas $\pnbrhood$ -- and with it $\nbrhood$ -- evolves in time as devices move.
-A deployment is therefore stated against a topology that changes underneath it,
-which is what makes the guarantee of \cref{subsec:deployment-independence} something to prove rather than something to assume.
+A deployment is therefore stated against a topology that changes underneath it.
+This is why \cref{subsec:deployment-independence} proves its guarantee: the guarantee cannot simply be assumed.
 
 \subsection{The Macro-program as a DAG of Components}
 \label{subsec:macroprogram-dag}
@@ -215,17 +216,18 @@ $\port_1$ is read by two downstream components, and $\port_4$ is the single glob
 \end{figure}
 
 Because a macro-program is executed jointly by the set of application devices,
-each component is instantiated once per application device:
-each of the $|\deviceIdSet|$ instantiations yields a \emph{component instance},
-written $\component_i^j$ for the instance of $\component_i$ instantiated for device $\deviceId_j$,
-and component instances,
+each component is instantiated once per application device.
+Each of the $|\deviceIdSet|$ instantiations yields a \emph{component instance},
+written $\component_i^j$ for the instance of $\component_i$ instantiated for device $\deviceId_j$.
+Component instances,
 not components,
 are the model's actual units of execution and deployment.
 %
-This is the first departure from the original pulverisation model:
-where a logical device always decomposed into exactly five components,
-here the number of components -- and so the number of instances, per device, that a deployment must place -- is whatever the macro-program's own data-flow graph calls for,
-from one to arbitrarily many.
+This is the first departure from the original pulverisation model.
+There, a logical device always decomposed into exactly five components.
+Here, the number of components is whatever the macro-program's own data-flow graph calls for,
+from one to arbitrarily many,
+and the number of instances per device that a deployment must place follows the same count.
 
 \subsection{Local and Collective Components}
 \label{subsec:local-collective-components}
@@ -236,9 +238,9 @@ components are classified by what executing one of their instances requires.
 A component is \emph{local} if computing an instance is a pure transformation of that instance's own inputs into its output,
 with no dependency on any other device.
 %
-A component is \emph{collective} if computing an instance additionally requires interaction with instances of the \emph{same} component at neighbouring devices --
-the same neighbour-dependent computation that gives aggregate computing's fields their collective character (\cref{subsec:aggregate-computing}),
-now scoped to a single component of a larger macro-program rather than to the whole macro-program at once.
+A component is \emph{collective} if computing an instance additionally requires interaction with instances of the \emph{same} component at neighbouring devices.
+This is the same neighbour-dependent computation that gives aggregate computing's fields their collective character (\cref{subsec:aggregate-computing}),
+but here it is scoped to a single component of a larger macro-program, not to the whole macro-program at once.
 %
 A component that turns one device's own readings into a per-device classification is local;
 a component whose output at one device depends on the same computation running at its neighbours -- propagating a value outward from a source,
@@ -260,7 +262,8 @@ a downstream instance reads the values its upstream instances produced,
 exactly as the bindings of \cref{subsec:macroprogram-dag} prescribe.
 %
 \emph{Intra-component} interaction happens between instances of the \emph{same} collective component at \emph{neighbouring} devices,
-letting that component's result cohere across the network rather than being computed device by device in isolation.
+letting that component's result cohere across the network.
+No device computes that result in isolation.
 %
 Correspondingly, a component instance's round of computation produces a new state $\vtree$,
 from which the value $\val(\vtree) = \anyvalue$ read by downstream instances is extracted.
@@ -298,8 +301,8 @@ so that the whole map of neighbour states has to travel with it.
     \label{fig:intra-component-interaction}
 \end{figure}
 
-Because collectiveness is a property of individual components rather than of a logical device as a whole,
-a single macro-program can freely mix components that behave like self-organising, field-based services with components that behave like ordinary, non-coordinating ones,
+Collectiveness is a property of individual components, not of a logical device as a whole.
+A single macro-program can therefore freely mix components that behave like self-organising, field-based services with components that behave like ordinary, non-coordinating ones,
 composed in the same \ac{DAG}.
 %
 The original pulverisation model has no equivalent distinction:
@@ -315,9 +318,10 @@ Each such pair identifies a component instance $\component_i^j$ together with it
 %
 By default, an instance runs at its owner.
 %
-An owner may lack the sensors, actuators, computational capacity, or storage a component needs, or another device may simply be a more efficient host for it;
-in either case, the instance is offloaded to an infrastructural device acting as its \emph{surrogate} for that specific component,
-while the rest of the owner's components may stay local or be offloaded elsewhere -- a \emph{mixed} deployment, in which an application device runs some of its own components and forwards others.
+An owner may lack the sensors, actuators, computational capacity, or storage a component needs, or another device may simply be a more efficient host for it.
+In either case, the instance is offloaded to an infrastructural device acting as its \emph{surrogate} for that specific component.
+The rest of the owner's components may stay local or be offloaded elsewhere:
+an application device that runs some of its own components while forwarding others has a \emph{mixed} deployment.
 %
 \Cref{fig:pulverization-forwarding} shows one such mixed deployment for the macro-program of \cref{fig:macro-program-dag,fig:local-collective-components}.
 
@@ -353,11 +357,11 @@ Component instances carry no state of their own beyond what their round-inputs s
 so a surrogate that ends up hosting the same component forwarded by several owners -- as commonly happens when many devices forward the same component to a shared cloud host -- can treat those instances as one, without losing any owner-specific behaviour to collapse.
 
 Forwarding resembles what a multitier compiler does when it slices one program across statically known tiers (\cref{subsec:multitier-programming}),
-with two differences that matter for the continuum:
-the assignment is a per-component, per-device decision taken -- and revisable -- at runtime rather than fixed once at compile time,
-and it is driven by whether a host's exposed capabilities meet a component's requirements,
+but two differences matter for the continuum.
+The first concerns timing: the assignment is a per-component, per-device decision taken -- and revisable -- at runtime, not fixed once at compile time.
+The second concerns what drives the decision: forwarding follows whether a host's exposed capabilities meet a component's requirements,
 in the sense PulvReAKt already established for the fixed five-role case (\cref{sec:pulverization-motivation}),
-rather than by a static tier annotation written by the programmer.
+not a static tier annotation written by the programmer.
 
 \section{Semantics and Guarantees}
 \label{sec:pulverization-semantics}
@@ -384,11 +388,12 @@ downstream instances at the same device directly,
 or, if the component is offloaded, only once it has travelled the forwarding chain of \cref{subsec:forwarding-chains} in both directions:
 inputs and neighbour context outward to the surrogate, the result back to the owner.
 
-Precisely, this is a small-step operational semantics over a global network configuration,
+More precisely, this is a small-step operational semantics over a global network configuration,
 which maps each device to the messages currently pending for it,
-and which extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along the two axes this chapter has introduced:
-a configuration carries the states of many components composed in a \ac{DAG} rather than of one flat program,
-and messages travel one hop at a time along a forwarding chain rather than being exchanged only between owners.
+and which extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along the two axes this chapter has introduced.
+A configuration now carries the states of many components composed in a \ac{DAG},
+and messages travel one hop at a time along a forwarding chain.
+They are no longer exchanged only between owners.
 %
 Five families of transition suffice.
 A component instance \emph{fires}, consuming the four round-inputs and depositing the resulting state;
@@ -510,7 +515,7 @@ regardless of how many components were forwarded and to which surrogate.
 The partitioning developed here and the original five-component one cut along different axes.
 Casadei et al.\ divide a logical device by the stages of its execution cycle -- sensing, actuation, behaviour, state, communication -- and obtain the same five deployable units for every application~\cite{DBLP:journals/fi/CasadeiPPVW20}.
 This chapter divides a macro-program by its own data flow, and obtains one unit per component of that flow.
-The two cuts are orthogonal rather than competing:
+The two cuts are orthogonal, not competing:
 a component of the \ac{DAG} is itself a small logical device, with its own sensing, state, and communication concerns,
 so the five-role decomposition can be applied inside a component once the data-flow decomposition has fixed what the components are.
 Nothing in the model forbids this, and the middleware built for the five-role case already places units of exactly that kind~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.

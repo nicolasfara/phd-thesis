@@ -28,10 +28,10 @@
 \node[port] (c4o)  at (c4.south) {};
 
 % ---------- bindings (labelled with the port they share) ----------
-\draw[bind] (c1o) to[out=200,in=90]  node[midway,left,font=\scriptsize]  {$\port_1$} (c3i);
-\draw[bind] (c1o) to[out=-20,in=90]  node[midway,right,font=\scriptsize] {$\port_1$} (c2i);
-\draw[bind] (c3o) to[out=-90,in=160] node[midway,left,font=\scriptsize]  {$\port_3$} (c4il);
-\draw[bind] (c2o) to[out=-90,in=20]  node[midway,right,font=\scriptsize] {$\port_2$} (c4ir);
+\draw[bind] (c1o) to[out=200,in=90]  node[midway,left,font=\scriptsize,fill=white,inner sep=1pt]  {$\port_1$} (c3i);
+\draw[bind] (c1o) to[out=-20,in=90]  node[midway,right,font=\scriptsize,fill=white,inner sep=1pt] {$\port_1$} (c2i);
+\draw[bind] (c3o) to[out=-90,in=160] node[midway,left,font=\scriptsize,fill=white,inner sep=1pt]  {$\port_3$} (c4il);
+\draw[bind] (c2o) to[out=-90,in=20]  node[midway,right,font=\scriptsize,fill=white,inner sep=1pt] {$\port_2$} (c4ir);
 
 % ---------- global output port ----------
 \draw (c4o) -- ++(0,-3mm);

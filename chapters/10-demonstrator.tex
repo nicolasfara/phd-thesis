@@ -1,7 +1,483 @@
 \chapter{A Demonstrator for Self-organizing Robot Teams}
 \label{chap:demonstrator}
 
-% NOTE: end-to-end validation chapter: it integrates the pulverisation model
-% (\cref{chap:pulverization}), the language results
-% (\crefrange{chap:language-and-coordination}{chap:language-based-macroprogramming}),
-% and the deployment strategies (\crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn}).
+% NOTE: this chapter reports Project Emerge as the physical realisation of one
+% deployment admitted by the model of \cref{chap:pulverization}. The pulverisation
+% reading of its architecture is the thesis's own: the paper never uses that
+% vocabulary. Aggregate computing background lives in
+% \cref{subsec:aggregate-computing}; reference it instead of re-explaining.
+% The chapter does not exercise \crefrange{chap:language-and-coordination}{chap:heterogeneous-gnn};
+% \cref{sec:emerge-discussion} states that gap rather than claiming otherwise.
+
+Every claim this thesis has made about deployment has been checked in simulation.
+%
+The pulverisation model was validated in Alchemist (\cref{subsec:pulverization-validation}),
+the reconfiguration policies of \cref{chap:deployment-and-reconfiguration} in the same simulator,
+and the learned offloading policy of \cref{chap:heterogeneous-gnn} against a simulated continuum.
+%
+Simulation is the right instrument for the questions those chapters ask,
+because it makes topologies, failures, and network sizes controllable.
+It leaves one question open:
+whether a deployment the model admits can be built at all,
+on real devices,
+with the sensing and actuation those devices actually have.
+
+This chapter reports a system that answers it.
+%
+\emph{Project Emerge} is a toolchain for running a single aggregate program on a team of physical
+mobile robots,
+demonstrated publicly at the European Researchers' Night in 2024 and 2025~\cite{Farabegoli:2026:ProjectEmerge,DBLP:conf/coordination/AguzziBBCCDFPV25}.
+%
+Nine robots form spatial patterns and recover them after one of them is displaced by hand.
+%
+The interest here is not the patterns but where the computation runs:
+the robots carry an ESP32 microcontroller and no aggregate runtime at all,
+while a server evaluates the program on their behalf and returns actuation commands.
+%
+Read through \cref{chap:pulverization}, that arrangement is a deployment in the model's sense,
+with the robots as owners and the server as their shared surrogate.
+
+The correspondence is worth stating carefully,
+because it is the chapter's argument and it is not the paper's claim.
+%
+Project Emerge was built to make aggregate computing demonstrable on hardware,
+and it describes its own architecture as centralised,
+without reference to pulverisation.
+%
+What this chapter observes is that the deployment it arrived at,
+for reasons of its own -- microcontrollers too small to host a runtime --
+is one of the deployments \cref{thm:deployment-independence} licenses,
+and that the freedom the theorem grants is what would let the same program run elsewhere unchanged.
+%
+\Cref{sec:pulverization-discussion} left the deployment ``taken as given'';
+this chapter exhibits one given deployment, physically.
+
+\Cref{sec:emerge-requirements} states what running a macro-program on real robots demands of the
+substrate beneath it.
+%
+\Cref{sec:emerge-architecture} describes the toolchain that meets those demands,
+and \cref{sec:emerge-as-pulverisation} reads its deployment against the vocabulary of
+\cref{chap:pulverization}.
+%
+\Cref{sec:emerge-demonstration} reports what the robots did,
+and \cref{sec:emerge-discussion} states what the demonstrator establishes and what it leaves untouched.
+
+\section{What a Physical Deployment Requires}
+\label{sec:emerge-requirements}
+
+Aggregate computing assumes a device that senses, computes, and actuates in rounds
+(\cref{subsubsec:ac-execution-model}).
+%
+A simulator supplies all three by construction.
+On physical robots each has to be built, or substituted by something that stands in for it,
+and that gap is where a demonstrator's engineering effort goes.
+%
+Six requirements record that gap.
+
+\paragraph{Positioning.}
+A macro-program that computes movement needs to know where its devices are.
+%
+Position alone is not enough:
+a command to move in a direction is meaningless to a robot that does not know which way it is
+facing,
+so the positioning system must report \emph{orientation} as well.
+%
+Outdoors this can be satellite positioning; indoors, where the demonstrator runs, it cannot.
+
+\paragraph{Homogeneous program loading.}
+The behaviour of the whole team is specified by one program (\cref{sec:macro-programming}),
+which every robot must be running for the collective behaviour to be the one specified.
+%
+Loading it must not require shutting the team down.
+%
+During a switch from one version to another the two coexist,
+and they must not interfere while they do,
+until every robot has moved across.
+
+\paragraph{Neighbourhood policy.}
+A device's neighbours are a dynamic set,
+and in a physical deployment membership is decided by physical facts:
+proximity, line of sight, achievable data rate.
+%
+The substrate has to make that policy explicit and replaceable,
+rather than fixing one notion of adjacency.
+
+\paragraph{Actuation agnosticism.}
+What a round produces must not presuppose a chassis.
+%
+The program's output is an intention -- move this way, turn that way --
+and translating an intention into wheel or rotor commands belongs to the platform, not to the program.
+%
+Without that separation the same program cannot run on two different robots.
+
+\paragraph{Openness to platforms, and to where the program runs.}
+The previous requirement concerns which robots a program can drive;
+this one concerns which robots can drive themselves.
+%
+Platforms differ in computational capacity,
+so the substrate must be able to evaluate the program on the robot,
+or remotely on a supporting host that does it on the robot's behalf.
+%
+This is the requirement that matters most for this thesis,
+and \cref{sec:emerge-as-pulverisation} returns to it:
+the demonstrator states it, and satisfies only its remote half.
+
+\paragraph{Interaction.}
+Emergent behaviour is hard to trust and harder to demonstrate without seeing it.
+%
+An operator needs to observe device states and the fields the program computes,
+and to perturb the running system --
+displace a device, change a parameter, swap the program -- while it runs.
+
+\section{Architecture of the Demonstrator}
+\label{sec:emerge-architecture}
+
+Project Emerge meets those six requirements with five subsystems communicating over a single
+message broker:
+a localisation system, a neighbourhood manager, the aggregate runtime, a dashboard, and the robots
+themselves.
+%
+\Cref{fig:emerge-architecture} shows how they connect.
+%
+Using one broker for every exchange is what makes the robots replaceable by a simulator later on
+(\cref{sec:emerge-demonstration}),
+since nothing in the runtime knows whether the positions it reads come from a camera or from a
+simulation.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.85\textwidth]{emerge-architecture.pdf}
+    \caption[System-level architecture of the demonstrator]{System-level architecture of the demonstrator. The localisation system tracks robot positions, the neighbourhood system maintains the adjacency relation, the aggregate runtime evaluates the collective program, and the dashboard supports monitoring and perturbation. Solid arrows are message flows through the broker; dashed arrows are logical dependencies. Adapted from~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \label{fig:emerge-architecture}
+\end{figure}
+
+Localisation is a camera above the arena and a marker on each robot,
+processed by a computer-vision component that publishes each robot's identifier, position, and
+orientation.
+%
+This discharges the positioning requirement without putting any sensor on the robot,
+a substitution \cref{sec:emerge-as-pulverisation} examines.
+%
+The neighbourhood manager derives adjacency from those positions by spatial proximity,
+kept separate from the localisation component so that a different policy can replace it.
+%
+The dashboard renders robots, their neighbourhood relation, and the current program,
+and lets an operator drag a robot to a new position, retune a parameter, elect a leader, or load a
+different program.
+
+\subsection{The Aggregate Runtime}
+\label{subsec:emerge-runtime}
+
+The runtime is written in Scala on ScaFi, with the collective behaviours taken from MacroSwarm
+(\cref{subsec:cas-platforms}),
+and is factored into four abstractions plus an entry point.
+%
+The factoring is what carries the requirements of \cref{sec:emerge-requirements} into code.
+
+An \texttt{Environment} models the physical context of one evaluation:
+which robots are currently present, where each is, who its neighbours are, and what the sensors
+read.
+%
+An \texttt{EnvironmentProvider} builds that snapshot on demand,
+its broker-based implementation assembling it from the localisation and neighbourhood messages
+received so far.
+%
+An \texttt{EnvironmentUpdater} performs the reverse translation,
+taking what a round computed and delivering it to the robots.
+%
+An \texttt{Orchestrator} evaluates the program:
+given an environment, it computes, \emph{for each robot in it}, the program that robot is to run,
+evaluates it, and returns that robot's command.
+%
+The \texttt{AggregateService} composes the three into a loop that samples an environment,
+evaluates, and dispatches, at a fixed frequency.
+%
+\Cref{fig:emerge-execution-cycle} shows one turn of that loop.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.6\textwidth]{emerge-execution-cycle.pdf}
+    \caption[One evaluation cycle of the aggregate runtime]{One evaluation cycle of the aggregate runtime. The environment provider builds a logical network model from the physical robot states at time $t$; the orchestrator evaluates the aggregate program over it, producing actuation commands; the updater dispatches them; the robots execute them, carrying the system to $t+1$. Adapted from~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \label{fig:emerge-execution-cycle}
+\end{figure}
+
+The boundary between program and platform is a small set of commands:
+rotate by a vector, move forward along a vector, hold, stop.
+%
+A MacroSwarm program yields one of these rather than a motor setting --
+a prescriptive intention, in the vocabulary of \cref{subsec:cas-platforms},
+that the robot is expected to attempt.
+%
+The updater is what turns an intention into motion,
+and in the current system it does so for differential drive:
+a desired velocity vector becomes a pair of left and right wheel velocities.
+%
+Supporting a different chassis means writing a different updater and touching no program.
+
+Two features complete the picture.
+%
+The runtime loads one program for the whole team, and can be told to switch to another over the
+broker while the team is running.
+%
+And because every subsystem speaks only to the broker,
+a simulation engine can stand in for the robots and the camera together,
+publishing the same messages a physical arena would.
+
+\section{The Deployment as a Pulverised One}
+\label{sec:emerge-as-pulverisation}
+
+The description just given is the demonstrator's own.
+%
+Restated in the terms of \cref{chap:pulverization}, it describes a deployment,
+and the restatement is exact enough to be worth doing term by term.
+%
+Nothing in this section is a claim the demonstrator makes about itself.
+
+The nine robots are the application devices $\deviceIdSet$:
+they carry the actuators the macro-program drives, and each of them owns an instance of its
+behaviour.
+%
+None of them executes that instance.
+%
+The server hosting the runtime is an infrastructural device,
+and it is the surrogate for every robot's behaviour component --
+the case \cref{subsec:forwarding-chains} anticipated,
+in which many owners forward the same component to one shared host.
+%
+That the model permits it rests on component instances holding no state beyond their round-inputs,
+which is why a surrogate can serve many owners as one without losing owner-specific behaviour.
+%
+The \texttt{Orchestrator} is precisely that collapse in code:
+one process, one instance per robot, each evaluated against its own view of the network.
+%
+The broker between them executes nothing and relays everything,
+the role of the intermediate hop $\deviceId_1$ in \cref{fig:pulverization-forwarding}.
+%
+Writing the deployment predicate of \cref{subsec:forwarding-chains} for robot $\deviceId_j$ gives
+%
+\[
+    \deploy(\deviceId_j,\ \component_{\mathit{beh}},\ \deviceId_j\ \mathit{broker}\ \mathit{server}),
+\]
+%
+with actuation left at the owner.
+%
+Every pair of a device and a component is deployed and no chain repeats a device,
+so the deployment is correct in the model's sense.
+
+Sensing is where the model's hypotheses actually bite.
+%
+The robots' onboard sensors were not used:
+they were replaced by the overhead camera,
+whose estimates of position and orientation reach the runtime through the environment provider.
+%
+The choice was made to keep a public demonstration robust,
+and in the model's terms it is a sensing component that does not run at its owner either.
+%
+\Cref{subsec:deployment-independence} spells out when that is admissible.
+A surrogate reads its own sensors, not the owner's,
+so the substitution is sound only if what it samples is indistinguishable, as far as the component
+is concerned, from what the owner would have sampled --
+the requirement that sensor state be uniform along the forwarding chain.
+%
+Here the requirement is met by construction rather than by luck:
+the camera reports each robot's own position and orientation,
+the same quantities an onboard sensor would have reported for that robot.
+%
+The demonstrator thus satisfies the theorem's second hypothesis for the one sensing modality it
+uses,
+and it satisfies the first by building its behaviours out of MacroSwarm's self-stabilising blocks
+(\cref{subsec:aggregate-computing}).
+
+What follows from this is a modest but concrete claim.
+%
+The arrangement the demonstrator settled on is not an alternative to the pulverisation model but an
+instance of it,
+reached without the model in hand,
+and the reasons that forced it -- microcontrollers that cannot host a runtime, sensing better done
+from the ceiling than from the chassis -- are exactly the capability mismatches
+\cref{subsec:forwarding-chains} gives offloading as the answer to.
+%
+The requirement of \cref{sec:emerge-requirements} that the program be executable
+\emph{either} on the robot \emph{or} on a supporting host names the same freedom
+\cref{thm:deployment-independence} proves is functionally free to exercise.
+%
+The demonstrator states that requirement and meets its remote half only.
+%
+Its own plan for the other half -- each robot running a local instance of the runtime, with
+localisation decentralised through radio ranging --
+is, in the model's terms, the monolithic deployment in which every component runs at its owner:
+the far end of the same space, reached with the same program.
+%
+Between the two ends lie the mixed deployments,
+and revising the choice among them at runtime is what
+\crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn} addressed.
+The demonstrator does not yet do so.
+
+\section{Demonstration and Observed Behaviour}
+\label{sec:emerge-demonstration}
+
+The demonstrator ran twice as a public exhibit, at the European Researchers' Night in 2024 and 2025,
+in an indoor venue with an untrained audience walking through it.
+%
+The team was nine mobile robots on chassis designed and printed in-house,
+each carrying an ESP32 microcontroller responsible for communication and low-level actuation, and a
+marker for the camera to track.
+
+Five programs were demonstrated,
+chosen to exercise different coordination requirements rather than to look varied:
+a circle, in which the robots distribute along a circumference around a leader elected at runtime;
+a square, in which they converge on four corners while keeping the edges aligned;
+a V-shape, two symmetric branches from a leader;
+point-the-leader, in which each robot orients towards a designated one;
+and line formations, horizontal and vertical, with uniform spacing along an axis.
+%
+Between them they cover symmetry, alignment, leader-based coordination, and global geometric
+constraints.
+%
+\Cref{fig:emerge-formations} shows four of them as they appeared in the venue.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-formation-circle.jpg}
+        \caption{Circle}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-formation-square.jpg}
+        \caption{Square}
+    \end{subfigure}
+
+    \vspace{0.6em}
+
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-formation-vshape.jpg}
+        \caption{V-shape}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-formation-pointleader.jpg}
+        \caption{Point-the-leader}
+    \end{subfigure}
+    \caption[Spatial patterns formed by the robot team]{Four of the spatial patterns the team formed during the demonstration, each produced by a different aggregate program loaded into the running system. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \label{fig:emerge-formations}
+\end{figure}
+
+Programs were switched while the team was running,
+which is what the homogeneous-loading requirement of \cref{sec:emerge-requirements} was for:
+the audience saw one formation dissolve into the next without the system being restarted.
+%
+The dashboard, shown in \cref{fig:emerge-dashboard}, was part of the exhibit rather than an operator
+tool,
+since the neighbourhood relation it draws is otherwise invisible,
+and a visitor could change the neighbourhood radius and watch the formation reorganise.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{emerge-dashboard.png}
+    \caption[The dashboard used to observe and perturb the running team]{The dashboard used to observe and perturb the running team. Lines between robots draw the current neighbourhood relation, which is otherwise invisible to an observer. The controls load a different aggregate program and retune the neighbourhood radius; selecting a robot exposes its state, a manual movement control, and the option to elect it leader. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \label{fig:emerge-dashboard}
+\end{figure}
+
+The property worth testing on hardware was self-stabilisation.
+%
+\Cref{subsec:pulverization-validation} confirmed in simulation that an offloaded deployment
+converges where a monolithic one does,
+under the perturbations that study modelled: node mobility, and movement stopping partway through.
+%
+A physical arena admits a perturbation neither of those covers,
+applied by hand and not scripted in advance.
+%
+Formations were disrupted by hand, displacing one or more robots mid-execution.
+%
+In every case tried, the team absorbed the displacement and recovered the formation without
+intervention.
+%
+\Cref{fig:emerge-selfhealing} shows one such recovery.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-selfhealing-1.png}
+        \caption{Formation reached}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-selfhealing-2.png}
+        \caption{A robot displaced by hand}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{emerge-selfhealing-3.png}
+        \caption{Formation recovered}
+    \end{subfigure}
+    \caption[Recovery of a line formation after manual perturbation]{Recovery of a line formation after a robot is displaced by hand during execution. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \label{fig:emerge-selfhealing}
+\end{figure}
+
+This is qualitative evidence, and should be read as such:
+the demonstration measured nothing,
+so it supports the claim that self-stabilisation survives physical embodiment and adversarial
+handling,
+and not any claim about how quickly, or how the recovery time compares across deployments.
+%
+The simulation engine that can replace the robots and the camera together is the reason a
+quantitative version of this experiment is reachable:
+it exposes the same broker interface,
+so a program validated against it and a program run in the arena are the same program under two
+sensing substrates.
+
+\section{Discussion}
+\label{sec:emerge-discussion}
+
+What the demonstrator establishes is narrow and worth having.
+%
+A deployment that \cref{chap:pulverization} admits has been built on real hardware and run in front
+of an audience,
+which is evidence that the model's admissible deployments are not only simulable but realisable,
+and that the capability mismatches motivating offloading in \cref{subsec:forwarding-chains} are the
+ones physical robots actually present.
+%
+The sensing substitution is the sharper instance:
+condition \emph{(ii)} of \cref{thm:deployment-independence} reads as a technical hypothesis on
+paper,
+and here it is a design decision -- put the sensor on the ceiling instead of the chassis -- that
+happens to satisfy it.
+
+What the demonstrator does not establish should be stated as plainly.
+%
+Its deployment is fixed by hand before the system starts and never revised while it runs,
+so it exercises none of \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn}:
+there is no reconfiguration policy, no declarative plan, and no learned offloading decision in it.
+%
+Its behaviour is one aggregate program rather than a macro-program decomposed into a
+\ac{DAG} of components,
+so the finer-grained partitioning of \cref{subsec:macroprogram-dag} is not put to work either;
+what is offloaded is the whole behaviour, as in the original five-role pulverisation.
+%
+It is written in ScaFi and MacroSwarm directly,
+not through the unified capabilities of \cref{chap:language-and-coordination} nor with the
+generation support of \cref{chap:language-based-macroprogramming}.
+%
+And it reports no measurements.
+%
+The demonstrator is therefore a realisation of one point of the deployment space this thesis
+defines, on physical devices,
+rather than end-to-end validation of the thesis as a whole.
+
+That is also what makes it the natural place to exercise the rest.
+%
+The requirement it states and half-satisfies -- run the program on the robot or on a supporting host
+-- is a deployment choice its architecture already isolates behind the environment provider and
+updater,
+and the platform this thesis proposes is what turns such a choice into something a policy can make
+instead of an engineer.
+%
+\Cref{chap:conclusions} returns to what closing that gap would require.

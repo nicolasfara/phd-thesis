@@ -31,8 +31,9 @@ and collective coordination across an ensemble whose membership changes --
 and it needs all three at once.
 %
 Today a developer either commits to one paradigm and encodes the others around it,
-or combines separate frameworks and gives up any guarantee about how they interact:
-correct placement does not imply protocol compliance,
+or combines separate frameworks and gives up any guarantee about how they interact.
+%
+Correct placement does not imply protocol compliance,
 and collective consistency does not imply safe inter-tier communication.
 
 This chapter takes up that problem from the language side.
@@ -149,11 +150,11 @@ the organisers' dashboard needs the crowding level that the aggregate part compu
 
 Combining the paradigms by running three frameworks side by side does not compose their guarantees.
 %
-Each brings its own abstractions and its own assumptions about connectivity,
-and each checks its own properties against its own model of where computation happens.
+Each framework brings its own abstractions and assumptions about connectivity,
+and checks its own properties against its own model of where computation happens.
 %
 At the seams between them there is no model at all:
-a value leaves the choreography as an ordinary value and enters the multitier code as an ordinary value,
+a value leaves the choreography and enters the multitier code as an ordinary value,
 and nothing checks that the peer reading it is a peer that may read it.
 %
 Worse, a paradigm's own guarantees can be broken from outside.
@@ -216,7 +217,7 @@ so the scopes of different paradigms are separated by construction.
 No convention has to keep them apart.
 %
 Second, the separation is not isolation:
-placement types are shared by all four capabilities, and are therefore the designated interface through which paradigms hand values to one another.
+placement types are shared by all four capabilities, and are therefore the interface through which paradigms hand values to one another.
 
 \subsection{Placement Types and the Placement Capability}
 \label{subsec:placement-capability}
@@ -373,7 +374,7 @@ here it is the skeleton of the program, and the placed computations hang off it.
 Each capability opens a scope in which its own operations, and only its own, are available.
 %
 The scopes do not leak into one another,
-but values do, and they do so through placement types.
+but values do, through placement types.
 %
 Multitier code reaches a remote placed value with \code{asLocal};
 choreographic code moves one between peers with \code{comm};
@@ -649,7 +650,7 @@ Reduction is annotated with the peer instance that performs the step,
 where $\peerconf$ maps each peer type to its live instances and $\vmstate$ holds the aggregate virtual machine's state.
 %
 A single global thread of execution annotated with peer instances is enough,
-the same device already used to give multitier programs a semantics~\cite{DBLP:journals/pacmpl/WeisenburgerKS18,Zakhour:2023:TypeSafe}.
+the same technique already used to give multitier programs a semantics~\cite{DBLP:journals/pacmpl/WeisenburgerKS18,Zakhour:2023:TypeSafe}.
 
 Each paradigm contributes its own constructs and its own rules on top of this core:
 \code{asLocal} and \code{asLocalAll} for multitier,
@@ -679,9 +680,9 @@ and the virtual-machine state must be consistent with the collective computation
     again under consistent virtual-machine states.
 \end{theorem}
 
-The proof is the standard progress-and-preservation argument,
+The proof follows the standard progress-and-preservation argument,
 by induction on the typing derivation and on the reduction rules respectively;
-both, and the rules they range over, are given in the paper.
+the rules themselves are given in the paper.
 %
 Two consequences matter for this chapter.
 %
@@ -785,8 +786,8 @@ each use case was reimplemented in \camil~\cite{Farabegoli:2026:CaMiL}.
 The reimplementations total 3874 lines of \camil code:
 2012 for the choreographic use cases, 1425 for the multitier ones, and 437 for the aggregate ones.
 %
-Every use case was expressible,
-which is the evidence that modelling a paradigm as a capability does not cost expressivity relative to a language dedicated to it.
+Every use case was expressible:
+modelling a paradigm as a capability does not cost expressivity relative to a language dedicated to it.
 
 The same use cases exercise the safety properties of \cref{subsec:capability-safety} paradigm by paradigm.
 %
@@ -993,8 +994,9 @@ HasChor, a monadic choreographic language in Haskell, provides only the point-to
 %
 ScalaLoci covers all four, but the differentiated ones are expressed at the type level, not by a dedicated communication operation.
 This makes them read indirectly:
-an anisotropic assignment is a value of type \code{Signal[Task] per Worker on Master}, built by a function from a remote reference to a signal,
-and the reader has to reconstruct the communication pattern from the type.
+an anisotropic assignment is a value of type \code{Signal[Task] per Worker on Master}, built by a function from a remote reference to a signal.
+%
+The reader has to reconstruct the communication pattern from the type.
 %
 ScalaTropy gives each pattern its own primitive.
 
@@ -1215,8 +1217,9 @@ where a choreographic implementation would need the replica count fixed statical
 
 The case for differentiated primitives made so far rests on how the program reads.
 %
-\Cref{fig:communication-overhead} adds a second argument: what they cost on the wire,
-using a matrix-vector product over a fixed $50\times50$ matrix in which the master partitions the rows and distributes a distinct block to each worker.
+\Cref{fig:communication-overhead} adds a second argument: what they cost on the wire.
+%
+The experiment is a matrix-vector product over a fixed $50\times50$ matrix, in which the master partitions the rows and distributes a distinct block to each worker.
 %
 The broadcast variant grows linearly in the number of workers,
 since every worker receives the whole matrix and discards what is not its own;
@@ -1230,9 +1233,10 @@ It is therefore evidence about the cost of encoding a selective pattern as broad
 not a comparison against HasChor or ScalaLoci.
 It measures bytes; no timing result is reported.
 %
-Two further arguments for the same primitives are qualitative:
-sending each recipient only what it needs is least privilege applied to communication,
-and stating the pattern in the operation makes the intent legible where ScalaLoci's type-level encoding does not.
+Two further arguments for the same primitives are qualitative.
+%
+Sending each recipient only what it needs is least privilege applied to communication;
+stating the pattern in the operation makes the intent legible where ScalaLoci's type-level encoding does not.
 
 \section{Discussion}
 \label{sec:language-coordination-discussion}
@@ -1249,14 +1253,16 @@ They agree on the interface between paradigms.
 %
 Both adopt placement types from multitier programming and both encode the architecture as ties with cardinalities.
 %
-Of the three paradigms of \cref{sec:foundational-paradigms}, it is multitier programming that supplies the vocabulary the others are expressed in,
-because it is the only one that already reifies location.
+Multitier programming supplies the vocabulary the others are expressed in,
+because it is the only one of the three paradigms of \cref{sec:foundational-paradigms} that already reifies location.
 
 Their scope differs.
 %
-\camil covers all three paradigms and proves that the combination is sound;
-ScalaTropy covers two and defers its metatheory, but supplies the differentiated communication primitives that \camil, like the paradigms it unifies, does not provide.
+\camil covers all three paradigms and proves that the combination is sound.
 %
+ScalaTropy covers two and defers its metatheory;
+in exchange, it supplies the differentiated communication primitives that neither \camil nor the paradigms it unifies provide.
+
 The two designs are complementary.
 %
 Nothing in \camil's capability design requires point-to-point communication as its only choreographic primitive,
@@ -1273,11 +1279,11 @@ It also rules out programs a multitier language would accept.
 ScalaTropy's strong architecture makes the same trade in a milder form:
 a choreography that assumes everyone can reach everyone has to be given an architecture before it can be written.
 
-For this thesis, the connection back to \cref{chap:pulverization} is the point of the chapter.
+This chapter's point for the thesis is the connection back to \cref{chap:pulverization}.
 %
 The pulverisation model needs a macro-program presented as a graph of components, each with declared inputs and outputs, and each independently deployable.
 %
-The three paradigms produce such components, but they produce them in incompatible terms,
+The three paradigms produce such components, but in incompatible terms,
 which is why a system built from more than one of them cannot be pulverised as a whole.
 %
 Expressing all of them over one notion of placement removes that obstacle:
@@ -1285,7 +1291,7 @@ a placement type states where a component's value resides,
 the architecture states which placements may exchange values,
 and both are exactly the information the deployment of \cref{sec:pulverization-abstractions} needs in order to decide where a component may run.
 %
-What neither design supplies is the decision itself.
+Neither design supplies the decision itself.
 %
 The architecture says which deployments are admissible;
 \cref{chap:deployment-and-reconfiguration} takes up the question of which one to choose, and of who revises it as the infrastructure changes.

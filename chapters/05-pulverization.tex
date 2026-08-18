@@ -6,15 +6,18 @@ splitting each logical device into a small, fixed set of components -- sensing,
 actuation,
 behaviour,
 state,
-and communication -- and promised that this thesis would develop the idea in full here~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+and communication.
+%
+This thesis develops the idea in full here~\cite{DBLP:journals/fi/CasadeiPPVW20}.
 %
 \Cref{chap:programming-models} reached the same gap from the language side.
 %
 Aggregate computing,
 choreographic programming,
 and multitier programming each derive logical units of computation from a global specification of collective behaviour,
-but leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time;
-aggregate computing's own execution model further assumes that every device runs a complete instance of the aggregate program,
+but leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time.
+%
+Aggregate computing's own execution model further assumes that every device runs a complete instance of the aggregate program,
 not a fragment of one realised across heterogeneous target platforms.
 %
 \Cref{chap:dynamic-reconfiguration} closed Part I by naming what is still missing before that mapping can even be posed as a runtime decision:
@@ -76,7 +79,7 @@ The middleware might, for instance, move a behaviour component off a device whos
 A pulverised system built this way can adapt its own deployment as conditions change.
 The deployment is not fixed at release time.
 %
-What stays fixed is the partitioning itself:
+The partitioning itself stays fixed:
 every logical device still decomposes into exactly the same five roles,
 so the number and kind of deployable units a system offers never varies with what the application actually computes,
 and each logical device still corresponds to a single physical device, relocated as a whole.
@@ -160,10 +163,12 @@ which always include $\deviceId$ itself.
 such as an edge server or a base station,
 without necessarily being targets of the application themselves.
 %
-The two roles cover the physical devices, $\deviceIdSet \cup \ihostIdSet = \hostIdSet$, but do not partition them:
-$\deviceIdSet \cap \ihostIdSet$ need not be empty,
-as when a more capable robot in a swarm also executes computation on behalf of a weaker neighbour,
-though application devices such as swarm robots and infrastructural devices such as edge servers or cloud hosts are, in the common case, disjoint.
+The two roles cover the physical devices, $\deviceIdSet \cup \ihostIdSet = \hostIdSet$, but do not partition them.
+%
+The sets $\deviceIdSet$ and $\ihostIdSet$ may intersect:
+a more capable robot in a swarm might also execute computation on behalf of a weaker neighbour.
+%
+In the common case, however, application devices such as swarm robots and infrastructural devices such as edge servers are disjoint.
 %
 Devices in the application role are additionally assumed to expose a set of \emph{sensors},
 queried as $\Sens(\deviceId) = \senstate$ to obtain the device's \emph{sensor state} $\senstate$,
@@ -287,8 +292,9 @@ yields the state $\vtree$.
 %
 What the judgment leaves unsaid is deliberate.
 The model fixes how rounds compose, not how a component computes:
-any language whose programs can be given as such a judgment can supply the components,
-which is what lets \cref{chap:language-and-coordination} obtain them from aggregate computing, choreographies, and multitier programs alike.
+any language whose programs can be given as such a judgment can supply the components.
+%
+This lets \cref{chap:language-and-coordination} obtain them from aggregate computing, choreographies, and multitier programs alike.
 %
 \Cref{fig:intra-component-interaction} shows this interaction where both instances run at their own device,
 and -- anticipating \cref{subsec:forwarding-chains} -- where one of them has been moved elsewhere,
@@ -312,7 +318,9 @@ but that computation's own local and collective parts are never exposed as separ
 \subsection{Forwarding Chains to Physical Devices}
 \label{subsec:forwarding-chains}
 
-Deploying a macro-program means deciding, for every pair of a component and the application device that instantiates it, on which physical device that component instance actually runs.
+Deployment means assigning each component instance to a physical device.
+%
+For each pair of a component and the application device that instantiates it, we decide which physical device that component instance runs on.
 %
 Each such pair identifies a component instance $\component_i^j$ together with its \emph{owner} $\deviceId_j$ -- the application device it was instantiated for.
 %
@@ -339,9 +347,10 @@ hop by hop,
 to the device that finally executes it.
 %
 The \emph{deployment predicate} records these chains:
-$\deploy(\deviceId_1, \component, \deviceId_1\dots\deviceId_n)$ states that component $\component$ at application device $\deviceId_1$ is forwarded through $\deviceId_1\dots\deviceId_n$,
-so a chain containing $\deviceId_1$ alone means the component is not forwarded at all,
-and otherwise $\deviceId_1$ forwards to $\deviceId_2$, which forwards to $\deviceId_3$, and so on until $\deviceId_n$ executes it.
+$\deploy(\deviceId_1, \component, \deviceId_1\dots\deviceId_n)$ states that component $\component$ at application device $\deviceId_1$ is forwarded through $\deviceId_1\dots\deviceId_n$.
+%
+A chain containing $\deviceId_1$ alone means the component is not forwarded at all;
+otherwise $\deviceId_1$ forwards to $\deviceId_2$, which forwards to $\deviceId_3$, and so on until $\deviceId_n$ executes it.
 %
 A deployment is \emph{correct} with respect to a well-formed macro-program when
 \emph{(i)} every pair of an application device and a component of the macro-program is deployed,
@@ -353,8 +362,11 @@ now placed on its physical realisation.
 The deployment of \cref{fig:pulverization-forwarding} thus reads $\deploy(\deviceId_0, \component_2, \deviceId_0\deviceId_1\deviceId_2)$ for the forwarded component,
 and $\deploy(\deviceId_0, \component_i, \deviceId_0)$ for $i \in \{1,3,4\}$.
 %
-Component instances carry no state of their own beyond what their round-inputs supply (\cref{subsec:local-collective-components}),
-so a surrogate that ends up hosting the same component forwarded by several owners -- as commonly happens when many devices forward the same component to a shared cloud host -- can treat those instances as one, without losing any owner-specific behaviour to collapse.
+Component instances carry no state of their own beyond what their round-inputs supply (\cref{subsec:local-collective-components}).
+%
+A surrogate that ends up hosting the same component forwarded by several owners -- as commonly happens when many devices forward the same component to a shared cloud host -- can treat those instances as one.
+%
+No owner-specific behaviour is lost, since components hold no private state across rounds.
 
 Forwarding resembles what a multitier compiler does when it slices one program across statically known tiers (\cref{subsec:multitier-programming}),
 but two differences matter for the continuum.
@@ -383,14 +395,17 @@ asynchronously with respect to other instances at the same device and to instanc
 in the same time-fluid sense already established for aggregate computing (\cref{subsubsec:ac-execution-model}).
 %
 A round produces a new state $\vtree$ from the four ingredients \cref{subsec:local-collective-components} listed,
-and the value $\val(\vtree)$ read off that state becomes available to whichever instances are bound to consume it --
-downstream instances at the same device directly,
-or, if the component is offloaded, only once it has travelled the forwarding chain of \cref{subsec:forwarding-chains} in both directions:
+and the value $\val(\vtree)$ read off that state becomes available to whichever instances are bound to consume it.
+%
+Downstream instances at the same device receive it directly.
+%
+If the component is offloaded, the value only reaches them once it has travelled the forwarding chain of \cref{subsec:forwarding-chains} in both directions:
 inputs and neighbour context outward to the surrogate, the result back to the owner.
 
 More precisely, this is a small-step operational semantics over a global network configuration,
-which maps each device to the messages currently pending for it,
-and which extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along the two axes this chapter has introduced.
+which maps each device to the messages currently pending for it.
+%
+It extends the field calculus network model already used to state self-stabilisation in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/tomacs/ViroliABDP18} along the two axes this chapter has introduced.
 A configuration now carries the states of many components composed in a \ac{DAG},
 and messages travel one hop at a time along a forwarding chain.
 They are no longer exchanged only between owners.
@@ -418,8 +433,8 @@ a computation is self-stabilising if every fair execution -- one in which each d
 One further condition has to be spelled out before the result can be stated.
 A surrogate reads its own sensors, not the owner's:
 what a forwarded component actually sees is $\Sens(\deviceId)$ at the device that executes it.
-Requiring the sensor state to be \emph{uniform along a forwarding chain} is requiring that this substitution make no difference --
-that what the surrogate samples be indistinguishable, as far as the component is concerned, from what the owner would have sampled.
+The sensor state is required to be \emph{uniform along a forwarding chain}:
+what the surrogate samples must be indistinguishable, as far as the component is concerned, from what the owner would have sampled.
 The requirement bites unevenly:
 a component reading a quantity that varies with the owner's own position is pinned to the owner,
 whereas one reading a quantity uniform over the chain can be placed anywhere along it.
@@ -492,7 +507,7 @@ with the error between them driven by the extra hops forwarding introduces durin
 Once the nodes stop moving at $t=900$,
 the error collapses -- not to a permanent zero,
 but to the small,
-recovering residual self-stabilisation predicts once transient perturbations fade.
+recovering residual that self-stabilisation predicts once transient perturbations fade.
 
 \begin{figure}[t]
     \centering
@@ -531,7 +546,7 @@ Third, and most consequential for the rest of the thesis, the deployment is here
 The model says which deployments are admissible and that the choice among them is functionally free;
 it does not say how the choice is made, nor who revises it as the infrastructure drifts.
 
-That freedom is what makes the choice worth automating.
+That freedom makes the choice worth automating.
 Because deployment independence holds for every correct deployment,
 the mapping from components to devices can be revised while the system runs, not only fixed at release time,
 and the revision can be driven entirely by non-functional concerns -- capability, load, energy --

@@ -13,9 +13,9 @@
 % \cityevt's crowding requirement from \cref{sec:multiparty-motivation} rather
 % than a second one, since the paper's marathon case is the same problem.
 
-\Cref{chap:language-and-coordination} removed a choice, not a step.
+Capabilities and monadic sequencing removed a choice, not a step (\cref{chap:language-and-coordination}).
 %
-Whichever of its two designs a developer adopts,
+Whichever of the two designs a developer adopts,
 a program still has to be written:
 a capability-annotated Scala program under \camil,
 a monadic pipeline in ScalaTropy,
@@ -47,16 +47,10 @@ The answer developed here needs neither fine-tuning nor a constrained decoder:
 what the model lacks is not decoding discipline but the abstraction ladder itself,
 and supplying that ladder in context is enough to move models that produce nothing usable to models that solve most of the tasks put to them~\cite{DBLP:journals/tiot/AguzziFV25}.
 
-\Cref{sec:llm-macroprogramming-motivation} states why aggregate computing is the target worth generating for,
-and fixes the questions the rest of the chapter answers.
-%
-\Cref{sec:body-of-knowledge} defines the \emph{body of knowledge}:
-the operational account of the language that is placed in the model's context, and how it is arrived at.
-%
-\Cref{sec:llm-pipeline} describes how a program is generated from it and what has to hold before that program is trusted.
-%
-\Cref{sec:llm-evaluation} reports what sixteen models do with it,
-where they fail, and where they compose abstractions into solutions they were not shown.
+The rest of the chapter answers the questions this raises:
+what a model needs to know about the language (\cref{sec:body-of-knowledge}),
+how a program is generated from that knowledge (\cref{sec:llm-pipeline}),
+and what sixteen models do with it (\cref{sec:llm-evaluation}).
 %
 \Cref{sec:llm-macroprogramming-discussion} states what the result licenses and what it does not.
 

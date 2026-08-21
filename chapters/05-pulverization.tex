@@ -1,47 +1,42 @@
 \chapter{The Pulverization Model}
 \label{chap:pulverization}
 
-\Cref{chap:edge-cloud-continuum} introduced pulverisation as Casadei et al.'s way of decoupling a collective system's self-organising logic from its deployment,
-splitting each logical device into a small, fixed set of components -- sensing,
+Pulverisation,
+due to Casadei et al. and already recalled in \cref{chap:edge-cloud-continuum}~\cite{DBLP:journals/fi/CasadeiPPVW20},
+decouples a collective system's self-organising logic from its deployment by splitting each logical device into a small,
+fixed set of components:
+sensing,
 actuation,
 behaviour,
 state,
-and communication.
-%
-This thesis develops the idea in full here~\cite{DBLP:journals/fi/CasadeiPPVW20}.
-%
-\Cref{chap:programming-models} reached the same gap from the language side.
+and communication;
+this thesis develops the idea in full here.
 %
 Aggregate computing,
 choreographic programming,
-and multitier programming each derive logical units of computation from a global specification of collective behaviour,
-but leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time.
-%
-Aggregate computing's own execution model further assumes that every device runs a complete instance of the aggregate program,
+and multitier programming reach the same gap from the language side (\cref{chap:programming-models}):
+each derive logical units of computation from a global specification of collective behaviour but leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time,
+and aggregate computing's own execution model further assumes that every device runs a complete instance of the aggregate program,
 not a fragment of one realised across heterogeneous target platforms.
 %
-\Cref{chap:dynamic-reconfiguration} closed Part I by naming what is still missing before that mapping can even be posed as a runtime decision:
-a model of what the unit being mapped actually is.
+That mapping cannot even be posed as a runtime decision without a model of what the unit being mapped actually is (\cref{chap:dynamic-reconfiguration}).
 
 This chapter supplies that model.
 %
-\Cref{sec:pulverization-motivation} recalls why the original,
+The rest of the chapter first states why the original,
 fixed-role pulverisation and its declarative,
-runtime-reconfigurable extension are not enough on their own,
-and states the more general, orthogonal partitioning this approach develops instead.
+runtime-reconfigurable extension are not enough on their own and sets out the more general,
+orthogonal partitioning developed here instead (\cref{sec:pulverization-motivation}),
+then defines that partitioning's core abstractions:
+application and infrastructural devices,
+the macro-program as a directed acyclic graph of deployable components,
+the local/collective distinction,
+and the forwarding chains that map components onto physical devices (\cref{sec:pulverization-abstractions}).
 %
-\Cref{sec:pulverization-abstractions} gives that partitioning its core abstractions:
-the physical devices a macro-program runs on and the infrastructure that can support it,
-the macro-program itself as a directed acyclic graph of independently deployable components,
-the distinction between components that compute in isolation and components whose result depends on their neighbours,
-and the forwarding mechanism that maps components onto physical devices.
-%
-\Cref{sec:pulverization-semantics} states the model's execution semantics,
+It then fixes the model's execution semantics,
 proves its central guarantee -- that, under stated conditions, a macro-program's observable behaviour does not depend on how its components are deployed --
-and reports the simulations that confirm it.
-%
-\Cref{sec:pulverization-discussion} closes the chapter by relating the model to the pulverisation it generalises,
-and by stating what it deliberately leaves open.
+and confirms it in simulation (\cref{sec:pulverization-semantics}),
+before closing by relating the model to the pulverisation it generalises and stating what it deliberately leaves open (\cref{sec:pulverization-discussion}).
 
 \section{Motivation and Design Goals}
 \label{sec:pulverization-motivation}
@@ -118,8 +113,8 @@ Second, each component should be able to state its own requirements,
 and to be deployed and executed independently of the others.
 Third, what the macro-program computes should not depend on which of the admissible deployments was chosen.
 %
-\Cref{sec:pulverization-abstractions} develops the partitioning that meets the first two goals;
-\cref{sec:pulverization-semantics} proves the third.
+The first two goals are met by the partitioning developed next (\cref{sec:pulverization-abstractions});
+the third is proved once its execution semantics are in place (\cref{sec:pulverization-semantics}).
 %
 Proving the third shows that generalising the partitioning this way does not cost the deployment-independence guarantee that motivated pulverisation to begin with.
 
@@ -382,9 +377,9 @@ The abstractions of \cref{sec:pulverization-abstractions} say what a deployment 
 they do not yet say what a deployed macro-program does,
 nor what a deployment is allowed to change about it.
 %
-\Cref{subsec:pulverization-execution-model} fixes how rounds and messages proceed,
-\cref{subsec:deployment-independence} states and proves the guarantee that follows,
-and \cref{subsec:pulverization-validation} reports the simulations that confirm it on two collective services.
+The execution model fixes how rounds and messages proceed (\cref{subsec:pulverization-execution-model});
+the guarantee that follows is stated and proved (\cref{subsec:deployment-independence})
+and confirmed in simulation on two collective services (\cref{subsec:pulverization-validation}).
 
 \subsection{Execution Model}
 \label{subsec:pulverization-execution-model}

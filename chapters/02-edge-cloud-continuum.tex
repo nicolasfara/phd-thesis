@@ -4,15 +4,14 @@
 Every contribution of this thesis targets the same substrate:
 the computing infrastructure stretching between cloud data centres and the devices embedded in the physical world.
 %
-This chapter opens Part I by fixing that substrate.
-%
-It establishes what the edge-cloud continuum is,
+This chapter fixes that substrate:
+what the edge-cloud continuum is,
 which environments this thesis must serve on it -- \ac{IoT} ecosystems and robot swarms --
 and why the architectural paradigms currently used to structure distributed software cannot deploy applications on it at the granularity,
 or with the runtime flexibility,
 those environments demand.
 %
-The gap this review exposes is the one the pulverisation model of \cref{chap:pulverization} closes;
+The resulting gap is the one the pulverisation model closes (\cref{chap:pulverization});
 the other two background chapters ask, against the same substrate,
 how collective systems can be programmed (\cref{chap:programming-models}) and how their placement can be revised while they run (\cref{chap:dynamic-reconfiguration}).
 
@@ -199,11 +198,8 @@ mobility,
 and energy constraints with a need for both local autonomy and collective coordination,
 exercising its heterogeneity and volatility at once.
 %
-This section surveys two concrete instances of such pervasive environments,
-\ac{IoT} ecosystems (\cref{subsec:iot-systems}) and swarm robotics (\cref{subsec:swarm-robotics}),
-frames them as instances of a broader class introduced in \cref{subsec:collective-adaptive-systems},
-and closes by drawing out the deployment and coordination challenges they share (\cref{subsec:environment-challenges}),
-which motivate the architectural paradigms reviewed next, in \cref{sec:architectural-paradigms}.
+\ac{IoT} ecosystems and swarm robotics (\cref{subsec:iot-systems,subsec:swarm-robotics}) are read as applications of a broader class (\cref{subsec:collective-adaptive-systems}),
+and share the deployment and coordination challenges drawn out at the end of the section (\cref{subsec:environment-challenges}).
 
 \subsection{Pervasive IoT Systems}
 \label{subsec:iot-systems}
@@ -369,10 +365,10 @@ to individual functions and actors.
 Each step of this progression has been adapted to edge and pervasive settings,
 since smaller units are easier to place on constrained nodes and cheaper to move between them.
 %
-This section reviews how microservices and \ac{FaaS} on the one side (\cref{subsec:microservices-faas-edge}),
-and the actor model on the other (\cref{subsec:actor-model-edge}),
-have been brought to the edge,
-and then argues that all three retain assumptions from their cloud origins that conflict with the fine-grained,
+Microservices,
+\ac{FaaS},
+and the actor model each adapted this progression for edge deployment (\cref{subsec:microservices-faas-edge,subsec:actor-model-edge}),
+yet all three retain assumptions from their cloud origins that conflict with the fine-grained,
 dynamic deployment needs identified in \cref{subsec:environment-challenges} (\cref{subsec:paradigm-limitations}).
 
 \subsection{Microservices and FaaS at the Edge}

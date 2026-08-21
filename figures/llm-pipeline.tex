@@ -1,0 +1,74 @@
+% Generating aggregate programs from natural language: an expert refines a
+% body of knowledge against test cases (left); a practitioner's task
+% description is combined with that body of knowledge, unchanged, into the
+% fixed prompt template to obtain a program (right).
+% Redraw of figures/llm-pipeline.svg.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,shapes.geometric}
+% Include with a normal figure environment, e.g. \input{figures/llm-pipeline}.
+\begin{tikzpicture}[
+  >=Latex, font=\small,
+  prog/.style={rounded corners,draw,fill=gray!6,minimum width=24mm,minimum height=11mm,align=center},
+  small/.style={rounded corners,draw,fill=gray!12,minimum width=18mm,minimum height=9mm,align=center},
+  task/.style={rounded corners,draw,fill=gray!6,align=center,text width=32mm,inner sep=3mm},
+  blk/.style={draw,fill=gray!18,inner sep=0pt},
+  ent/.style={draw,fill=gray!35,inner sep=0pt},
+  circ/.style={ent,circle,minimum size=3.2mm},
+  tri/.style={ent,regular polygon,regular polygon sides=3,minimum size=3.6mm},
+  dia/.style={ent,diamond,minimum size=3.6mm},
+  flow/.style={->,gray!80},
+  dep/.style={->,dashed,gray!55,thick},
+  wire/.style={gray!55},
+  lbl/.style={font=\small\bfseries},
+  note/.style={font=\scriptsize,gray!65},
+  region/.style={rounded corners,draw=gray!50,thin,fill=gray!3,inner sep=6mm},
+]
+
+% ============ Expert (left): the co-design loop ============
+\node[prog]  (bok)      at (0,4)     {Body of\\knowledge};
+\node[prog]  (tests)    at (3.2,4)   {Test\\cases};
+\node[small] (validate) at (6.3,4)   {Validate};
+
+\draw[flow] (bok) -- (tests);
+\draw[flow] (tests) -- (validate);
+\draw[flow] (validate.north) to[bend right=35] node[above,note] {refine} (bok.north);
+\coordinate (arcpeak) at (3.15,6.1);
+
+% additional material feeding the test cases
+\draw[blk] (2.80,1.55) rectangle (3.40,2.05);
+\draw[blk] (3.10,1.35) rectangle (3.70,1.85);
+\draw[blk] (3.40,1.55) rectangle (4.00,2.05);
+\node[note] (matlbl) at (3.40,0.95) {additional material};
+\draw[flow] (3.40,2.05) -- (tests.south);
+
+\begin{scope}[on background layer]
+  \node[region,fit=(bok)(tests)(validate)(arcpeak)(matlbl)] (expert) {};
+\end{scope}
+\node[lbl,anchor=south] at ([yshift=3mm]expert.north) {Expert};
+
+% ============ Practitioner (right): one answer ============
+\node[task] (taskdesc) at (10.4,6.55)
+  {{\bfseries\scriptsize Task description}\\[3pt]{\itshape\scriptsize ``Compute the average temperature in a region of 20 meters''}};
+\node[prog] (prompt) [below=9mm of taskdesc]
+  {{\bfseries Prompt}\\[2pt]{\ttfamily\scriptsize\{BOK\}}\\{\ttfamily\scriptsize\{TASK\_DESCRIPTION\}}};
+\node[prog] (program) [below=9mm of prompt] {{\bfseries Program}\\[2pt]{\ttfamily\scriptsize def main(): Any}};
+
+\draw[flow] (taskdesc) -- (prompt);
+\draw[flow] (prompt) -- (program) node[midway,right,note] {LLM};
+\draw[dep] (validate.east) -- node[above,note,pos=0.32] {Deploy} (prompt.west);
+
+% the deployed network the program runs over
+\node[circ] (n1) [below left=8mm and 6mm of program.south]  {};
+\node[tri]  (n2) [below right=4mm and 2mm of n1] {};
+\node[dia]  (n3) [right=10mm of n2] {};
+\node[circ] (n4) [below right=4mm and 2mm of n2] {};
+\draw[wire] (n1) -- (n2) -- (n3) -- (n4) -- (n1) (n1) -- (n3);
+\draw[flow] (program.south) -- node[right,note] {runs on} ([yshift=8mm]n2.north);
+\node[note] (netlbl) at ([yshift=-5mm]n4.south) {network};
+
+\begin{scope}[on background layer]
+  \node[region,fit=(taskdesc)(prompt)(program)(n1)(n2)(n3)(n4)(netlbl)] (practitioner) {};
+\end{scope}
+\node[lbl,anchor=south] at ([yshift=3mm]practitioner.north) {Practitioner};
+
+\end{tikzpicture}

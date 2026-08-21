@@ -39,17 +39,14 @@ A hand-written policy has to guess the thresholds;
 This chapter builds that learned policy,
 and so removes the requirement of stating the rule in advance.
 %
-\Cref{sec:collective-offloading-learning} states what makes offloading a macro-program harder than the binary decision \cref{subsec:learning-based-offloading} introduced,
-and why deployment independence is what licenses posing it as a learning problem at all.
+It states what makes offloading a macro-program harder than the binary decision of \cref{subsec:learning-based-offloading},
+and why deployment independence licenses posing it as a learning problem (\cref{sec:collective-offloading-learning});
+gives the learner a heterogeneous graph as its state,
+with a \ac{GNN} over it as the Q-function (\cref{sec:hetero-graph-state});
+and adds the collective summary the graph alone does not supply -- computed by an aggregate program running on the very devices whose deployment is being decided -- to arrive at the resulting algorithm (\cref{sec:idhgql}).
 %
-\Cref{sec:hetero-graph-state} gives the learner its state:
-the continuum as a heterogeneous graph,
-and a \ac{GNN} over that graph as the Q-function.
-%
-\Cref{sec:idhgql} adds the ingredient the graph alone does not supply -- a collective summary computed by an aggregate program running on the very devices whose deployment is being decided -- and states the resulting algorithm.
-%
-\Cref{sec:idhgql-evaluation} reports the simulations,
-and \cref{sec:idhgql-discussion} states what the approach does not yet cover.
+Simulations then test it (\cref{sec:idhgql-evaluation}),
+and a closing discussion states what it does not yet cover (\cref{sec:idhgql-discussion}).
 %
 The contribution is published as~\cite{Farabegoli:2026:HeteroGNN}.
 

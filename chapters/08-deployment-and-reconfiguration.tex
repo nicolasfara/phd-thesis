@@ -1,16 +1,16 @@
 \chapter{Deployment and Reconfiguration Strategies on the Edge-Cloud Continuum}
 \label{chap:deployment-and-reconfiguration}
 
-\Cref{sec:pulverization-discussion} left the deployment of a macro-program deliberately underdetermined:
+The deployment of a macro-program is deliberately underdetermined:
 \cref{thm:deployment-independence} guarantees that every correct deployment of a well-formed macro-program computes the same thing,
-so the assignment of components to hosts is free to be chosen -- and later revised -- on non-functional grounds alone, without touching the application logic.
+so the assignment of components to hosts is free to be chosen -- and later revised -- on non-functional grounds alone, without touching the application logic (\cref{sec:pulverization-discussion}).
 %
-\Cref{chap:language-and-coordination} closed the gap on the language side,
-showing that aggregate computing, choreographic programming, and multitier programming can all be made to produce the deployable components the model expects.
+On the language side, the gap is already closed:
+aggregate computing, choreographic programming, and multitier programming can all be made to produce the deployable components the model expects (\cref{chap:language-and-coordination}).
 %
-Neither chapter says who exercises that freedom, or how the resulting deployment is kept good as the infrastructure moves under it.
+Neither says who exercises that freedom, or how the resulting deployment is kept good as the infrastructure moves under it.
 
-This chapter takes up that question as an explicit runtime control problem.
+That question is an explicit runtime control problem.
 %
 Two decisions have to be made whichever way the question is answered.
 %
@@ -20,25 +20,22 @@ which non-functional quantity -- energy drawn, battery remaining, carbon emitted
 The second is how often, and by what mechanism, a deployment already running is revisited:
 continuously, in reaction to a local signal, or periodically, by recomputing the assignment from scratch against the infrastructure's current state.
 
-The chapter answers both questions three times, at three points of the same design space.
+Both questions are answered three times, at three points of the same design space.
 %
-\Cref{sec:battery-triggered-offloading} states the decision as a single rule, triggered locally:
-a device offloads a specific, resource-heavy component to a nearby host the moment its own battery drops below a threshold, and moves it again if that host becomes unreachable.
+The first states the decision as a single rule, triggered locally:
+a device offloads a specific, resource-heavy component to a nearby host the moment its own battery drops below a threshold, and moves it again if that host becomes unreachable,
+with no search involved and nothing stated beyond the threshold itself (\cref{sec:battery-triggered-offloading}).
 %
-No search is involved, and nothing is stated beyond the threshold itself.
-%
-\Cref{sec:global-self-organising-reconfiguration} states the decision as a self-organising rule too, but a harder one:
+The second states the decision as a self-organising rule too, but a harder one:
 infrastructural devices compete for the components application devices would rather not run locally by resizing, through a field built collectively, the region each one leads,
-so a device ends up offloaded to whichever infrastructural device currently combines proximity with spare capacity.
+so a device ends up offloaded to whichever infrastructural device currently combines proximity with spare capacity (\cref{sec:global-self-organising-reconfiguration}).
 %
-\Cref{sec:declarative-green-planning} states the same decision declaratively instead:
+The third states the same decision declaratively instead:
 an explicit objective over energy and carbon is given once, together with the hardware and latency requirements of every component,
-and a planner searches the space of admissible deployments for one that meets it, repeating the search as the network drifts.
+and a planner searches the space of admissible deployments for one that meets it, repeating the search as the network drifts (\cref{sec:declarative-green-planning}).
 %
-All three policies are evaluated against a comparable currency:
+All three policies are evaluated against a comparable currency and set against each other (\cref{sec:deployment-reconfiguration-discussion}):
 how much of a targeted non-functional gain -- energy, battery life, carbon, or the share of devices able to offload at all -- they buy, and how much of it costs again in extra hops, extra latency, or a slower transient before the gain materialises.
-%
-\Cref{sec:deployment-reconfiguration-discussion} closes the chapter by setting the three evaluations against each other.
 
 \section{A Self-organising Offloading Rule Triggered by Battery Level}
 \label{sec:battery-triggered-offloading}

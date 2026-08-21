@@ -9,12 +9,10 @@
 % \cref{subsec:camil-formalization} states the soundness result and cites the
 % paper for the rules, following the precedent of \cref{chap:pulverization}.
 
-\Cref{chap:pulverization} closed by pointing here.
-%
-The pulverisation model says what a deployable component is and proves that its placement is functionally free,
+The pulverisation model (\cref{chap:pulverization}) says what a deployable component is and proves that its placement is functionally free,
 but it takes the components as given:
 something has to produce them,
-and \cref{chap:programming-models} showed that three separate paradigms each produce them in their own way.
+and three separate paradigms (\cref{chap:programming-models}) each produce them in their own way.
 %
 Aggregate computing derives them from a field computation over an ensemble,
 choreographic programming from a global protocol projected onto its participants,
@@ -36,25 +34,21 @@ or combines separate frameworks and gives up any guarantee about how they intera
 Correct placement does not imply protocol compliance,
 and collective consistency does not imply safe inter-tier communication.
 
-This chapter takes up that problem from the language side.
+This chapter takes up that problem from the language side, starting from a scenario that needs all three paradigms and what combining them ad hoc costs (\cref{sec:multiparty-motivation}).
 %
-\Cref{sec:multiparty-motivation} sets out a scenario that needs all three paradigms and states why combining them ad hoc costs the guarantees each provides on its own.
-%
-\Cref{sec:capabilities-unification} answers with \camil,
-a framework in which each paradigm is modelled as a \emph{capability}: a value whose possession authorises a class of operations.
+The answer is \camil (\cref{sec:capabilities-unification}),
+a framework in which each paradigm becomes a \emph{capability}: a value whose possession authorises a class of operations.
 %
 Placement types are the interface through which paradigms exchange values.
 %
-\Cref{sec:camil-realisation} shows how Scala~3's contextual abstractions, capture checking, and separation checking make the discipline statically enforceable, and states the soundness result that backs it.
+Scala~3's contextual abstractions, capture checking, and separation checking make the discipline statically enforceable, backed by a soundness result (\cref{sec:camil-realisation});
+what the design buys is measured on 46 use cases from the literature and on two applications that mix paradigms in one program (\cref{sec:camil-evaluation}).
 %
-\Cref{sec:camil-evaluation} reports what the design buys, on 46 use cases from the literature and on two applications that mix paradigms in one program.
+ScalaTropy reaches the same goal along a different route (\cref{sec:scalatropy}):
+it does not model a paradigm as a capability but unifies choreographic and multitier programming through monadic communication primitives,
+adding the differentiated communication schemes neither paradigm offers.
 %
-\Cref{sec:scalatropy} reaches the same goal along a different route:
-ScalaTropy does not model a paradigm as a capability;
-it unifies choreographic and multitier programming through monadic communication primitives,
-and adds the differentiated communication schemes neither paradigm offers.
-%
-\Cref{sec:language-coordination-discussion} closes by relating the two designs to each other and to the components of \cref{chap:pulverization}.
+A closing discussion (\cref{sec:language-coordination-discussion}) relates the two designs to each other and to the components of \cref{chap:pulverization}.
 
 \section{One System, Three Paradigms}
 \label{sec:multiparty-motivation}

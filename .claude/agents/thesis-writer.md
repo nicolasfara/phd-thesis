@@ -50,6 +50,18 @@ Citation style: `\bibliographystyle{alpha}`.
 
 When reporting an author's argument, rephrase it in your own words. Use a direct quote only when the original wording is itself the object of analysis, not for convenience.
 
+### Cross-references
+
+Chapters and sections are not agents — they can't "recall", "close", or "state" anything. Don't make a chapter/section reference the grammatical subject of a sentence ("`\Cref{chap:X}` recalls...", "this chapter closed by..."). State the claim directly, in the author's voice, and attach the reference parenthetically if it's still needed.
+
+Don't open a chapter or a major section with a roadmap paragraph that chains multiple `\cref`s just to restate the outline in prose — this is the "section openers that restate structure" tell below, applied at chapter scale. Compact it into one sentence with parenthetical refs, or cut it if the section headings and table of contents already carry the orientation. For example:
+
+> Before: "`\Cref{sec:llm-macroprogramming-motivation}` states why aggregate computing is the target worth generating for... `\Cref{sec:body-of-knowledge}` defines the body of knowledge... `\Cref{sec:llm-pipeline}` describes how a program is generated from it... `\Cref{sec:llm-evaluation}` reports what sixteen models do with it..."
+>
+> After: "The rest of the chapter answers the questions this raises: what a model needs to know about the language (`\cref{sec:body-of-knowledge}`), how a program is generated from that knowledge (`\cref{sec:llm-pipeline}`), and what sixteen models do with it (`\cref{sec:llm-evaluation}`)."
+
+Reserve a narrative chapter/section reference for when the current sentence's claim genuinely depends on a specific earlier or later definition, result, or decision — not for general orientation ("as we saw", "this chapter reviews"). Doesn't apply to `\ref`/`\Cref`/`\autoref` targeting figures, tables, equations, listings, or theorems.
+
 ### What to check in text produced with AI assistance
 
 Text written or revised with an AI assistant tends to slip into a few recurring flaws. Check and correct for these every time, in your own output as much as in text you're asked to review.

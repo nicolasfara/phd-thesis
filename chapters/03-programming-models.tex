@@ -1,15 +1,15 @@
 \chapter{Programming Models for Large-scale Distributed Systems}
 \label{chap:programming-models}
 
-\Cref{chap:edge-cloud-continuum} fixed the substrate this thesis targets;
+The edge-cloud continuum is the substrate this thesis targets (\cref{chap:edge-cloud-continuum});
 this chapter reviews how the systems that run on it can be programmed.
 %
 Its subject is macroprogramming -- giving a collective one global program instead of one program per device -- and the language support around it,
 from the type-level machinery that makes coordination obligations checkable to the \ac{LLM}-assisted generation of programs in the \acp{DSL} that host such programs.
 %
 Three paradigms carry the review -- aggregate computing, choreographic programming, and multitier programming -- because the thesis builds on all three at once:
-\cref{chap:language-and-coordination} unifies them in a single coordination model,
-and \cref{chap:language-based-macroprogramming} applies the \ac{LLM} material to one of their \acp{DSL}.
+it later unifies them in a single coordination model (\cref{chap:language-and-coordination})
+and applies the \ac{LLM} material to one of their \acp{DSL} (\cref{chap:language-based-macroprogramming}).
 
 \section{Introduction to Macroprogramming}
 \label{sec:macro-programming}
@@ -64,9 +64,11 @@ regardless of how many devices instantiate it or how often the set of participan
 %
 \Cref{subsec:collective-adaptive-systems} already argued that this is exactly the guarantee a \ac{CAS} needs.
 %
-\Cref{sec:foundational-paradigms} reviews three paradigms that realise this idea -- aggregate computing, choreographic programming, and multitier programming -- together with the platforms that turn them into usable tools;
-\cref{sec:advanced-linguistic-abstractions} then looks at the language machinery -- monads, effects, and capabilities -- that these paradigms increasingly rely on to make coordination obligations part of a program's type;
-\cref{sec:llms-for-code-generation} closes on a complementary strategy for the same goal, using \acp{LLM} to lower the cost of writing macro-programs and the domain-specific languages that host them.
+The rest of the chapter reviews three paradigms that realise this idea -- aggregate computing, choreographic programming, and multitier programming -- together with the platforms that turn them into usable tools (\cref{sec:foundational-paradigms}).
+%
+It then looks at the language machinery -- monads, effects, and capabilities -- that these paradigms increasingly rely on to make coordination obligations part of a program's type (\cref{sec:advanced-linguistic-abstractions}),
+and closes on a complementary strategy for the same goal,
+using \acp{LLM} to lower the cost of writing macro-programs and the domain-specific languages that host them (\cref{sec:llms-for-code-generation}).
 
 \section{Foundational Macroprogramming Paradigms}
 \label{sec:foundational-paradigms}
@@ -79,7 +81,7 @@ Choreographic programming derives one program per participant from a description
 %
 Multitier programming derives per-tier code from a single program annotated with placement information (\cref{subsec:multitier-programming}).
 %
-\Cref{subsec:cas-platforms} then reviews the toolchains that turn the first of these, aggregate computing, into engineering practice for collective and self-organising systems, the setting most of this thesis builds on.
+The toolchains that turn the first of these, aggregate computing, into engineering practice for collective and self-organising systems -- the setting most of this thesis builds on -- follow (\cref{subsec:cas-platforms}).
 
 \subsection{Aggregate Computing}
 \label{subsec:aggregate-computing}

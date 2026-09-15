@@ -7,54 +7,47 @@
 % components, application vs. infrastructural devices, owner and surrogate -- is
 % Chapter 5's, and is referenced rather than restated.
 
-\Cref{thm:deployment-independence} established that,
-under stated conditions,
-every correct deployment of a macro-program yields the same observable behaviour.
+Under stated conditions, every correct deployment of a macro-program yields the same observable behaviour (\cref{thm:deployment-independence}).
 %
 The choice among deployments is therefore free on functional grounds and constrained only by non-functional ones,
 which is what makes it worth revising while the system runs.
 %
-\Cref{chap:deployment-and-reconfiguration} took up that revision with policies written by hand:
-a self-organising rule that reacts to a local trigger,
-a declarative specification whose planner recomputes an assignment when the infrastructure changes.
+The previous chapter revised it with policies written by hand (\cref{chap:deployment-and-reconfiguration}):
+a self-organising rule reacting to a local trigger, and a declarative specification whose planner recomputes an assignment when the infrastructure changes.
 %
-Both require someone to state, in advance, what a good deployment looks like.
+Both require someone to state in advance what a good deployment looks like.
 
-That requirement is not always easy to meet.
+Stating the rule is straightforward when the objective is a single quantity:
+keep the battery above a threshold, or keep the plan within a carbon budget.
 %
-When the objective is a single quantity -- keep the battery above a threshold, keep the plan within a carbon budget -- stating the rule is straightforward.
+It stops being obvious when several objectives compete,
+and when the quantity that should drive the decision belongs to the collective rather than to any device.
 %
-When several objectives compete,
-and when the quantity that should drive the decision is a property of the collective rather than of any device,
-the rule stops being obvious.
+This chapter works with one such quantity, network congestion.
 %
-Network congestion is the case this chapter works with:
-it is produced by the offloading decisions themselves,
+Congestion is produced by the offloading decisions themselves,
 no device observes it directly,
-and whether a device should offload under congestion depends on where in the network that device sits.
+and whether a device should offload under congestion depends on where in the network it sits.
 %
-A hand-written policy has to guess the thresholds;
-\cref{sec:ml-for-topologies} argued that a learned one can be trained to find them instead.
+A hand-written policy has to guess the thresholds.
+A learned policy can be trained to find them instead (\cref{sec:ml-for-topologies}).
 
-This chapter builds that learned policy,
-and so removes the requirement of stating the rule in advance.
+This chapter builds that learned policy, and so removes the requirement of stating the rule in advance.
 %
-It states what makes offloading a macro-program harder than the binary decision of \cref{subsec:learning-based-offloading},
-and why deployment independence licenses posing it as a learning problem (\cref{sec:collective-offloading-learning});
-gives the learner a heterogeneous graph as its state,
-with a \ac{GNN} over it as the Q-function (\cref{sec:hetero-graph-state});
-and adds the collective summary the graph alone does not supply -- computed by an aggregate program running on the very devices whose deployment is being decided -- to arrive at the resulting algorithm (\cref{sec:idhgql}).
+Offloading a macro-program is harder than the binary decision of \cref{subsec:learning-based-offloading},
+and deployment independence is what licenses posing it as a learning problem (\cref{sec:collective-offloading-learning}).
 %
-Simulations then test it (\cref{sec:idhgql-evaluation}),
-and a closing discussion states what it does not yet cover (\cref{sec:idhgql-discussion}).
+The learner takes a heterogeneous graph as its state, with a \ac{GNN} over that graph as the Q-function (\cref{sec:hetero-graph-state}),
+and an aggregate program running on the very devices whose deployment is being decided supplies the collective summary the graph alone does not carry (\cref{sec:idhgql}).
+%
+Simulations then test the result (\cref{sec:idhgql-evaluation}), and a closing discussion states what it does not yet cover (\cref{sec:idhgql-discussion}).
 %
 The contribution is published as~\cite{Farabegoli:2026:HeteroGNN}.
 
 \section{Collective Offloading as a Learning Problem}
 \label{sec:collective-offloading-learning}
 
-Offloading, as \cref{subsec:learning-based-offloading} posed it,
-concerns one computation and two possible hosts:
+Offloading as posed in \cref{subsec:learning-based-offloading} concerns one computation and two possible hosts:
 run it here, or send it there.
 %
 The unit being placed in this thesis is not one computation.
@@ -63,50 +56,45 @@ A macro-program is a \ac{DAG} of components (\cref{subsec:macroprogram-dag}),
 instantiated once per application device,
 and each of the resulting component instances is separately deployable.
 %
-A device therefore does not decide whether to offload;
-it decides, for each of its component instances, where that instance runs.
-%
-The target set is the infrastructural devices it can reach, plus itself:
+A device therefore does not decide whether to offload.
+It decides, for each of its component instances, where that instance runs,
+choosing among the infrastructural devices it can reach and itself:
 $\ihostIdSet \cup \{\deviceId\}$.
 %
-Offloading is partial by construction --
-a device may keep some instances and place others on different surrogates --
-which is exactly the freedom the decomposition of \cref{chap:pulverization} was introduced to expose,
-and exactly what a binary formulation cannot express.
+Offloading is partial by construction: a device may keep some instances and place others on different surrogates.
+This is the freedom the decomposition of \cref{chap:pulverization} was introduced to expose, and a binary formulation cannot express it.
 
-Three further properties separate this problem from the one \cref{subsec:reinforcement-learning} sketched.
+Three further properties separate this problem from the one sketched in \cref{subsec:reinforcement-learning}.
 
-First, the decision is taken by every application device, concurrently, with no central arbiter.
+First, every application device takes the decision concurrently, with no central arbiter.
 %
 This is a constraint inherited from the setting, not a design preference:
 the systems of \cref{subsec:cas-platforms} have no node that sees the whole network,
-and a policy that assumed one would not run on them.
+and a policy assuming one would not run on them.
 %
-Each device therefore acts on what it can observe locally and from its neighbours.
+Each device acts on what it observes locally and on what its neighbours report.
 
 Second, the objectives conflict.
 %
-Keeping a component instance local costs the device battery and costs the infrastructure nothing;
-offloading it reverses both.
+Keeping a component instance local costs the device battery and costs the infrastructure nothing, and offloading it reverses both.
 %
-Offloading to the cloud preserves battery as well as offloading to the edge does, at ten times the price;
-offloading everything to the edge preserves battery cheaply until the edge servers saturate.
+Offloading to the cloud preserves battery as well as offloading to the edge, at ten times the price.
+Offloading everything to the edge preserves battery cheaply until the edge servers saturate.
 %
 No single ordering of deployments follows from these criteria,
 so the policy has to be told how to weigh them.
 
 Third, and least tractable by hand,
-some of what determines a good decision is produced by the decisions themselves.
+part of what determines a good decision is produced by the decisions themselves.
 %
 When many devices in one area offload at once,
 the wireless links they share congest,
-and the latency of the very offloading that caused it degrades.
+and the offloading that caused the congestion is itself slowed by it.
 %
-Congestion is a property of a region of the network,
-not of a device;
-a device can measure its own link quality but cannot tell whether the cause is local crowding or something else.
+Congestion belongs to a region of the network, not to a device.
+A device can measure its own link quality, but cannot tell whether the cause is local crowding or something else.
 %
-A policy that ignores it will offload precisely where offloading is most expensive.
+A policy that ignores congestion will offload precisely where offloading is most expensive.
 
 \paragraph{A running example.}
 The crowd-steering application makes the three properties concrete,
@@ -121,9 +109,10 @@ a \emph{route planner}, collective, computing a route from that estimate;
 and a \emph{navigation system}, local, turning the route into guidance for the person carrying the device.
 %
 The two collective components are the expensive ones,
-and the two ends of the \ac{DAG} are pinned to the device that owns them:
-the position sensor reads a quantity that varies with the owner's own position,
-which is exactly the case \cref{subsec:deployment-independence} identified as not uniform along a forwarding chain,
+and the two ends of the \ac{DAG} are pinned to the device that owns them.
+%
+The position sensor reads a quantity that varies with the owner's own position,
+the case identified in \cref{subsec:deployment-independence} as not uniform along a forwarding chain,
 and the navigation system drives the owner's own display.
 %
 When the venue is quiet,
@@ -131,13 +120,12 @@ placing the density estimator and the route planner on an edge server saves batt
 %
 When a crowd forms,
 the devices that most need a fresh route are the ones whose links are most congested,
-and running the same two components locally becomes the better choice --
-paid for in battery.
+and running the same two components locally becomes the better choice, paid for in battery.
 %
-The decision reverses depending on a property of the crowd, not of the device.
+The decision reverses on a property of the crowd, not of the device.
 
 \paragraph{What makes the problem posable.}
-Nothing in the above says that any assignment of component instances to hosts is admissible.
+Nothing above says that any assignment of component instances to hosts is admissible.
 %
 That comes from \cref{chap:pulverization}.
 %
@@ -145,24 +133,21 @@ By \cref{thm:deployment-independence},
 a correct deployment of a macro-program whose components are self-stabilising computes the same thing wherever its instances are placed,
 provided the sensor state is uniform along each forwarding chain.
 %
-A learner searching over deployments therefore cannot break the application:
-whatever it chooses, the macro-program still converges to the same answer,
-and only the non-functional cost of getting there changes.
+A learner searching over deployments therefore cannot break the application.
+Whatever it chooses, the macro-program still converges to the same answer, and only the non-functional cost of getting there changes.
 %
-This is why the action space below is left unconstrained,
-and why the reward can be written purely in terms of battery, money, and latency,
-with no term penalising incorrect results.
+The action space below is left unconstrained for this reason,
+and the reward can be written in terms of battery, money, and latency alone, with no term penalising incorrect results.
 %
-Without the theorem the same formulation would need constraints ruling out placements that break the computation,
-and a reward that could tell a cheap deployment from a wrong one.
+Without the theorem, the same formulation would need constraints ruling out placements that break the computation,
+and a reward able to tell a cheap deployment from a wrong one.
 
 \section{Representing the Continuum as a Heterogeneous Graph}
 \label{sec:hetero-graph-state}
 
 The state a learned policy sees has to expose the structure the decision depends on.
 %
-For this problem that structure is a graph,
-and one whose nodes and links are of different kinds:
+Here that structure is a graph, and one whose nodes and links are of different kinds:
 the argument of \cref{subsec:gnns-for-edge}, made concrete on the deployment problem of \cref{chap:pulverization}.
 
 At time $t$ the system is a graph $G_t = (V_t, E_t)$.
@@ -179,8 +164,9 @@ and infrastructural-to-infrastructural.
 %
 The distinction is not cosmetic.
 %
-An application-to-application edge carries the peer-to-peer neighbourhood $\nbrhood$ over which collective components exchange state;
-an application-to-infrastructural edge carries the offloading relation,
+An application-to-application edge carries the peer-to-peer neighbourhood $\nbrhood$ over which collective components exchange state.
+%
+An application-to-infrastructural edge carries the offloading relation,
 and the features on its endpoints -- price per hour, spare capacity, round-trip latency -- have no counterpart on the other kind.
 %
 Folding both into one relation, as a homogeneous \ac{GNN} would,
@@ -194,7 +180,7 @@ whose four parts differ in where they come from.
 %
 The first, $i_{\deviceId,t}$, is what the device measures about itself: battery level and processor load.
 %
-The second, $\component_{p,\deviceId}$, is the fraction of its own component instances currently running locally --
+The second, $\component_{p,\deviceId}$, is the fraction of its own component instances currently running locally,
 the device's present deployment, which the next action revises.
 %
 The third, $N_{\deviceId,t}$, is what its neighbours and the servers it can reach report:
@@ -203,8 +189,7 @@ prices and capacities over application-to-infrastructural ones.
 %
 Some of this is not measurable locally at all and arrives only by exchange, a hop at a time.
 %
-The fourth, $c_{\deviceId,t}$, is the collective term,
-and \cref{sec:idhgql} is about where it comes from.
+The fourth, $c_{\deviceId,t}$, is the collective term, and where it comes from is the subject of \cref{sec:idhgql}.
 
 An action assigns one component to one host.
 %
@@ -213,8 +198,9 @@ The action space is
     \mathcal{A} = \{\, \component_j \mapsto \deviceId_k \;\mid\; \component_j \in \overline\component,\; \deviceId_k \in \ihostIdSet \cup \{\deviceId\} \,\},
 \]
 of size $|\overline\component| \cdot |\ihostIdSet \cup \{\deviceId\}|$:
-the number of components times the number of reachable hosts,
-and not exponential in the number of instances,
+the number of components times the number of reachable hosts.
+%
+It is not exponential in the number of instances,
 because each device decides for itself alone and for one component at a time.
 
 The reward scalarises the competing objectives of \cref{sec:collective-offloading-learning} into one signal.
@@ -225,9 +211,9 @@ Given per-objective rewards $\mathcal{R}_i$,
     \qquad \sum_{i=1}^{n} \lambda_i = 1 .
 \]
 The weights $\lambda_i$ are where the system's operator states the trade-off,
-and varying them is how \cref{subsec:idhgql-multiobjective} tests whether the learner honours it.
+and varying them tests whether the learner honours it (\cref{subsec:idhgql-multiobjective}).
 %
-\Cref{sec:idhgql-discussion} returns to what a linear combination cannot express.
+What a linear combination cannot express is taken up in the discussion (\cref{sec:idhgql-discussion}).
 
 \subsection{A Heterogeneous GNN as the Q-function}
 \label{subsec:heterognn-q-function}
@@ -238,8 +224,9 @@ Here the state is $G_t$,
 so the network approximating it is a \ac{GNN} over that graph,
 built from the heterogeneous attention of \cref{subsec:gnns-for-edge}.
 
-Nodes of different types do not carry the same features:
-an application device is described by battery level, processor load, and the collective term $c_{\deviceId,t}$,
+Nodes of different types do not carry the same features.
+%
+An application device is described by battery level, processor load, and the collective term $c_{\deviceId,t}$;
 an infrastructural device by price, spare capacity, and latency.
 %
 The two feature vectors have different dimensions and different meanings,
@@ -248,10 +235,11 @@ so the network cannot start from a single input layer.
 It starts instead from a per-type projection into a shared hidden space of dimension $h$,
 after which every node embedding lives in the same space and messages from different kinds of neighbour can be summed.
 %
-This is obtained in practice by writing a homogeneous graph attention network~\cite{DBLP:conf/iclr/VelickovicCCRLB18}
-and replicating its message-passing operator once per edge type,
-each replica holding its own weights while projecting into the common space --
-the heterogeneous message-passing scheme of \cref{subsec:gnns-for-edge}, realised by replication rather than by a dedicated architecture~\cite{DBLP:conf/www/WangJSWCYY19}.
+In practice this is a homogeneous graph attention network~\cite{DBLP:conf/iclr/VelickovicCCRLB18}
+whose message-passing operator is replicated once per edge type,
+each replica holding its own weights and projecting into the common space.
+%
+It realises the heterogeneous message-passing scheme of \cref{subsec:gnns-for-edge} by replication rather than by a dedicated architecture~\cite{DBLP:conf/www/WangJSWCYY19}.
 
 A message crossing an edge of type $\tau$ from $u$ to $v$ at layer $\ell$ is
 \begin{equation}
@@ -261,8 +249,9 @@ A message crossing an edge of type $\tau$ from $u$ to $v$ at layer $\ell$ is
 with $\mathbf{W}^{\tau} \in \mathbb{R}^{h \times h}$ the weights of the replica for that edge type,
 and $\alpha^{\tau}_{uv}$ an attention coefficient computed from the two node embeddings together with the features of the edge itself, such as its measured latency.
 %
-Attention over edge features is what lets the network prefer a fast link to a slow one between servers that are otherwise alike --
-the two-level weighting of \cref{subsec:gnns-for-edge}, with the second level reading link quality rather than link type alone.
+Attention over edge features lets the network prefer a fast link to a slow one between servers that are otherwise alike.
+%
+This is the two-level weighting of \cref{subsec:gnns-for-edge}, with the second level reading link quality rather than link type alone.
 %
 Writing $\Psi$ for the edge types present in $G_t$ and $\mathcal{N}^{\tau}_v$ for the neighbours of $v$ across type $\tau$,
 a layer updates each node by summing over both:
@@ -270,9 +259,9 @@ a layer updates each node by summing over both:
     \label{eq:hetero-aggregation}
     \mathbf{h}^{(\ell+1)}_v = \sigma\!\left( \sum_{\tau \in \Psi} \; \sum_{u \in \mathcal{N}^{\tau}_v} \mathbf{m}^{\tau}_{u \to v} \right).
 \end{equation}
-An application device's embedding thus accumulates two distinct kinds of context:
-from its peers, whatever they report about the local collective situation;
-from the servers it can reach, what those servers cost and how loaded they are.
+An application device's embedding therefore accumulates two kinds of context:
+what its peers report about the local collective situation,
+and what the servers it can reach cost and how loaded they are.
 
 After $L$ such layers the embeddings feed a multi-layer perceptron that emits one value per action,
 $\mathbf{Q}_v \in \mathbb{R}^{|\mathcal{A}|}$,
@@ -280,47 +269,45 @@ and the policy takes $\arg\max_a \mathbf{Q}_v[a]$.
 %
 The head is applied only at application-device nodes.
 %
-Infrastructural devices take no decisions;
+Infrastructural devices take no decisions:
 they enter the computation as sources of information about the targets, and stop there.
 %
 \Cref{fig:heterognn-architecture} shows the resulting network.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
     \centering
     \includegraphics[width=0.85\textwidth]{heterognn-architecture.pdf}
     \caption[The heterogeneous GNN approximating the Q-function]{The heterogeneous graph neural network used to approximate the Q-function. Application and infrastructural devices enter through separate per-type projections into a shared hidden space, message passing is replicated once per edge type, and the Q-value head is applied only at application-device nodes, which are the ones taking offloading decisions. Adapted from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:heterognn-architecture}
 \end{figure}
 
-This architecture is chosen as much for where it can run as for what it can represent.
+The architecture is chosen as much for where it can run as for what it can represent.
 %
-Because both \cref{eq:hetero-message,eq:hetero-aggregation} are defined over a node and its direct neighbours,
-a trained network can be evaluated without assembling the graph anywhere.
+Both \cref{eq:hetero-message,eq:hetero-aggregation} are defined over a node and its direct neighbours,
+so a trained network can be evaluated without assembling the graph anywhere.
 %
 Each device computes its own embedding from messages exchanged with the devices it is already connected to,
 and reads its Q-values off its own head.
 %
-Training may assume the global graph;
-execution does not,
-and the decentralisation \cref{sec:collective-offloading-learning} required is preserved rather than approximated.
+Training may assume the global graph; execution does not.
+%
+The decentralisation required in \cref{sec:collective-offloading-learning} is preserved rather than approximated.
 
 \section{Informed Deep Hetero Graph Q-Learning}
 \label{sec:idhgql}
 
-\Cref{sec:hetero-graph-state} gives the learner a state, an action space, and a reward.
+The learner now has a state, an action space, and a reward (\cref{sec:hetero-graph-state}).
 %
-What it does not give is the collective term $c_{\deviceId,t}$,
-and the algorithm that turns the pieces into a trained policy.
+Two pieces are still missing:
+the collective term $c_{\deviceId,t}$, and the algorithm that turns the pieces into a trained policy.
 %
-Both are supplied here.
-%
-The result is the \emph{Informed Deep Hetero Graph Q-Learning} (IDHGQL) framework,
+With both supplied, the result is the \emph{Informed Deep Hetero Graph Q-Learning} (IDHGQL) framework,
 sketched in \cref{fig:idhgql-overview}:
 a heterogeneous \ac{GNN} as Q-function,
 an aggregate program supplying the collective term,
 and a deep Q-learning procedure over graph-valued transitions.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
     \centering
     \def\svgwidth{\textwidth}\footnotesize
     \input{figures/idhgql-overview.pdf_tex}
@@ -340,35 +327,33 @@ so a property that depends on a region of diameter $D$ needs $O(D)$ layers befor
 %
 Making the network that deep to compute a quantity as simple as local crowding trades parameters and training time for something the network need not learn at all.
 
-The same quantity is what aggregate computing computes natively.
+Aggregate computing computes that same quantity natively.
 %
 Crowding is a field over the network (\cref{subsec:aggregate-computing}):
 a distributed data structure with one value per device,
 produced by repeated exchange with neighbours,
 self-stabilising in the sense of \cref{subsec:deployment-independence}.
 %
-So an aggregate program is run alongside the macro-program, over the same devices and the same neighbourhood relation $\nbrhood$,
-computing at each device an estimate of the density around it as a proxy for the congestion its links are subject to.
+An aggregate program therefore runs alongside the macro-program, over the same devices and the same neighbourhood relation $\nbrhood$.
 %
-The value that program produces at $\deviceId$ is $c_{\deviceId,t}$,
+At each device it estimates the density around that device, as a proxy for the congestion its links are subject to.
+%
+The value produced at $\deviceId$ is $c_{\deviceId,t}$,
 and it is appended to that device's feature vector in $G_t$ before the network of \cref{subsec:heterognn-q-function} reads it.
 
 Two properties make this practical on the devices that have to run it.
 %
-A round costs $O(|\neigh(\deviceId)|)$ at each device,
-since it processes only what its direct neighbours sent,
-and rounds proceed asynchronously,
-each device gathering the latest messages it holds, computing, and broadcasting the result.
+A round costs $O(|\neigh(\deviceId)|)$ at each device, since it processes only what its direct neighbours sent.
+Rounds proceed asynchronously: each device gathers the latest messages it holds, computes, and broadcasts the result.
 %
-Because the computation is self-stabilising,
-a message that arrives late or not at all perturbs the estimate transiently and is absorbed as the rounds continue,
-so no synchronisation barrier is needed between the aggregate program and the learner.
+The computation is self-stabilising,
+so a message that arrives late or not at all perturbs the estimate only transiently and is absorbed as the rounds continue.
+No synchronisation barrier is needed between the aggregate program and the learner.
 %
-The two can therefore run at different rates:
-the density field can be refreshed several times between one offloading decision and the next,
-which is what keeps the estimate fresh when devices move.
+The two can therefore run at different rates.
+The density field can be refreshed several times between one offloading decision and the next, which keeps the estimate fresh when devices move.
 
-This arrangement closes a loop that runs through the whole thesis.
+The same paradigm appears here in two roles.
 %
 The macro-program is the thing being deployed.
 %
@@ -376,18 +361,18 @@ An aggregate program of the same kind,
 written against the same abstractions and running on the same network,
 is also the sensor that tells the deployment policy what the collective is doing.
 %
-The paradigm that \cref{chap:programming-models} introduced for expressing collective behaviour turns out to express the observation of that behaviour just as well,
-and the policy of \cref{subsec:heterognn-q-function} is left to learn only what it uniquely can:
-what to do about a congestion estimate it is handed, rather than how to compute one.
+The paradigm introduced in \cref{chap:programming-models} for expressing collective behaviour expresses the observation of that behaviour just as well,
+and the policy of \cref{subsec:heterognn-q-function} learns only what to do about a congestion estimate it is handed, not how to compute one.
 
 \subsection{Training and Execution}
 \label{subsec:idhgql-training}
 
-Training follows deep Q-learning (\cref{subsec:reinforcement-learning}) with the two mechanisms that make it stable --
-an experience-replay buffer and a target network --
-adapted to a state that is a graph and to a system where every device is an agent.
+Training follows deep Q-learning (\cref{subsec:reinforcement-learning}), with the two mechanisms that make it stable:
+an experience-replay buffer and a target network.
+%
+Both are adapted to a state that is a graph, and to a system where every device is an agent.
 
-The adaptation is in what a transition is.
+The adaptation is in what counts as a transition.
 %
 A single experience records the whole network's step:
 the enriched graph $G_o$ observed at time $t$,
@@ -395,12 +380,12 @@ the joint action $a_t$ collecting every device's individual choice,
 a graph $G_r$ of per-device rewards,
 and the resulting graph $G'_o$.
 %
-Storing transitions at this granularity is what lets one sampled experience carry the consequences of decisions taken simultaneously elsewhere in the network --
+At this granularity, one sampled experience carries the consequences of decisions taken simultaneously elsewhere in the network,
 the interaction between agents that a per-device buffer would discard.
 
 Each step proceeds as follows.
 %
-The aggregate program of \cref{subsec:collective-information} refreshes the collective term and the enriched graph $G_o$ is observed.
+The aggregate program of \cref{subsec:collective-information} refreshes the collective term, and the enriched graph $G_o$ is observed.
 %
 Each device then selects an action $\epsilon$-greedily:
 a random one with probability $\epsilon$,
@@ -426,8 +411,7 @@ Training is centralised and execution is not.
 During training the procedure holds the whole graph and samples from one buffer,
 which is what makes the joint effect of concurrent decisions learnable at all.
 %
-Once trained,
-the network is evaluated as \cref{subsec:heterognn-q-function} described:
+Once trained, the network is evaluated as described in \cref{subsec:heterognn-q-function}:
 each device exchanges embeddings with its neighbours, reads its own Q-values, and acts.
 %
 No component of the deployed system needs a view of the network it could not obtain locally.
@@ -435,15 +419,15 @@ No component of the deployed system needs a view of the network it could not obt
 \section{Experimental Validation}
 \label{sec:idhgql-evaluation}
 
-Two questions are put to the framework.
+The evaluation asks two questions.
 %
-Does it learn policies that honour a stated trade-off among conflicting objectives?
+Does the framework learn policies that honour a stated trade-off among conflicting objectives?
 %
 And does the collective term of \cref{subsec:collective-information} change what it learns,
 or is the graph structure sufficient on its own?
 %
-The second is the one the design turns on,
-so it is answered with an ablation rather than a comparison against an external baseline.
+The second question is the one the design turns on,
+and it is answered with an ablation rather than with a comparison against an external baseline.
 
 \subsection{Setup}
 \label{subsec:idhgql-setup}
@@ -463,8 +447,9 @@ starting from full batteries and an entirely local deployment,
 so any offloading observed is something the policy chose rather than an initial condition.
 
 Runs are simulated in Alchemist~\cite{DBLP:journals/jos/PianiniMV13},
-which \cref{subsec:pulverization-validation} already used for the functional validation of the model,
-and which executes the components as ScaFi macro-programs~\cite{casadei2022scafi}
+the simulator already used for the functional validation of the model (\cref{subsec:pulverization-validation}).
+%
+It executes the components as ScaFi macro-programs~\cite{casadei2022scafi},
 under an extension enacting the deployment semantics of \cref{subsec:pulverization-execution-model}.
 %
 The learner runs alongside as a separate process.
@@ -498,12 +483,24 @@ offloading everything to a randomly chosen edge server,
 offloading everything to a randomly chosen cloud server,
 and reallocating every component at random at every step.
 %
-The first three bracket the trade-off --
+The first three bracket the trade-off:
 local execution costs nothing and drains the batteries fastest,
-either form of offloading preserves battery and accumulates cost --
-while the fourth measures what movement alone buys, absent a policy.
+while either form of offloading preserves battery and accumulates cost.
+%
+The fourth measures what reallocation alone achieves, without a policy.
 
-\begin{figure}[t]
+\Cref{fig:idhgql-edge-cases} puts the whole reward on one objective at a time.
+%
+With $\alpha = 1$ the policy offloads nearly everything and holds the batteries high, paying for it;
+with $\beta = 1$ it keeps everything local, spends nothing, and lets the batteries run down;
+with $\gamma = 1$ it stops using the edge servers.
+%
+Each row is the extreme the weights ask for, which is the least the learner should manage.
+%
+Against the random-allocation strategy the learned policies are better on every metric they were asked to optimise,
+so the improvement comes from the policy and not from reallocating at all.
+
+\begin{figure}[tbp]
     \centering
     \includegraphics[width=\textwidth]{idhgql-edge-case-battery.pdf}
     \\[0.3em]
@@ -514,29 +511,10 @@ while the fourth measures what movement alone buys, absent a policy.
     \label{fig:idhgql-edge-cases}
 \end{figure}
 
-\Cref{fig:idhgql-edge-cases} puts the whole reward on one objective at a time.
-%
-With $\alpha = 1$ the policy offloads nearly everything and holds the batteries high, paying for it;
-with $\beta = 1$ it keeps everything local, spends nothing, and lets the batteries run down;
-with $\gamma = 1$ it stops using the edge servers.
-%
-Each row is the extreme the weights ask for,
-which is the least the learner should manage and the first thing worth checking.
-%
-Against the random-allocation strategy the learned policies are better on every metric they were asked to optimise,
-so the improvement comes from the policy and not from reallocating at all.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.75\textwidth]{idhgql-battery-cost-tradeoff.pdf}
-    \caption[Battery against cost across weight settings]{Battery remaining against accumulated cost for the policies learned under different weight settings. The points fall along a trade-off curve: battery is preserved by offloading, and offloading is what costs money. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
-    \label{fig:idhgql-tradeoff}
-\end{figure}
-
 \Cref{fig:idhgql-tradeoff} plots battery against cost across the weight settings.
 %
 The learned policies lie along a curve rather than clustering,
-which says the weights move the outcome continuously between the extremes instead of switching it between two modes.
+so the weights move the outcome continuously between the extremes instead of switching it between two modes.
 %
 \Cref{fig:idhgql-mixed-weights} takes one interior setting, $(\alpha,\beta,\gamma) = (0.3, 0.1, 0.6)$,
 where the dominant term penalises edge-server load.
@@ -545,9 +523,16 @@ The policy that emerges keeps edge usage low, batteries high, and cost correspon
 denied the cheap servers, it preserves battery through the expensive ones,
 which is what the weights, read together, ask for.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
     \centering
-    \includegraphics[width=\textwidth]{idhgql-mixed-weights.pdf}
+    \includegraphics[width=0.75\textwidth]{idhgql-battery-cost-tradeoff.pdf}
+    \caption[Battery against cost across weight settings]{Battery remaining against accumulated cost for the policies learned under different weight settings. The points fall along a trade-off curve: battery is preserved by offloading, and offloading is what costs money. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
+    \label{fig:idhgql-tradeoff}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[height=0.8\textheight]{idhgql-mixed-weights.pdf}
     \caption[Learned policy under a mixed reward]{Learned policy with all three objectives active at $(\alpha,\beta,\gamma) = (0.3, 0.1, 0.6)$, where edge-server load dominates. Edge usage stays low, and battery is preserved through the cloud servers at a correspondingly higher cost. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-mixed-weights}
 \end{figure}
@@ -563,7 +548,20 @@ so offloading from within a crowd costs latency that offloading from a sparse re
 The reward now balances battery, cost, and latency,
 and the observation carries the collective density field of \cref{subsec:collective-information}.
 
-\begin{figure}[t]
+The reference point is a hand-written rule of the kind evaluated in \cref{chap:deployment-and-reconfiguration}:
+count the neighbours within a radius $s$, execute locally if that count exceeds a threshold $th$, and otherwise offload.
+%
+\Cref{fig:idhgql-density-baseline} shows what it does under three settings of $(s, th)$.
+%
+The partition it induces between local and offloading devices shifts substantially with the parameters,
+and no setting among the three separates the two dense zones from their surroundings cleanly.
+%
+The rule is not wrong; it is underdetermined.
+%
+Its parameters encode a judgement about how much crowding is too much,
+and that judgement is what nobody can state in advance for a venue whose crowd keeps changing.
+
+\begin{figure}[tbp]
     \centering
     \begin{subfigure}{0.32\textwidth}
         \centering
@@ -586,20 +584,19 @@ and the observation carries the collective density field of \cref{subsec:collect
     \label{fig:idhgql-density-baseline}
 \end{figure}
 
-The reference point is the hand-written rule of the kind \cref{chap:deployment-and-reconfiguration} would produce:
-count the neighbours within a radius $s$, execute locally if that count exceeds a threshold $th$, otherwise offload.
+\Cref{fig:idhgql-density-ablation} sets the trained policy against the same policy trained without the collective term.
 %
-\Cref{fig:idhgql-density-baseline} shows what it does under three settings of $(s, th)$.
+With it, the learned behaviour is differentiated by position:
+devices inside the dense zones keep their components local, avoiding links they would congest further;
+devices in sparse regions offload and preserve battery;
+devices at the boundary offload part of their components and keep the rest.
 %
-The partition it induces between local and offloading devices shifts substantially with the parameters,
-and no setting among the three separates the two dense zones from their surroundings cleanly.
+That last group matters more than the two extremes.
 %
-The rule is not wrong; it is underdetermined.
-%
-Its parameters encode a judgement about how much crowding is too much,
-and that judgement is exactly what nobody can state in advance for a venue whose crowd keeps changing.
+No binary rule can express the partial deployments a device chooses at the fringe of a crowd,
+and making them available is why the action space of \cref{sec:hetero-graph-state} is per component.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
     \centering
     \begin{subfigure}{0.47\textwidth}
         \centering
@@ -616,19 +613,6 @@ and that judgement is exactly what nobody can state in advance for a venue whose
     \label{fig:idhgql-density-ablation}
 \end{figure}
 
-\Cref{fig:idhgql-density-ablation} sets the trained policy against the same policy trained without the collective term.
-%
-With it,
-the learned behaviour is differentiated by position:
-devices inside the dense zones keep their components local, avoiding links they would congest further;
-devices in sparse regions offload and preserve battery;
-devices at the boundary offload part of their components and keep the rest.
-%
-That last group matters more than the two extremes.
-%
-The partial deployments a device chooses at the fringe of a crowd are the ones no binary rule can express,
-and they are what the per-component action space of \cref{sec:hetero-graph-state} was introduced to make available.
-
 Without the collective term the policy does not differentiate at all.
 %
 Every device converges on approximately the same fraction of locally executed components,
@@ -636,13 +620,24 @@ irrespective of whether it sits in a dense zone or a sparse one.
 %
 The graph structure was still there,
 the heterogeneous message passing still ran,
-and the difference that should have driven the decision was still present in the environment --
-but at the depth used, it did not reach the nodes that needed it.
+and the difference that should have driven the decision was still present in the environment.
+At the depth used, it did not reach the nodes that needed it.
 %
-The comparison is the chapter's central evidence:
+This comparison is the chapter's central evidence:
 what makes the policy context-aware is not the learner and not the graph, but the collective computation feeding them.
 
-\begin{figure}[t]
+A last run tests whether the policy tracks a change it did not see during training.
+%
+Three devices in one dense zone move out of it at $t = 100$,
+and the trained network is applied unchanged, with no further learning.
+%
+\Cref{fig:idhgql-density-mobility} shows the three switching from local execution to offloading once they arrive in the sparse region.
+%
+The policy responds to the density field it reads, not to the positions it was trained on.
+%
+This is the inductive behaviour identified in \cref{subsec:gnns-for-edge} as the requirement for acting on a topology that keeps changing.
+
+\begin{figure}[tbp]
     \centering
     \begin{subfigure}{0.32\textwidth}
         \centering
@@ -665,16 +660,6 @@ what makes the policy context-aware is not the learner and not the graph, but th
     \label{fig:idhgql-density-mobility}
 \end{figure}
 
-A last run tests whether the policy tracks a change it did not see during training.
-%
-Three devices in one dense zone move out of it at $t = 100$;
-the trained network is applied unchanged, with no further learning.
-%
-\Cref{fig:idhgql-density-mobility} shows the three switching from local execution to offloading once they arrive in the sparse region.
-%
-The policy responds to the density field it reads, not to the positions it was trained on,
-which is the inductive behaviour \cref{subsec:gnns-for-edge} identified as the requirement for acting on a topology that keeps changing.
-
 \section{Discussion}
 \label{sec:idhgql-discussion}
 
@@ -687,21 +672,21 @@ Four limits qualify that.
 The evidence is simulated.
 %
 The energy model and the price points are taken from published measurements rather than invented,
-and the network conditions follow the same simulator used for the functional validation of \cref{subsec:pulverization-validation},
-but a simulator reproduces the mechanisms it was given.
+and the network conditions follow the same simulator used for the functional validation (\cref{subsec:pulverization-validation}).
 %
-Nothing here has been run on physical devices,
-and the gap that separates the two is not measured.
+A simulator, though, reproduces only the mechanisms it was given.
+%
+Nothing here has been run on physical devices, and the gap between the two is not measured.
 
-The scalarised reward buys interpretability at a stated cost.
+The scalarised reward is easy to read and limited in what it can reach.
 %
-A weighted sum can only reach deployments on the convex portion of the trade-off,
-so any policy that would be optimal in a concave region of the Pareto front is unreachable by any choice of $\lambda_i$.
+A weighted sum only reaches deployments on the convex portion of the trade-off,
+so a policy that would be optimal in a concave region of the Pareto front is unreachable by any choice of $\lambda_i$.
 %
 The weights are also not calibrated:
 $(0.3, 0.1, 0.6)$ expresses a priority, not a quantity, and moving them is a matter of trial.
 %
-Multi-objective methods that learn a set of policies covering the front instead of one policy per weight vector would remove both objections,
+Multi-objective methods that learn a set of policies covering the front, instead of one policy per weight vector, would remove both objections,
 and nothing in the architecture of \cref{subsec:heterognn-q-function} stands in their way.
 
 The learned policies polarise.
@@ -710,9 +695,9 @@ When both kinds of server are available,
 a device tends to commit to the edge or to the cloud rather than splitting its components across the two,
 even where a mixed placement would score better.
 %
-The likely cause is in the representation:
-all application devices are treated as one node type,
-so the network has no way to differentiate a device with an unusual battery or workload profile from its peers,
+The likely cause is in the representation.
+All application devices are treated as one node type,
+so the network cannot tell a device with an unusual battery or workload profile from its peers,
 and the policy it learns is correspondingly uniform.
 %
 Distinguishing application devices by profile,
@@ -728,12 +713,11 @@ and neither device's policy accounts for what the other decided.
 Deployment independence guarantees this cannot break the computation;
 it says nothing about the latency it costs.
 %
-A policy that reasoned over the \ac{DAG} structure as well as the topology,
-placing bound components jointly,
+A policy that reasoned over the \ac{DAG} structure as well as the topology, placing bound components jointly,
 is the clearest gap between what the model of \cref{chap:pulverization} expresses and what the learner of this chapter exploits.
 
-With this chapter Part III has assembled the three ways of revising a deployment at runtime that the thesis offers:
+Part III now holds the three ways of revising a deployment at runtime that this thesis offers:
 the self-organising and declarative policies of \cref{chap:deployment-and-reconfiguration},
 and the learned policy developed here.
 %
-\Cref{chap:demonstrator} puts the model, the languages, and these policies together on a single running system.
+The next chapter puts the model, the languages, and these policies together on a single running system (\cref{chap:demonstrator}).

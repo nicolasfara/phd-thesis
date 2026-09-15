@@ -1,87 +1,80 @@
 \chapter{Deployment and Reconfiguration Strategies on the Edge-Cloud Continuum}
 \label{chap:deployment-and-reconfiguration}
 
-The deployment of a macro-program is deliberately underdetermined.
+Every correct deployment of a well-formed macro-program computes the same thing (\cref{thm:deployment-independence}).
 %
-Every correct deployment of a well-formed macro-program computes the same thing (\cref{thm:deployment-independence}),
-so components can be assigned to hosts -- and later reassigned -- on non-functional grounds alone, without touching the application logic (\cref{sec:pulverization-discussion}).
+The assignment of components to hosts is therefore free: it can be chosen, and later revised, on non-functional grounds alone, without touching the application logic (\cref{sec:pulverization-discussion}).
 %
-The components themselves are accounted for on the language side:
-aggregate computing, choreographic programming, and multitier programming can all be made to produce what the model expects (\cref{chap:language-and-coordination}).
+The language side is settled too:
+aggregate computing, choreographic programming, and multitier programming can all produce the deployable components the model expects (\cref{chap:language-and-coordination}).
 %
-Neither result says who exercises that freedom, or how a deployment is kept good as the infrastructure moves under it.
+Neither result says who uses that freedom, or how a deployment is kept good while the infrastructure changes under it.
 
-That question is a control problem at run time.
+Any answer has to settle two decisions.
 %
-Whichever way it is answered, two decisions have to be made.
+The first is what the deployment is for.
+It fixes which quantity a candidate deployment should improve -- energy drawn, battery remaining, or carbon emitted -- and how much latency or extra communication that improvement may cost.
 %
-The first is what a deployment is for:
-which non-functional quantity -- energy drawn, battery remaining, carbon emitted -- a candidate deployment should improve, against what it is allowed to cost in latency or communication overhead.
-%
-The second is how often, and by what mechanism, a deployment already running is revisited:
-continuously, in reaction to a local signal, or periodically, by recomputing the assignment from scratch against the infrastructure's current state.
+The second is when a running deployment is revisited:
+continuously, in reaction to a local signal, or at fixed intervals, by recomputing the assignment against the infrastructure's current state.
 
-Both questions are answered three times, at three points of the same design space.
+This chapter evaluates three policies, each settling the two decisions differently.
 %
-The first answer is a single rule, triggered locally:
-a device offloads a specific, resource-heavy component to a nearby host the moment its own battery drops below a threshold, and moves it again if that host becomes unreachable,
-with no search involved and nothing stated beyond the threshold itself (\cref{sec:battery-triggered-offloading}).
+The first is a single local rule:
+a device offloads one resource-heavy component to a nearby host as soon as its own battery drops below a threshold, and moves it again if that host becomes unreachable (\cref{sec:battery-triggered-offloading}).
+Nothing is searched, and nothing is stated beyond the threshold itself.
 %
-The second is self-organising too, but harder:
-infrastructural devices compete for the components application devices would rather not run locally by resizing, through a field built collectively, the region each one leads,
-so a device ends up offloaded to whichever infrastructural device currently combines proximity with spare capacity (\cref{sec:global-self-organising-reconfiguration}).
+The second is self-organising as well, but the devices decide together.
+Infrastructural devices compete for the components application devices would rather not run locally, resizing through a collectively built field the region each one leads,
+so a device is offloaded to whichever infrastructural device combines proximity with spare capacity (\cref{sec:global-self-organising-reconfiguration}).
 %
-The third is declarative:
-an explicit objective over energy and carbon is given once, together with the hardware and latency requirements of every component,
-and a planner searches the space of admissible deployments for one that meets it, repeating the search as the network drifts (\cref{sec:declarative-green-planning}).
-%
-All three are then compared on the same terms (\cref{sec:deployment-reconfiguration-discussion}):
-how much of a targeted non-functional gain -- energy, battery life, carbon, or the share of devices able to offload at all -- each one buys,
-and what that gain costs in extra hops, extra latency, or a slower transient before it materialises.
+The third states the decision declaratively.
+An objective over energy and carbon is given once, together with the hardware and latency requirements of every component,
+and a planner searches the admissible deployments for one that meets it, repeating the search as the network drifts (\cref{sec:declarative-green-planning}).
+
+The three are compared on the same terms at the end of the chapter (\cref{sec:deployment-reconfiguration-discussion}):
+how much they improve the quantity they target -- energy, battery life, carbon, or the share of devices able to offload at all --
+and what that improvement costs in extra hops, extra latency, or a slower transient before it appears.
 
 \section{A Self-organising Offloading Rule Triggered by Battery Level}
 \label{sec:battery-triggered-offloading}
 
-The rescue scenario of \cref{fig:rescue-case-study} supplies the evaluation's macro-program,
-narrowed to the two components whose interaction the offloading decision affects:
+The evaluation uses the rescue scenario of \cref{fig:rescue-case-study}, reduced to the two components the offloading decision affects:
 Emergency Service and Steering Service, both collective~\cite{DBLP:conf/acsos/FarabegoliVC24}.
 %
-Biometrics Acquisition, Navigation System, and Data Analysis are left out,
-since none of them is a candidate for offloading in what follows.
+Biometrics Acquisition, Navigation System, and Data Analysis are left out, since none of them is a candidate for offloading.
 %
-Emergency Service is the expensive one.
+Emergency Service is the expensive component: it locates an emergency from the readings of neighbouring devices.
+Steering Service only guides a rescuer once a location is known, at a negligible computational cost.
 %
-Locating an emergency from neighbouring devices' readings costs far more than Steering Service's job, which is to guide a rescuer once a location is known and costs next to nothing.
-%
-The rule evaluated here accordingly moves only Emergency Service; Steering Service always stays at its owner.
+The rule evaluated here therefore moves Emergency Service alone, and Steering Service always stays at its owner.
 
-In the monolithic deployment -- the baseline used in \cref{subsec:pulverization-validation} to check deployment independence -- both components run at their owner.
+In the monolithic deployment both components run at their owner.
+This is the baseline already used to check deployment independence (\cref{subsec:pulverization-validation}).
 %
-The alternative deployment offloads Emergency Service opportunistically.
+The deployment evaluated here offloads Emergency Service instead.
 %
-Each device starts a run with a battery level drawn at random,
-and the moment that level falls below 30\%,
-the device forwards its Emergency Service instance to the nearest edge server acting as its surrogate (\cref{subsec:forwarding-chains}).
+Each device starts a run with a battery level drawn at random.
+As soon as that level falls below 30\%, the device forwards its Emergency Service instance to the nearest edge server acting as its surrogate (\cref{subsec:forwarding-chains}),
+and switches to another surrogate if it loses the connection to the current one.
 %
-If the connection to that surrogate is lost, the device switches to another.
-%
-No other condition drives the decision:
-not load, not the state of the network elsewhere, only the device's own battery.
+No other condition drives the decision: not load, not the state of the network elsewhere, only the device's own battery.
 %
 The rule is self-organising in the narrowest sense:
-each device decides for itself, from one locally observed number, with no negotiation and no view of what any other device is doing.
+each device decides for itself, from one locally observed number, without negotiating and without knowing what the other devices do.
 
-Interpreting the result needs a power model for the two device classes involved.
+Reading the result requires a power model for the two device classes.
 %
-The reference values come from a smartphone and an edge server,
-taken from Shao and Brooks's published per-instruction energy measurements for both device classes~\cite{DBLP:conf/islped/ShaoB13}:
-a Snapdragon 888, with a thermal design power of 5 W and an energy cost of 0.55 J per instruction,
-and a Xeon Platinum P-8124, with a thermal design power of 220 W and an energy cost of 10 J per instruction.
+The reference values come from Shao and Brooks's per-instruction energy measurements~\cite{DBLP:conf/islped/ShaoB13}.
 %
-A 4500 mAh battery at 3.7 V then fixes the energy budget each device starts a run with.
+The smartphone is a Snapdragon 888, with a thermal design power of 5 W and an energy cost of 0.55 J per instruction.
+The edge server is a Xeon Platinum P-8124, with a thermal design power of 220 W and an energy cost of 10 J per instruction.
+%
+A 4500 mAh battery at 3.7 V fixes the energy budget each device starts a run with.
 
-The three network sizes used in \cref{subsec:pulverization-validation} to validate deployment independence -- 50, 100, and 200 mobile devices -- are reused here,
-simulated again in Alchemist~\cite{DBLP:journals/jos/PianiniMV13} with eight edge servers and one cloud instance available as surrogates,
+The three network sizes used to validate deployment independence -- 50, 100, and 200 mobile devices -- are reused here (\cref{subsec:pulverization-validation}).
+%
+The simulations run again in Alchemist~\cite{DBLP:journals/jos/PianiniMV13}, with eight edge servers and one cloud instance available as surrogates,
 under the mobility pattern already described for the functional validation.
 %
 \Cref{fig:power-consumption} compares the monolithic deployment against the one that offloads Emergency Service under the battery rule.
@@ -93,123 +86,126 @@ under the mobility pattern already described for the functional validation.
     \label{fig:power-consumption}
 \end{figure}
 
-The offloaded deployment leaves devices with more remaining battery over the run.
+The offloaded deployment leaves devices with more battery at the end of the run.
 %
-It pays for that with a modest increase in the number of messages exchanged,
-visible in the right-hand chart of \cref{fig:power-consumption}:
-reaching Emergency Service at its surrogate and returning its result takes hops that a local execution would not need.
+It exchanges slightly more messages in return, as the right-hand chart of \cref{fig:power-consumption} shows:
+reaching Emergency Service at its surrogate and returning its result takes hops that a local execution does not need.
 %
-The cost of offloading therefore lands on bandwidth rather than on energy.
+The cost is not paid in energy, since the offloaded devices are the ones with more battery left.
+It is paid in bandwidth, in the extra messages the forwarding chain to the surrogate requires.
 
-The rule buys this result with a very cheap statement:
-one threshold, one component, and no coordination between devices.
+The rule obtains this result from the cheapest possible statement: one threshold, one component, and no coordination between devices.
 %
-It does not generalise beyond that one signal and that one component.
+It does not generalise beyond the signal and the component it was written for.
 %
 A second bottleneck, or a second component worth offloading under different conditions, would need a second threshold chosen by hand.
 
 \section{A Field-based Reconfiguration Policy over Self-organising Coordination Regions}
 \label{sec:global-self-organising-reconfiguration}
 
-The policy evaluated here answers the same offloading question as the rule of \cref{sec:battery-triggered-offloading} --
-which infrastructural device should run the component an application device would rather not run locally --
-but no longer reads the decision off a single, locally observed number.
+This section answers the same question as \cref{sec:battery-triggered-offloading}:
+which infrastructural device should run the component an application device would rather not run locally.
 %
-Every infrastructural device seeds a potential field weighted by its own current load,
-so a lightly loaded device's field reaches further into the network than a heavily loaded one's,
-and each application device is claimed by whichever field reaches it with the lowest potential~\cite{DBLP:journals/iot/FarabegoliPCV24}.
-%
-The construction is the self-organising coordination regions pattern already met in \cref{subsec:pulverization-validation}~\cite{DBLP:journals/fgcs/PianiniCVN21},
-with two changes:
-every infrastructural device qualifies as a leader, instead of leaders being elected at a fixed grain,
-and the region-forming field encodes the leader's own current load rather than distance alone,
-so a leader carrying more work commands a smaller region.
-%
-A convergecast brings each region's candidate components to its leader;
-the leader accepts as many as its own capacity still allows and casts the decision back over the same region,
-so every application device ends up either keeping its component locally or running it on the infrastructural device that claimed it.
-%
-Because the regions resize themselves as load shifts, the policy reasons over the whole network's topology
-rather than over one locally observed number,
-while still running on the infrastructure/application-device split maintained by the middleware of \cref{chap:pulverization}.
+The answer is no longer read off a single, locally observed number.
 
-The policy is evaluated against a local baseline that pins every application device to its nearest infrastructural device by hop count, irrespective of that device's load.
+Every infrastructural device seeds a potential field weighted by its own current load.
 %
-The networks have a thousand hosts each, arranged once as a scale-free topology and once as a lobster, tree-like one.
+A lightly loaded device's field reaches further into the network than a heavily loaded one's,
+and each application device is claimed by the field that reaches it with the lowest potential~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 %
-Two scenarios are run: a variable load imposed externally on infrastructural devices, and a degradation and recovery in which batches of infrastructural devices are switched off and then progressively reactivated.
+The construction is the self-organising coordination regions pattern already met in \cref{subsec:pulverization-validation}~\cite{DBLP:journals/fgcs/PianiniCVN21}, with one difference.
 %
-Quality of service is measured as the share of application devices that manage to offload their component at all.
+Leaders are not elected at a fixed grain: every infrastructural device is already a leader,
+and its region-forming field encodes its own current load rather than distance alone.
+A leader carrying more work therefore commands a smaller region.
+
+A converge-cast brings each region's candidate components to its leader.
 %
+The leader accepts as many as its own capacity allows and casts the decision back over the same region,
+so every application device either keeps its component locally or runs it on the infrastructural device that claimed it.
+%
+The regions resize themselves as load shifts, so the decision follows the whole network's topology instead of one local signal.
+%
+The policy still runs over the same infrastructure/application-device split the middleware maintains (\cref{chap:pulverization}).
+
+The policy is evaluated against a local baseline that pins every application device to its nearest infrastructural device by hop count, whatever that device's load.
+%
+The networks hold a thousand hosts each, arranged as a scale-free and as a lobster, tree-like topology.
+%
+Two scenarios are simulated:
+a variable load imposed externally on the infrastructural devices,
+and a degradation and recovery in which batches of infrastructural devices are switched off and then progressively reactivated.
+%
+Quality of service is the share of application devices that manage to offload their component at all.
+
 Across both scenarios and both topologies, the field-based policy reaches a higher quality of service than the local baseline once its regions have stabilised.
 %
-Stabilisation itself takes time, and quality of service can briefly dip below the baseline's during that transient before recovering past it.
+Stabilisation takes time, and quality of service can dip below the baseline's during that transient before recovering past it.
 %
 The policy also degrades and recovers more gracefully than the baseline when infrastructural devices fail.
 %
-Both advantages are more pronounced in the scale-free topology than in the lobster one:
+Both advantages are larger in the scale-free topology than in the lobster one:
 removing a node from a lobster network is far more likely to segment it,
-cutting off the alternative routes the field-based policy relies on to redirect load elsewhere~\cite{DBLP:journals/iot/FarabegoliPCV24}.
+cutting off the alternative routes the field-based policy needs to redirect load elsewhere~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 
 \section{A Declarative Planner for Green Deployments}
 \label{sec:declarative-green-planning}
 
-The declarative continuous reasoning reviewed in \cref{subsec:declarative-deployment} stops at Forti and Brogi's incremental repair of a stated deployment goal~\cite{DBLP:journals/logcom/FortiBB22}.
+Declarative continuous reasoning was introduced above as Forti and Brogi's incremental repair of a stated deployment goal (\cref{subsec:declarative-deployment})~\cite{DBLP:journals/logcom/FortiBB22}.
 %
-The planner presented here descends from the same idea, worked out over the deployment units defined in \cref{chap:pulverization}~\cite{DBLP:conf/coordination/BrogiCFFV25}.
+The planner presented here follows the same idea, worked out over the deployment units defined in \cref{chap:pulverization}~\cite{DBLP:conf/coordination/BrogiCFFV25}.
+
+Every deployment unit declares its hardware requirements and the maximum latency it tolerates towards the unit of the same macro-program it depends on most closely.
 %
-Every deployment unit declares its hardware requirements and a maximum latency it tolerates towards whichever other unit of the same macro-program it depends on most closely.
-%
-Every candidate host declares its available and total capacity, the power-usage effectiveness of running work on it, and the mix of energy sources -- and the associated carbon intensity -- that supplies it.
+Every candidate host declares its available and total capacity, the power-usage effectiveness of running work on it, and the mix of energy sources that supplies it, with the associated carbon intensity.
 %
 A Prolog-based generator searches this space for an assignment of every deployment unit to a host that meets both kinds of requirement.
-%
-The requirements are stated as facts and discharged by ordinary logic-program resolution, not by a bespoke solver.
-%
-The assignment problem is the combinatorial one already found too costly to solve exactly at scale (\cref{subsec:constraint-based-placement}),
-so the generator orders candidate hosts from the least to the most carbon-intensive,
-and the search reaches a low-carbon assignment quickly instead of exploring the space exhaustively.
-%
-For every candidate it considers, the generator also estimates the resulting energy draw and carbon emissions, from each host's load before and after the candidate placement, its power-usage effectiveness, and its energy mix's carbon intensity.
+The requirements are stated as facts rather than computed by a bespoke solver, and the search is ordinary logic-program resolution.
 
-The generator runs at a fixed interval inside Alchemist~\cite{DBLP:journals/jos/PianiniMV13},
-the simulator already used in \cref{subsec:pulverization-validation} to validate the model.
+The assignment problem is the same combinatorial one that is already too costly to solve exactly at scale (\cref{subsec:constraint-based-placement}).
 %
-Each time it runs, it is handed the infrastructure's current state and returns a new assignment,
-so a deployment already running is periodically replaced by whichever one the search currently favours.
+The generator therefore tries candidate hosts from the least to the most carbon-intensive, reaching a low-carbon assignment quickly instead of exploring the space exhaustively.
+%
+For every candidate it considers, the same declarative program estimates the resulting energy draw and carbon emissions
+from each host's load before and after the placement, its power-usage effectiveness, and the carbon intensity of its energy mix.
+
+The generator is invoked at a fixed interval from inside Alchemist~\cite{DBLP:journals/jos/PianiniMV13}, the same simulator used to validate the model (\cref{subsec:pulverization-validation}).
+%
+Each time it runs, it receives the infrastructure's current state and returns a new assignment,
+so the running deployment is periodically replaced by the one the search currently favours.
 %
 This is the repeated declarative repair of \cref{subsec:declarative-deployment}, driven here by an explicit energy and carbon objective rather than by an incremental reasoner reacting to a stated goal.
 
-One detail of the instantiation matters for reading the numbers below.
+The published planner states its requirements over five deployment units per device: sensing, actuation, behaviour, state, and communication.
 %
-The published planner states its requirements over five deployment units per device -- sensing, actuation, behaviour, state, and communication -- the fixed partitioning of a logical device recalled in \cref{sec:pulverization-motivation} as this model's predecessor.
+This is the fixed partitioning of a logical device that precedes the present model (\cref{sec:pulverization-motivation}).
 %
-The latency bound is stated towards the state unit specifically, since the other four were designed to depend on it.
+The latency bound is stated towards the state unit, since the other four were designed to depend on it.
+
+The search itself is not tied to that count or to a single hub.
 %
-Nothing about the search itself is tied to that count or to a single hub.
+A hardware requirement and a latency bound towards whatever a unit depends on are the kind of per-component declaration the bindings of \cref{subsec:macroprogram-dag} already make explicit for a macro-program of any size,
+and the same Prolog predicates would run unchanged over a \ac{DAG} of arbitrarily many components.
 %
-A hardware requirement and a latency bound towards whatever a unit depends on are the kind of per-component declaration that the bindings of \cref{subsec:macroprogram-dag} already make explicit for a macro-program of any size,
-and the same Prolog predicates would run over a \ac{DAG} of arbitrarily many components without change.
+What is evaluated below is the five-unit instantiation, not a macro-program pulverised into such a \ac{DAG}.
 %
-The evaluation below, however, uses the five-role instantiation.
-%
-The mechanism generalises; the reported numbers do not, on their own, speak for deployments finer than five units per device.
+The mechanism generalises; the reported numbers do not speak on their own for deployments finer than five units per device.
 
 The evaluation is synthetic.
 %
-A variable number of physical devices, each capable of running every component locally, are placed uniformly at random in a two-dimensional area whose size scales with device count.
+A variable number of physical devices, each able to run every component locally, are placed uniformly at random in a two-dimensional area whose size grows with the device count.
 %
-Each device is connected to the others within a range that also grows with device count -- a stand-in for a short-range radio -- and to a single cloud instance.
+Devices connect to one another within a range that also grows with the device count, a stand-in for a short-range radio, and all of them connect to a single cloud instance.
 %
 Each device's mix of energy sources follows a jittered sine wave, capped at 90\% green energy for devices and 50\% for the cloud.
 %
-The wave stands in for the day-night cycle in a grid's own carbon intensity, the time-varying supply already raised in \cref{subsec:energy-aware-orchestration} for Wiesner et al.'s carbon-aware scheduling~\cite{DBLP:conf/middleware/WiesnerBSGT21}.
+The sine wave stands in for the day-night cycle in a grid's carbon intensity, the time-varying supply behind Wiesner et al.'s carbon-aware scheduling (\cref{subsec:energy-aware-orchestration})~\cite{DBLP:conf/middleware/WiesnerBSGT21}.
 %
-Each run covers 720 simulated minutes of device movement, repeated ten times per configuration to average out random placement and mobility.
+Each run simulates 720 simulated minutes of device movement, repeated ten times per configuration to average out random placement and mobility.
 %
-Two deployments are compared over the same runs:
-a peer-to-peer baseline that keeps every unit at its owner throughout -- the monolithic deployment in this thesis's terms --
-and a deployment the generator recomputes every 30 simulated minutes.
+Two deployments are compared over the same runs.
+The peer-to-peer baseline keeps every unit at its owner for the whole run, which is the monolithic deployment in this thesis's terms.
+The other is recomputed by the generator every 30 simulated minutes.
 
 \begin{figure}[t]
     \centering
@@ -218,17 +214,17 @@ and a deployment the generator recomputes every 30 simulated minutes.
     \label{fig:green-planner-carbon-energy}
 \end{figure}
 
-At every network size tested, the deployment the planner produces draws roughly a third of the energy the peer-to-peer baseline does for the same network --
-under 2 kWh for 50 devices, rising to 3.5 kWh for 100 -- and its carbon footprint follows the same pattern (\cref{fig:green-planner-carbon-energy}).
+At every network size tested, the planner's deployment draws roughly a third of the energy the peer-to-peer baseline draws on the same network:
+under 2 kWh for 50 devices, rising to 3.5 kWh for 100.
 %
-Because each device's energy mix drifts along a sinusoid, the peer-to-peer baseline's carbon footprint tracks that sinusoid exactly:
-its deployment never changes, so it cannot exploit a momentarily greener mix elsewhere in the network.
+Its carbon footprint follows the same pattern (\cref{fig:green-planner-carbon-energy}).
+%
+The baseline's carbon footprint tracks the sinusoid of the energy mix exactly, because its deployment never changes and cannot exploit a momentarily greener mix elsewhere in the network.
 %
 The planner's footprint departs from that curve.
 %
-Recomputing the assignment every 30 minutes lets it keep steering deployment units towards whichever host's energy mix is least carbon-intensive at the time.
-%
-For a pulverised deployment, this realises the time-varying objective described in \cref{subsec:energy-aware-orchestration} for a single scheduled job.
+Recomputing the assignment every 30 minutes steers deployment units towards the host whose energy mix is least carbon-intensive at the time.
+This is, for a pulverised deployment, the time-varying objective described for a single scheduled job in \cref{subsec:energy-aware-orchestration}.
 
 \begin{figure}[t]
     \centering
@@ -237,56 +233,58 @@ For a pulverised deployment, this realises the time-varying objective described 
     \label{fig:green-planner-latencies}
 \end{figure}
 
-The energy reduction of \cref{fig:green-planner-carbon-energy} is not free, and \cref{fig:green-planner-latencies} reports where it is spent.
+The energy reduction of \cref{fig:green-planner-carbon-energy} is not free.
+\Cref{fig:green-planner-latencies} shows where it is spent.
+
+Intra-component latency is the delay a device experiences reaching its own deployment units, now spread across more than one host.
 %
-Intra-component latency -- the delay a device experiences reaching its own deployment units, now spread across more than one host -- rises well above the near-zero, in-memory cost of the peer-to-peer baseline,
-the expected price of leaving units off the device that owns them.
+It rises well above the near-zero, in-memory cost of the peer-to-peer baseline, which is the expected price of leaving units off the device that owns them.
 %
-That increase, though, stays within the same order of magnitude as the network grows,
-evidence that the search keeps a device's units close together rather than scattering them further as the problem gets larger.
+The increase stays within the same order of magnitude as the network grows,
+so the search keeps a device's units close together rather than scattering them further as the problem gets larger.
+
+Inter-device latency is the delay between the communication units of neighbouring devices, and it is the one that matters for the collective computation itself.
 %
-Inter-device latency -- the delay between the communication units of neighbouring devices, the one that matters directly for the collective computation -- rises only slightly,
-even though nothing in the objective rewards keeping communicating units nearby.
+It rises only slightly, even though nothing in the objective rewards keeping communicating units nearby.
 %
-The same tendency to concentrate a device's units on a small number of nearby hosts keeps neighbouring devices' communication units close to one another too.
+Concentrating a device's units on a few nearby hosts keeps neighbouring devices' communication units close to one another as well.
 %
-The search itself scales well:
-computing a new assignment takes on the order of 100 ms regardless of network size, well inside the 30-minute interval between successive replanning rounds~\cite{DBLP:conf/coordination/BrogiCFFV25}.
+The search itself scales:
+computing a new assignment takes about 100 ms whatever the network size, well inside the 30-minute interval between replanning rounds~\cite{DBLP:conf/coordination/BrogiCFFV25}.
 
 \section{Discussion}
 \label{sec:deployment-reconfiguration-discussion}
 
-All three evaluations show that revising who runs a component at run time buys a real reduction in some targeted quantity at a bounded, secondary cost --
-more messages for the offloading rule, more latency for the planner, a stabilisation transient for the field-based policy -- rather than trading one non-functional gain for another outright.
+All three evaluations show the same thing:
+revising who runs a component at runtime reduces the quantity the policy targets, at a bounded secondary cost.
 %
-None of the three results, however, removes the work of deciding what counts as a good deployment in the first place.
+The offloading rule pays in messages, the planner in latency, and the field-based policy in a stabilisation transient.
 %
-The offloading rule needs a person to fix a battery threshold and to decide, in advance, which one component is worth offloading.
-%
-The field-based policy needs a person to decide that load, specifically, is the quantity its regions should compete over.
-%
-The planner needs a person to state the energy and carbon objective and the constraints the search should respect, and to decide how often the search should be repeated.
-%
-All three policies are, in this sense, written by hand:
-one as a single number, tripped locally and without coordination;
-one as a field, resized competitively by the infrastructural devices themselves;
-one as a declarative statement, solved centrally and repeated on a fixed schedule.
+None of them trades one non-functional gain for another outright.
 
-They differ in where that judgement is exercised, and how far it reaches.
+None of them removes the work of deciding what counts as a good deployment either.
 %
-A single threshold says nothing about a second bottleneck, a second component, or a trade-off between two competing objectives;
-extending the rule means writing a new rule.
+The offloading rule needs a person to fix a battery threshold and to choose, in advance, the one component worth offloading.
 %
-The field-based policy already reasons over the whole network's topology, and recovers from a failed host better than either alternative does,
-but that recovery depends on the topology it runs on --
-a dependence the threshold rule and the planner never had to face, since each was tested over a single topology.
+The field-based policy needs a person to decide that load is the quantity its regions compete over.
 %
-The planner's objective already accommodates several concerns at once -- energy, carbon, a latency bound enforced as a hard constraint --
-but only because someone wrote out that objective and those constraints beforehand.
+The planner needs a person to state the energy and carbon objective, the constraints the search must respect, and how often the search is repeated.
 %
-Adding a further concern is still a matter of stating it by hand.
+Every one of these policies is written by hand.
 
-Dropping even that requirement is the subject of \cref{chap:heterogeneous-gnn}:
-instead of a rule or an objective fixed in advance,
+They differ in where that judgement is exercised and how far it reaches.
+%
+A single threshold says nothing about a second bottleneck, a second component, or a trade-off between two competing objectives.
+Extending the rule means writing a new rule.
+%
+The field-based policy reasons over the whole network's topology and recovers from a failed host better than the other two.
+That recovery depends on the topology it runs on, a dependence the threshold rule and the planner never face, since each was tested over a single topology.
+%
+The planner's objective covers several concerns at once: energy, carbon, and a latency bound enforced as a hard constraint.
+Someone still had to write that objective and those constraints beforehand, and a further concern has to be stated by hand as well.
+
+The next chapter drops that requirement (\cref{chap:heterogeneous-gnn}).
+%
+Instead of a rule or an objective fixed in advance,
 a policy is trained to weigh the same non-functional concerns from experience,
-over a condition -- network congestion -- that none of the three policies of this chapter was built to see.
+under a condition none of the three policies of this chapter was built to see: network congestion.

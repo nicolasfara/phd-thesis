@@ -4,11 +4,13 @@
 The edge-cloud continuum is the substrate this thesis targets (\cref{chap:edge-cloud-continuum});
 this chapter reviews how the systems that run on it can be programmed.
 %
-Its subject is macroprogramming -- giving a collective one global program instead of one program per device -- and the language support around it,
-from the type-level machinery that makes coordination obligations checkable to the \ac{LLM}-assisted generation of programs in the \acp{DSL} that host such programs.
+Its subject is macroprogramming: giving a collective one global program instead of one program per device.
 %
-Three paradigms carry the review -- aggregate computing, choreographic programming, and multitier programming -- because the thesis builds on all three at once:
-it later unifies them in a single coordination model (\cref{chap:language-and-coordination})
+It also covers the language support built around it,
+from the type-level machinery that makes coordination obligations checkable to the \ac{LLM}-assisted generation of programs in the \acp{DSL} that host them.
+%
+The review is organised around three paradigms -- aggregate computing, choreographic programming, and multitier programming -- because the thesis builds on all three:
+it later unifies them in a single coordination model (\cref{chap:language-and-coordination}),
 and applies the \ac{LLM} material to one of their \acp{DSL} (\cref{chap:language-based-macroprogramming}).
 
 \section{Introduction to Macroprogramming}
@@ -17,7 +19,7 @@ and applies the \ac{LLM} material to one of their \acp{DSL} (\cref{chap:language
 Every paradigm reviewed in \cref{sec:architectural-paradigms} -- microservices, \ac{FaaS}, actors -- still asks the programmer to reason about the system one deployment unit at a time,
 even where the runtime automates where that unit ends up~\cite{DBLP:journals/tse/CrnkovicSVC11}.
 %
-\Cref{subsec:paradigm-limitations} showed why this stops scaling once the target is a \ac{CAS}:
+This stops scaling once the target is a \ac{CAS} (\cref{subsec:paradigm-limitations}):
 membership changes continuously,
 so any correctness argument built node by node has to be redone,
 implicitly or explicitly,
@@ -27,7 +29,7 @@ A monitoring service spread over a building,
 or a coordinated task assigned to a robot swarm,
 is specified by what the whole collective achieves (\cref{subsec:iot-systems,subsec:swarm-robotics}).
 %
-Node-centric code names the wrong unit for that specification:
+Node-centric code works at the wrong unit:
 it describes a single device's behaviour,
 and the collective's behaviour would have to be reconstructed from many such descriptions by hand.
 
@@ -43,50 +45,47 @@ a program describes the collective's behaviour directly,
 as a specification over the whole system,
 and the compiler or runtime derives whatever each participating device must run to realise it~\cite{DBLP:journals/csur/Casadei23}.
 %
-\Cref{fig:macroprogramming} depicts this picture:
-a macro-program, expressed over macro-abstractions that relate goals to macro-observables,
-is mapped -- through a macro-to-micro mapping -- onto the micro-level programs that individual entities run in their environment,
-and the effects and emergent behaviour of that execution are what the macro-observables report back.
+\Cref{fig:macroprogramming} shows the resulting picture,
+in which a macro-to-micro mapping derives the micro-level programs individual entities run from the macro-program written over the collective.
 %
-It names a family of approaches that differ in what the global specification looks like and how it is projected onto individual devices,
-surveyed in \cref{sec:foundational-paradigms}.
+Macroprogramming is a family of approaches rather than a single one:
+they differ in what the global specification looks like and how it is projected onto individual devices (\cref{sec:foundational-paradigms}).
 %
-What they share is the shift already argued for architecturally in \cref{subsec:continuum-evolution}:
+They share the shift already argued for architecturally in \cref{subsec:continuum-evolution}:
 the collective is the unit that is designed,
 verified,
 and reconfigured,
-and its mapping onto physical devices follows automatically from the specification.
+and its mapping onto physical devices follows from the specification.
 
-This shift is what makes macroprogramming relevant to engineering large-scale distributed systems specifically.
+This shift matters for large-scale distributed systems in particular.
 %
 A property proved about a macro-program -- that a protocol terminates, that a placement type-checks, that a field stabilises -- holds for every deployment the specification admits,
 regardless of how many devices instantiate it or how often the set of participants changes~\cite{DBLP:journals/csur/Casadei23}.
 %
-\Cref{subsec:collective-adaptive-systems} already argued that this is exactly the guarantee a \ac{CAS} needs.
+That is the guarantee a \ac{CAS} needs (\cref{subsec:collective-adaptive-systems}).
 %
-The rest of the chapter reviews three paradigms that realise this idea -- aggregate computing, choreographic programming, and multitier programming -- together with the platforms that turn them into usable tools (\cref{sec:foundational-paradigms}).
-%
-It then looks at the language machinery -- monads, effects, and capabilities -- that these paradigms increasingly rely on to make coordination obligations part of a program's type (\cref{sec:advanced-linguistic-abstractions}),
-and closes on a complementary strategy for the same goal,
-using \acp{LLM} to lower the cost of writing macro-programs and the domain-specific languages that host them (\cref{sec:llms-for-code-generation}).
+The rest of the chapter covers the three paradigms that realise the idea and the platforms built on them (\cref{sec:foundational-paradigms}),
+the language machinery -- monads, effects, and capabilities -- these paradigms rely on to make coordination obligations part of a program's type (\cref{sec:advanced-linguistic-abstractions}),
+and the use of \acp{LLM} to lower the cost of writing such programs (\cref{sec:llms-for-code-generation}).
 
 \section{Foundational Macroprogramming Paradigms}
 \label{sec:foundational-paradigms}
 
-The three paradigms surveyed in this section answer the same question -- how to give one, global description of a distributed computation -- from different starting points.
+The three paradigms surveyed in this section answer the same question -- how to give one global description of a distributed computation -- from different starting points.
 %
-Aggregate computing derives node-local behaviour from a functional specification over computational fields (\cref{subsec:aggregate-computing}).
+Aggregate computing derives node-local behaviour from a functional specification over computational fields;
+choreographic programming derives one program per participant from a multiparty interaction protocol;
+multitier programming derives per-tier code from a single program annotated with placement information.
 %
-Choreographic programming derives one program per participant from a description of a multiparty interaction protocol (\cref{subsec:choreographic-programming}).
-%
-Multitier programming derives per-tier code from a single program annotated with placement information (\cref{subsec:multitier-programming}).
-%
-The toolchains that turn the first of these, aggregate computing, into engineering practice for collective and self-organising systems -- the setting most of this thesis builds on -- follow (\cref{subsec:cas-platforms}).
+Aggregate computing is the setting most of this thesis builds on,
+and the toolchains that turn it into engineering practice are reviewed last (\cref{subsec:cas-platforms}).
 
 \subsection{Aggregate Computing}
 \label{subsec:aggregate-computing}
 
-Aggregate programming addresses the reasoning burden identified in \cref{sec:macro-programming} by making the collective itself the object of programming, rather than reconstructing collective behaviour from a set of per-device descriptions after the fact~\cite{DBLP:journals/csur/Casadei23}.
+Aggregate programming makes the collective itself the object of programming,
+which addresses the reasoning burden identified in \cref{sec:macro-programming}:
+collective behaviour no longer has to be reconstructed from a set of per-device descriptions after the fact~\cite{DBLP:journals/csur/Casadei23}.
 %
 Its core intuition is to express system state and behaviour as a \emph{computational field}:
 a distributed value, spread across the devices of the system and evolving over time,
@@ -97,12 +96,12 @@ The field calculus distils this intuition into a minimal,
 universal functional model with equivalent local and aggregate semantics~\cite{VIROLI2019100486},
 later extended to a higher-order calculus that supports passing fields -- including field-producing programs -- as first-class values~\cite{AVDPB-TOCL2019}.
 
-Field-based coordination provides the theoretical backbone for this thesis' treatment of self-organisation,
-in the sense fixed in \cref{subsec:swarm-robotics}:
+Field-based coordination is the basis for the treatment of self-organisation in this thesis,
+in the sense defined in \cref{subsec:swarm-robotics}:
 global order arising from local interactions alone.
 %
-Fields give that process an engineering form,
-because the self-stabilising building blocks introduced below make the outcome of those local interactions predictable and composable,
+Fields give that process an engineering form:
+the self-stabilising building blocks introduced below make the outcome of those local interactions predictable and composable,
 rather than merely emergent~\cite{DBLP:conf/saso/BealV14a,VIROLI2019100486}.
 %
 Two mechanisms make it implementable on a real distributed system,
@@ -116,17 +115,26 @@ The first is \emph{alignment}:
 two neighbouring devices contribute to each other's evaluation of a field expression only if they are currently evaluating the same point of the program -- typically,
 the same branch of a conditional.
 %
-Constructs such as \texttt{nbr} and \texttt{rep}, which respectively read a neighbour's value of an expression and carry state across computation rounds, combine incoming messages exclusively from aligned neighbours,
-which is what keeps the domain of a field expression well defined regardless of how the network partitions or reconverges at runtime~\cite{VIROLI2019100486,AVDPB-TOCL2019}.
+Two constructs rely on it:
+\texttt{nbr} reads a neighbour's value of an expression, and \texttt{rep} carries state across computation rounds.
+%
+Both combine incoming messages only from aligned neighbours,
+so the domain of a field expression stays well defined however the network partitions or reconverges at run time~\cite{VIROLI2019100486,AVDPB-TOCL2019}.
 %
 The second is \emph{self-stabilisation}:
 a field computation is self-stabilising if,
 started from an arbitrary state,
 it converges to a correct output and keeps recovering it after bounded perturbations to the network or the environment.
 %
-Because self-stabilising building blocks compose into self-stabilising programs, properties proved once at the level of reusable language constructs transfer, by composition, to whole applications~\cite{DBLP:conf/saso/BealV14a,DBLP:journals/tomacs/ViroliABDP18}.
+Self-stabilising building blocks compose into self-stabilising programs,
+so a property proved once for a reusable language construct transfers to whole applications~\cite{DBLP:conf/saso/BealV14a,DBLP:journals/tomacs/ViroliABDP18}.
 %
-This compositionality is not limited to combining whole building blocks: because a field is just a distributed value, any operator that applies to plain values -- arithmetic, relational, or otherwise -- lifts pointwise to the fields it is applied to, letting new fields be defined by ordinary functional composition of simpler ones, with no explicit device-to-device coordination written by the developer~\cite{VIROLI2019100486,DBLP:conf/saso/BealV14a}.
+Composition is not limited to whole building blocks.
+%
+A field is a distributed value, so any operator defined on plain values -- arithmetic, relational, or otherwise -- lifts pointwise to fields.
+%
+New fields can therefore be defined by ordinary functional composition of simpler ones,
+with no device-to-device coordination written by the developer~\cite{VIROLI2019100486,DBLP:conf/saso/BealV14a}.
 %
 \Cref{fig:ac-blocks-composition} shows a canonical instance of this: the \emph{channel} block, which marks the region of the network connecting a \emph{Source} to a \emph{Destination}.
 %
@@ -142,11 +150,13 @@ Comparing this sum field against a \emph{Width} field with \texttt{<=} then yiel
     \label{fig:ac-blocks-composition}
 \end{figure}
 
-The field calculus specifies \emph{what} a collective computation is; a complete foundation also needs a reference execution model showing \emph{how} that specification is enacted on a distributed system.
+The field calculus says what a collective computation is.
 %
-The eXchange Calculus (XC) revisits the design of the underlying language with exactly this in mind, distilling field computations into a smaller, more composable core built around a single \texttt{exchange} construct~\cite{DBLP:journals/jss/AudritoCDSV24}.
+A complete foundation also needs an execution model saying how that specification is enacted on a distributed system.
 %
-\Cref{subsubsec:ac-execution-model} describes the execution model at the level this thesis relies on, and \cref{subsec:cas-platforms} surveys the toolchains -- ScaFi, Protelis, FCPP, and XC among them -- that realise it in practice.
+The eXchange Calculus (XC) revisits the design of the underlying language with this in mind, distilling field computations into a smaller, more composable core built around a single \texttt{exchange} construct~\cite{DBLP:journals/jss/AudritoCDSV24}.
+%
+The execution model is described next (\cref{subsubsec:ac-execution-model}), and the toolchains that realise it -- ScaFi, Protelis, FCPP, and XC among them -- in \cref{subsec:cas-platforms}.
 
 \subsubsection{Execution Model}
 \label{subsubsec:ac-execution-model}
@@ -164,8 +174,9 @@ called its \emph{neighbours}.
 %
 The execution model assumes bidirectional communication links between devices,
 although messages may be lost or delayed,
-reflecting the inherent unreliability of wireless communication;
-time-fluid scheduling pushes this asynchrony further still,
+reflecting the unreliability of wireless communication.
+%
+Time-fluid scheduling pushes this asynchrony further,
 letting each device pick its own execution rate instead of assuming a shared clock across the collective~\cite{DBLP:journals/lmcs/PianiniCVMZ21}.
 %
 \Cref{fig:ac-architecture} illustrates this distributed system architecture.
@@ -236,21 +247,22 @@ operating systems,
 and runtime environments,
 provided each executes a complete instance of the same aggregate program and supports the \emph{sense-compute-interact} cycle.
 %
-This preserves homogeneous collective logic over heterogeneous devices,
-while requiring platform-specific support for sensing and actuation,
-local program execution,
-and interoperable neighbour communication.
+The collective logic therefore stays the same across heterogeneous devices,
+but every platform must supply its own support for sensing and actuation,
+for executing the program locally,
+and for communicating with neighbours.
 %
-\Cref{chap:pulverization} takes up exactly this problem,
-realising the model across heterogeneous target platforms, not a single runtime;
-\cref{chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration} take up the complementary problem of placing and offloading computations across the edge-cloud continuum,
-instead of assuming, as this execution model does, that every device already runs a full instance of the aggregate program.
+That problem is taken up in \cref{chap:pulverization},
+where the model is realised across heterogeneous target platforms rather than on a single runtime.
+%
+The complementary problem -- placing and offloading computations across the edge-cloud continuum, instead of assuming that every device runs a full instance of the aggregate program -- is taken up in \cref{chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration}.
 
 \subsubsection{Application Scenarios}
 \label{subsubsec:ac-application-scenarios}
 
-The field calculus and its execution model are deliberately generic;
-what makes them useful is that the same handful of constructs -- alignment, \texttt{nbr}/\texttt{rep}, self-stabilisation -- recur, largely unchanged,
+The field calculus and its execution model are deliberately generic.
+%
+The same handful of constructs -- alignment, \texttt{nbr}/\texttt{rep}, self-stabilisation -- recurs, largely unchanged,
 across collectives that otherwise have little in common.
 %
 Beal and Viroli make this reuse explicit with a shared library of aggregate building blocks -- gradients, aggregation, time summarisation, and partitioning --
@@ -269,19 +281,20 @@ and the broader swarm-robotics literature documents the same decentralisation re
 A third scenario moves the same constructs to the infrastructure layer:
 smart-city and edge services composed of many small, heterogeneous devices that cannot be assumed to share a clock.
 %
-Time-fluid scheduling targets exactly this setting,
+Time-fluid scheduling targets this setting,
 letting each device pick its own execution rate~\cite{DBLP:journals/lmcs/PianiniCVMZ21}.
 %
 Simulation lets the deployment performance of such collective services be estimated before they are rolled out on real edge infrastructure~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
 %
-The three scenarios differ in devices, communication substrate, and collective goal;
-none of these enters the sense-compute-interact cycle or the alignment and self-stabilisation guarantees,
+The three scenarios differ in devices, communication substrate, and collective goal.
+%
+None of these enters the sense-compute-interact cycle or the alignment and self-stabilisation guarantees,
 so the building blocks, and the proofs they carry, move between settings unchanged.
 
 \subsection{Choreographic Programming}
 \label{subsec:choreographic-programming}
 
-Choreographic programming approaches multiparty coordination from the opposite direction of a node-centric implementation.
+Choreographic programming starts from the interaction between participants, not from the code each one runs.
 %
 Its industrial precursor, the W3C \emph{Web Services Choreography Description Language},
 already described the interactions among a set of services from a single, global viewpoint,
@@ -304,7 +317,7 @@ Choreographies in practice stress-tested the model against a set of concurrent a
 procedural choreographic programming closed that gap, adding familiar syntax and imperative control flow to the underlying model~\cite{CruzFilipe2017}.
 %
 Dynamic choreographies relax a different assumption, that a role's projected code cannot change once deployed,
-letting delimited fragments of a participant's behaviour be replaced by new code at runtime while keeping deadlock and race freedom across the update~\cite{Preda:2017}.
+letting delimited fragments of a participant's behaviour be replaced by new code at run time while keeping deadlock and race freedom across the update~\cite{Preda:2017}.
 %
 Process polymorphism instead relaxes the assumption of a fixed participant set,
 letting a single choreography be written once and instantiated for a number of participants decided later~\cite{GRAVERSEN_HIRSCH_MONTESI_2024};
@@ -346,7 +359,7 @@ so that the whole multiparty protocol reads as a single piece of source code rat
     \label{fig:epp}
 \end{figure}
 
-\emph{Endpoint projection} (EPP)\acused{EPP} turns this global description into an implementation, exactly as \cref{fig:epp} illustrates on that two-party protocol:
+\emph{Endpoint projection} (EPP)\acused{EPP} turns this global description into an implementation, as \cref{fig:epp} illustrates on that two-party protocol:
 for each role, \ac{EPP} erases every interaction the role is not party to and keeps only the statements -- sends, receives, local computation -- that mention it,
 yielding one process per participant that, together, reproduce exactly the behaviour prescribed by the choreography~\cite{10.1145/2429069.2429101}.
 %
@@ -355,7 +368,7 @@ whenever a role's continuation depends on a decision taken elsewhere,
 that decision must be communicated to it before the branch is taken,
 so that no two projected processes can ever disagree about which branch of the protocol they are in~\cite{10.1145/2429069.2429101,Montesi2023chor}.
 %
-Enforcing this statically, rather than checking it against an implementation after the fact, is what gives choreographic programming its central guarantee:
+Enforcing this statically, rather than checking an implementation against it after the fact, gives choreographic programming its central guarantee:
 any program produced by \ac{EPP} from a well-formed choreography is deadlock-free and communication-safe by construction~\cite{10.1145/2429069.2429101}.
 %
 Typed accounts of \ac{EPP} strengthen this correspondence into a proof:
@@ -375,12 +388,12 @@ Aggregate computing (\cref{subsubsec:ac-execution-model}) admits an open, dynami
 The choreographic execution model starts instead from a closed, statically named set of roles,
 and derives correctness from a projection that type-checks once, at compile time, against that fixed set.
 %
-Process polymorphism relaxes exactly this assumption,
-letting the set of projected processes be instantiated at runtime for a participant count decided later rather than fixed in the source choreography~\cite{GRAVERSEN_HIRSCH_MONTESI_2024},
-which is what makes the resulting model compatible with the changing membership of a \ac{CAS} (\cref{subsec:collective-adaptive-systems}).
+Process polymorphism relaxes this assumption,
+letting the set of projected processes be instantiated at run time for a participant count decided later rather than fixed in the source choreography~\cite{GRAVERSEN_HIRSCH_MONTESI_2024},
+so the resulting model is compatible with the changing membership of a \ac{CAS} (\cref{subsec:collective-adaptive-systems}).
 %
 Dynamic choreographies relax a related but distinct assumption,
-that a role's code, once projected, cannot change: delimited fragments of it can be replaced at runtime without reopening the deadlock- and race-freedom guarantees already established~\cite{Preda:2017}.
+that a role's code, once projected, cannot change: delimited fragments of it can be replaced at run time without reopening the deadlock- and race-freedom guarantees already established~\cite{Preda:2017}.
 
 \subsubsection{Application Scenarios}
 \label{subsubsec:chor-application-scenarios}
@@ -399,20 +412,19 @@ More recent work moves choreographic programming from a research language onto d
 census-polymorphic choreographies target multi-tenant services whose participant count is not fixed until deployment~\cite{DBLP:journals/pacmpl/BatesKJSKN25},
 and lightweight choreographic cloud services optimise the resulting projected processes for the resource constraints of real cloud deployments~\cite{DBLP:conf/pepm/IonescuR26}.
 %
-Across these scenarios, the unit being coordinated is a small, fixed, and named set of services engaged in a protocol with a definite shape -- a purchase, a two-factor login, a request-response exchange.
+Across these scenarios, the unit being coordinated is a small, fixed, named set of services engaged in a protocol with a definite shape -- a purchase, a two-factor login, a request-response exchange.
 %
-This is a different problem shape from the open, populous, and anonymous collectives that motivate aggregate computing's swarms and edge deployments (\cref{subsubsec:ac-application-scenarios}).
+That is a different problem from the open, populous, anonymous collectives that motivate aggregate computing's swarms and edge deployments (\cref{subsubsec:ac-application-scenarios}).
 %
-The process-polymorphic choreographies already noted above are the closest this line of work has come to that setting,
-and \cref{chap:language-and-coordination} returns to what a coordination language for collective systems can still borrow from it.
+The process-polymorphic choreographies noted above are the closest this line of work has come to that setting;
+what a coordination language for collective systems can borrow from it is taken up in \cref{chap:language-and-coordination}.
 
 \subsection{Multitier Programming}
 \label{subsec:multitier-programming}
 
-Multitier programming addresses the same coordination problem from a third angle.
+Multitier programming also derives several programs from a single source, but the source is not an interaction protocol.
 %
-Instead of deriving per-participant code from a global interaction description,
-it has the programmer write a single program for the whole application and annotate each fragment with the tier where it must run -- client, server, or, in this thesis' setting, any node of the continuum.
+The programmer writes a single program for the whole application and annotates each fragment with the tier where it must run -- client, server, or, in this thesis' setting, any node of the continuum.
 %
 A compiler then slices the program accordingly~\cite{DBLP:journals/csur/WeisenburgerWS20},
 as \Cref{fig:multitier-programming} illustrates for the canonical two-tier case.
@@ -448,7 +460,7 @@ so that a distributed system's architecture is checked by the type system rather
 and Multitier Modules extend the same discipline to placed components composed across module boundaries~\cite{Weisenburger:2019:Multitier}.
 %
 Type-safe dynamic placement with first-class placed values goes further,
-letting where a value lives change at runtime while keeping placement checked statically~\cite{Zakhour:2023:TypeSafe},
+letting where a value lives change at run time while keeping placement checked statically~\cite{Zakhour:2023:TypeSafe},
 the multitier counterpart of the dynamic-membership problem already raised for choreographies in \cref{subsec:choreographic-programming}.
 %
 Exceptional asynchronous session types dissolve the tier boundary altogether,
@@ -503,10 +515,9 @@ and adapted it to temporal data~\cite{10.1145/3564719.3568690}.
 A polymorphic \ac{RPC} calculus generalises the same principle beyond queries,
 typing a remote procedure call by the location of the code that issues it rather than by a fixed, monomorphic tier~\cite{CHOI2020102499}.
 %
-Cross-tier communication in a multitier program is, in this sense, a query or a call compiled to cross a tier boundary, not a message assembled by hand.
+Cross-tier communication in a multitier program is therefore a query or a call compiled to cross a tier boundary, not a message assembled by hand.
 %
-This is the same shift, from writing communication code to specifying what should happen and letting the compiler derive how,
-that motivates aggregate computing and choreographic programming in the first place.
+That is the same shift -- from writing communication code to stating what should happen and letting the compiler derive how -- that motivates aggregate computing and choreographic programming.
 
 Choreographic programming and multitier programming both derive several programs from a single source, but each guarantees a different property.
 %
@@ -542,31 +553,32 @@ and reactive programming abstractions propagate a changing value to whichever pe
 Even so, most multitier languages still fix the set of tiers, typically just client and server, for the whole lifetime of the application,
 unlike the open membership a \ac{CAS} must tolerate (\cref{subsec:collective-adaptive-systems}).
 %
-Type-safe dynamic placement, already noted above for letting where a value lives change at runtime while keeping placement checked statically, and ScalaLoci's peer types are the closest a multitier language comes to that requirement~\cite{Zakhour:2023:TypeSafe,DBLP:journals/pacmpl/WeisenburgerKS18}.
+Type-safe dynamic placement, noted above for letting where a value lives change at run time while keeping placement checked statically, and ScalaLoci's peer types are the closest a multitier language comes to that requirement~\cite{Zakhour:2023:TypeSafe,DBLP:journals/pacmpl/WeisenburgerKS18}.
 
 \subsection{Platforms and Toolchains for Collective Intelligence}
 \label{subsec:cas-platforms}
 
-The field calculus and XC specify what an aggregate computation is (\cref{subsec:aggregate-computing});
-turning that specification into something a device can run needs a language to program it in,
+The field calculus and XC specify what an aggregate computation is (\cref{subsec:aggregate-computing}).
+%
+Running that specification on a device needs a language to write it in,
 a runtime that carries out the sense-compute-interact cycle,
-and, in practice, a simulator to check a design before it meets real hardware.
+and, in practice, a simulator to check a design before it is deployed on hardware.
 %
 Several toolchains supply this layer,
 giving aggregate computing the same route from formal model to deployable runtime that Jolie gives choreographic programming and ScalaLoci gives multitier programming (\cref{subsec:choreographic-programming,subsec:multitier-programming}).
 
-ScaFi takes the embedding route:
-it realises the field calculus as an internal \ac{DSL} hosted in Scala,
+ScaFi embeds the calculus in a host language:
+it realises the field calculus as an internal \ac{DSL} in Scala,
 packaged with a companion runtime that runs the same aggregate program, unmodified, inside a discrete-event simulation or on physically distributed devices~\cite{casadei2022scafi}.
 %
-The simulation seat is supplied by Alchemist,
+The simulator is Alchemist,
 a discrete-event simulator built around chemical-inspired computational models that has become the reference testbed for aggregate programs~\cite{DBLP:journals/jos/PianiniMV13}.
 %
-Embedding buys aggregate programs the host language's tooling, libraries, and type system for free,
-at the cost of a syntax that is aggregate computing filtered through Scala's own conventions.
+Embedding gives aggregate programs the host language's tooling, libraries, and type system for free,
+at the cost of a syntax constrained by Scala's own conventions.
 %
-Protelis instead commits to a dedicated, external language purpose-built for aggregate programming,
-trading that free tooling for a syntax designed from scratch around fields and their composition, rather than adapted from a general-purpose host~\cite{pianini2015protelis}.
+Protelis is instead a dedicated, external language for aggregate programming,
+trading that free tooling for a syntax designed around fields and their composition rather than adapted from a general-purpose host~\cite{pianini2015protelis}.
 %
 Where ScaFi and Protelis both target the JVM,
 FCPP re-implements the same execution model in C++,
@@ -577,7 +589,7 @@ XC, already introduced in \cref{subsec:aggregate-computing} as a reworking of th
 by collapsing \texttt{nbr}, \texttt{rep}, and the alignment discipline relating them into a single \texttt{exchange} construct,
 it shrinks the core an implementation has to get right, rather than adding a fourth runtime alongside ScaFi, Protelis, and FCPP~\cite{DBLP:journals/jss/AudritoCDSV24}.
 
-An experience report spanning more than a decade of aggregate-computing research reads this ecosystem back through the lens of declarative programming,
+An experience report spanning more than a decade of aggregate-computing research reviews this ecosystem from the standpoint of declarative programming,
 tracing how the paradigm's declarative core has let language,
 execution-dynamics,
 middleware,
@@ -588,7 +600,7 @@ Later work builds directly on these toolchains.
 %
 Aggregate processes extend the aggregate-computing model, and its ScaFi implementation,
 with constructs for concurrent collective computations whose execution is sustained by a dynamic team of devices,
-whose spatial region can itself vary over time -- precisely the elastic membership a \ac{CAS} exhibits (\cref{subsec:collective-adaptive-systems})~\cite{CASADEI2021104081}.
+whose spatial region can itself vary over time -- the elastic membership a \ac{CAS} exhibits (\cref{subsec:collective-adaptive-systems})~\cite{CASADEI2021104081}.
 %
 \ac{RL} has been explored as a way of deriving,
 rather than hand-specifying,
@@ -599,13 +611,13 @@ Proximity-aware, self-federated learning applies the same field-based coordinati
 clustering devices for federated training from local, decentralised information alone,
 with no central coordinator deciding cluster membership~\cite{DBLP:journals/iot/DominiFAVE26}.
 %
-None of this treats deployment performance as a given:
+Deployment performance is not taken as given either:
 a simulation-based methodology,
 again built on Alchemist,
-lets it be estimated for a collective service before that service is rolled out on real edge infrastructure,
+estimates it for a collective service before that service is rolled out on real edge infrastructure,
 the same practice already noted for smart-city and edge scenarios in \cref{subsec:aggregate-computing}~\cite{DBLP:journals/iotj/CasadeiFPPSV22}.
 
-Together, ScaFi, Protelis, FCPP, and XC -- and the aggregate-process, learning-augmented, and federated-learning extensions built on top of them -- constitute the closest prior art to the deployment and coordination model this thesis develops in \cref{chap:pulverization,chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration}.
+ScaFi, Protelis, FCPP, XC, and the aggregate-process, learning-augmented, and federated-learning extensions built on them are the closest prior art to the deployment and coordination model this thesis develops in \cref{chap:pulverization,chap:dynamic-reconfiguration,chap:deployment-and-reconfiguration}.
 
 \section{Advanced Linguistic Abstractions for Coordination}
 \label{sec:advanced-linguistic-abstractions}
@@ -646,9 +658,9 @@ so a protocol's sequencing is enforced by the same type discipline that sequence
     \label{fig:monadic-pipeline}
 \end{figure}
 
-Cloud Haskell puts this pipeline to work on an actual coordination protocol, as \Cref{fig:monadic-pipeline} depicts:
+Cloud Haskell puts this pipeline to work on a coordination protocol, as \Cref{fig:monadic-pipeline} depicts:
 a process monad sequences send, receive, and spawn across a network of nodes,
-so a distributed program is written exactly as if the same operations were local, and the monad is what inserts the network in between~\cite{DBLP:conf/haskell/EpsteinBJ11}.
+so a distributed program is written exactly as if the same operations were local, and the monad inserts the network in between~\cite{DBLP:conf/haskell/EpsteinBJ11}.
 %
 Session-typed channels admit the same treatment.
 %
@@ -656,7 +668,7 @@ Session types are the type discipline for structured communication introduced by
 a channel's type prescribes the order of sends and receives on it~\cite{DBLP:conf/esop/HondaVK98}.
 %
 Pucella and Tov encode a session type as a sequence of monadic actions,
-so a protocol violation -- sending where the type expects a receive -- is a type error in exactly the sense that using a value of the wrong type would be~\cite{DBLP:conf/haskell/PucellaT08}.
+so a protocol violation -- sending where the type expects a receive -- is a type error in the same sense as using a value of the wrong type~\cite{DBLP:conf/haskell/PucellaT08}.
 
 \subsection{Direct-Style Effect Systems}
 \label{subsec:direct-style-effect-systems}
@@ -668,9 +680,11 @@ so the same effectful program can be run under different handlers without being 
 %
 A continuation-passing semantics has since put handlers themselves on a formal footing~\cite{Hillerström:2017}.
 %
-For a coordination protocol, this separation matters beyond style:
-the code that issues an effect -- send this message, wait on that reply -- stays the same whether the handler interpreting it performs a genuine remote call or drives a local simulation,
-so the same protocol implementation serves as its own test harness, with no separate code path for either, as \Cref{fig:effect-handlers} depicts.
+For a coordination protocol, this separation matters beyond style.
+%
+The code that issues an effect -- send this message, wait on that reply -- stays the same whether the handler interpreting it performs a genuine remote call or drives a local simulation.
+%
+The same protocol implementation therefore serves as its own test harness, with no separate code path for either, as \Cref{fig:effect-handlers} depicts.
 
 \begin{figure}
     \centering
@@ -679,7 +693,7 @@ so the same protocol implementation serves as its own test harness, with no sepa
     \label{fig:effect-handlers}
 \end{figure}
 
-Handlers reach past network coordination as well:
+Handlers apply beyond network coordination as well:
 retrofitted onto OCaml, they let the concurrency scheduler that decides which computation runs next be written as an ordinary handler rather than fixed into the runtime,
 so scheduling becomes one more effect a program can interpret, not a mechanism the runtime alone controls~\cite{DBLP:conf/pldi/Sivaramakrishnan21}.
 
@@ -694,7 +708,7 @@ so the sequence of effects a type records for one party is exactly the session t
 Exceptional asynchronous session types put this correspondence to work on the failure a distributed protocol cannot avoid:
 building session-typed channels on an effect-handler implementation lets a disconnection be handled by the same mechanism that handles any other effect, without leaving the session-typed discipline~\cite{10.1145/3290341}.
 
-Capabilities push the same idea from what a computation may effect to what it may even reach.
+Capabilities push the same idea from what a computation may do to what it may reach.
 %
 An object-capability system grants access to a resource only by handing over an unforgeable reference to it,
 so authority is tracked by what a piece of code holds rather than by an ambient identity check~\cite{miller2003capability}.
@@ -712,14 +726,15 @@ using capability types to rule out unsafe sharing between concurrent computation
 %
 Both build on Scala 3, whose reference documents the language features this line of work extends~\cite{odersky2021scala3}.
 
-For multiparty coordination specifically, monadic sequencing, handler-based interpretation, statically tracked effects, and capability-based reach offer four ways of making a protocol's obligations part of the type of the program that implements it,
-rather than a property checked separately,
-the same goal already pursued by the typed choreographies and placement types reviewed in \cref{subsec:choreographic-programming,subsec:multitier-programming}.
+For multiparty coordination, monadic sequencing, handler-based interpretation, statically tracked effects, and capabilities offer four ways of making a protocol's obligations part of the type of the program that implements it,
+rather than a property checked separately.
 %
-\Cref{chap:language-and-coordination} takes up this connection directly:
-it examines how a coordination language for collective systems can draw on aggregate computing, choreographic programming, and multitier programming at once (\cref{sec:foundational-paradigms}),
+This is the goal already pursued by the typed choreographies and placement types reviewed in \cref{subsec:choreographic-programming,subsec:multitier-programming}.
+%
+That connection is taken up in \cref{chap:language-and-coordination}:
+a coordination language for collective systems can draw on aggregate computing, choreographic programming, and multitier programming at once (\cref{sec:foundational-paradigms}),
 modelling each paradigm as a capability,
-and then how the same unification can be reached instead through monadic communication primitives built from the abstractions just introduced.
+and the same unification can be reached instead through monadic communication primitives built from the abstractions just introduced.
 
 \section{Large Language Models for Code Generation and DSLs}
 \label{sec:llms-for-code-generation}
@@ -752,11 +767,11 @@ or carry over syntax from the general-purpose languages that dominate its traini
 
 One response constrains decoding itself,
 restricting, at every step, the tokens the model may sample to those that keep the output derivable from the target grammar,
-so an invalid program is never produced in the first place.
+so an invalid program is never produced.
 %
 PICARD applies this idea incrementally to SQL,
 parsing the partial output as it is generated and rejecting any token that cannot be completed into a valid query,
-which turns fine-tuned but unreliable text-to-SQL models into state-of-the-art ones~\cite{DBLP:conf/emnlp/ScholakSB21}.
+which raises fine-tuned but unreliable text-to-SQL models to the best results reported at the time~\cite{DBLP:conf/emnlp/ScholakSB21}.
 %
 Synchromesh generalises the mechanism into constrained semantic decoding,
 checking partial output against a grammar for the target language itself rather than a parser specific to SQL,
@@ -777,17 +792,17 @@ Constrained decoding and grammar prompting address the same gap from opposite en
 an \ac{LLM}'s fluency in a general-purpose language does not transfer automatically to a \ac{DSL}'s grammar,
 and each technique makes that transfer explicit -- one at the level of decoding, the other at the level of the prompt.
 %
-\Cref{chap:language-based-macroprogramming} puts this requirement to work on a macroprogramming \ac{DSL} for aggregate computing (\cref{subsec:aggregate-computing}),
-using an \ac{LLM}'s in-context learning to turn a natural-language description of a collective's target behaviour into a program the aggregate-computing runtime executes~\cite{DBLP:journals/tiot/AguzziFV25}.
+This requirement is taken up in \cref{chap:language-based-macroprogramming} for a macroprogramming \ac{DSL} over aggregate computing (\cref{subsec:aggregate-computing}),
+where an \ac{LLM}'s in-context learning turns a natural-language description of a collective's target behaviour into a program the aggregate-computing runtime executes~\cite{DBLP:journals/tiot/AguzziFV25}.
 
-What none of the models reviewed in this chapter settles is where their derived programs meet the physical infrastructure.
+None of the models reviewed in this chapter says where its derived programs run on the physical infrastructure.
 %
-Aggregate computing, choreographic programming, and multitier programming each describe collective behaviour from a global viewpoint and derive the logical units -- per-device programs, per-role processes, per-tier slices -- that realise it;
-all three leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time.
+Aggregate computing, choreographic programming, and multitier programming each describe collective behaviour from a global viewpoint and derive the logical units -- per-device programs, per-role processes, per-tier slices -- that realise it.
 %
-That is the same gap \cref{chap:edge-cloud-continuum} exposed at the architectural level,
-and \cref{chap:dynamic-reconfiguration} reviews next what the orchestration literature offers to close it at runtime.
+All three leave the mapping of those units onto a changing physical topology either implicit or fixed at compile time.
 %
-The thesis' answers begin Part II:
-\cref{chap:pulverization} gives the mapping an architectural model,
-and \cref{chap:language-and-coordination} gives the three paradigms a single language account.
+This is the same gap identified at the architectural level in \cref{chap:edge-cloud-continuum};
+what the orchestration literature offers to close it at run time is reviewed in \cref{chap:dynamic-reconfiguration}.
+%
+The thesis' own answers begin in Part II,
+with an architectural model for the mapping (\cref{chap:pulverization}) and a single language account of the three paradigms (\cref{chap:language-and-coordination}).

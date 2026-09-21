@@ -5,16 +5,16 @@ The macroprogramming models of \cref{chap:programming-models} abstract from phys
 they fix what each logical participant runs,
 not which physical host runs it.
 %
-Some mechanism at runtime must therefore supply the missing choice of host,
-and keep revising it as the infrastructure characterised in \cref{chap:edge-cloud-continuum} changes underneath it.
+Some mechanism must therefore supply the missing choice of host at run time,
+and keep revising it as the infrastructure described in \cref{chap:edge-cloud-continuum} changes underneath it.
 %
-The literature offers four answers to that need:
+This chapter reviews four answers to that need:
 constraint- and optimisation-based placement,
 energy- and carbon-aware objectives,
 declarative statements of the deployment problem,
 and policies learned with \ac{RL} over graph representations of the topology.
 %
-The review is direct background for the thesis' answers in Part III:
+They are the background for the thesis' own answers in Part III:
 the deployment and reconfiguration strategies of \cref{chap:deployment-and-reconfiguration} and the learned offloading policy of \cref{chap:heterogeneous-gnn}.
 
 \section{Deployment Problems in Pervasive Systems}
@@ -24,11 +24,10 @@ Deployment is a challenge shared by the target environments of this thesis (\cre
 it means placing computation and coordination logic onto nodes that are heterogeneous (\cref{subsec:continuum-characteristics}) and mobile or intermittently connected (\cref{subsec:network-volatility}),
 so that no placement decision can be assumed to remain valid for long.
 %
-From the runtime perspective,
-how is the mapping from logical computational units to physical hosts actually decided,
+Once the assumption of a fixed topology is dropped,
+the mapping from logical computational units to physical hosts has to be decided,
 revised,
-and enacted,
-once the assumption of a fixed topology is dropped?
+and enacted at run time.
 
 Deployment is an assignment problem:
 given a set of computational units -- services, functions, actors -- and a set of candidate hosts connected by links of varying capacity,
@@ -41,7 +40,7 @@ this is still the default assumption behind most automatic deployment tooling, w
 recomputing or adjusting it as devices join,
 leave,
 move,
-or change state -- exactly the behaviour \cref{subsec:continuum-evolution} already argued self-managed systems need in general~\cite{DBLP:conf/icse/KramerM07}.
+or change state -- the behaviour argued necessary for self-managed systems in general in \cref{subsec:continuum-evolution}~\cite{DBLP:conf/icse/KramerM07}.
 
 \begin{figure}[t]
     \centering
@@ -50,56 +49,48 @@ or change state -- exactly the behaviour \cref{subsec:continuum-evolution} alrea
     \label{fig:placement-mapping}
 \end{figure}
 
-Static deployment is not just a weaker form of the dynamic case;
-it is the wrong model altogether once the assumptions that justify it stop holding.
+Static deployment is the wrong model once the assumptions that justify it stop holding.
 %
-A mapping computed once implicitly assumes that the set of candidate hosts,
+A mapping computed once assumes that the set of candidate hosts,
 their capacity,
-and the connectivity between them are known and stable enough that a single decision remains valid.
+and the connectivity between them are known and stable enough for a single decision to remain valid.
 %
-\Cref{subsec:continuum-characteristics,subsec:network-volatility} showed that none of the three holds towards the edge of the continuum,
-where nodes differ radically in capacity and energy budget and links form and break as devices move.
+None of the three holds towards the edge of the continuum (\cref{subsec:continuum-characteristics,subsec:network-volatility}),
+where nodes differ widely in capacity and energy budget and links form and break as devices move.
 %
-Under these conditions a static mapping does not merely become suboptimal over time:
-it can stop being satisfiable at all,
-if the host it names disappears or the link to it is no longer available.
+Under these conditions a static mapping does not merely become suboptimal over time.
+%
+It can stop being satisfiable if the host it names disappears or the link to it is no longer available.
 
-Reopening the mapping at runtime raises four questions that structure the rest of this chapter.
+Reopening the mapping at run time raises four questions, and they structure the rest of this chapter:
+which objective a placement should optimise, and under which constraints (\cref{subsec:constraint-based-placement});
+which objective to privilege when several compete, energy being one of them (\cref{subsec:energy-aware-orchestration});
+in what form the components, their requirements, and the objective are stated to whatever computes the mapping (\cref{subsec:declarative-deployment});
+and how a new mapping can be computed fast enough to matter on a topology that keeps changing while the computation runs (\cref{sec:ml-for-topologies}).
 %
-First, an implementation must decide \emph{what} makes one placement better than another:
-which objective the mapping should optimise, and under which constraints.
-The orchestration and placement literature answers this chiefly through the constraint- and optimisation-based formulations reviewed in \cref{subsec:constraint-based-placement}.
-%
-Second, it must decide \emph{which} objective to privilege when several compete:
-energy is one such objective,
-already flagged in \cref{subsec:continuum-characteristics} as a concern orthogonal to raw computational capacity and treated as first-class in \cref{subsec:energy-aware-orchestration}.
-%
-Third, it must decide \emph{in what form} the problem itself is stated:
-how the components, their requirements, and the objective are declared to whatever computes the mapping,
-in the specification models reviewed in \cref{subsec:declarative-deployment}.
-%
-Fourth, it must decide \emph{how} to compute a new mapping fast enough to matter on a topology that keeps changing while the computation runs -- a scalability concern that motivates the shift from the classical heuristics surveyed in \cref{sec:edge-orchestration-sota} to the learning-based methods examined in \cref{sec:ml-for-topologies}.
+The last question drives the shift from the classical heuristics surveyed in \cref{sec:edge-orchestration-sota} to learning-based methods.
 
 \section{State-of-the-Art in Edge Orchestration and Placement}
 \label{sec:edge-orchestration-sota}
 
-Automating the mapping problem posed in \cref{sec:the-deployment-problem} is the subject of a substantial body of work on \emph{edge orchestration and service placement},
-surveyed by Aït-Salaht et al.,
-who propose a classification scheme for the field and catalogue its open issues~\cite{DBLP:journals/csur/Ait-SalahtDL20},
-and, four years later, by Taleb et al.,
-whose appearance signals that the first wave of proposals left placement in integrated cloud-fog-edge settings unsettled~\cite{DBLP:journals/csur/TalebGD25}.
+Automating the mapping problem posed in \cref{sec:the-deployment-problem} is the subject of a substantial body of work on \emph{edge orchestration and service placement}.
 %
-The latter survey groups existing proposals into three categories -- graph-based (exact) methods,
+Aït-Salaht et al. survey it, proposing a classification scheme for the field and cataloguing its open issues~\cite{DBLP:journals/csur/Ait-SalahtDL20}.
+%
+Taleb et al. survey it again four years later, which is itself a sign that the first wave of proposals left placement in integrated cloud-fog-edge settings unsettled~\cite{DBLP:journals/csur/TalebGD25}.
+%
+The later survey groups existing proposals into three categories:
+graph-based (exact) methods,
 heuristics,
-and machine-learning-based methods~\cite{DBLP:journals/csur/TalebGD25} --
-a classification followed loosely here,
-with one addition:
-the first two categories fall under constrained optimisation,
-with energy treated as an objective of its own (\cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration});
-the addition is how the problem itself is stated, rather than how it is solved,
-a concern the classification leaves implicit (\cref{subsec:declarative-deployment});
-and the third category, learning-based methods,
-is what both surveys register as the most active recent trend (\cref{sec:ml-for-topologies,fig:orchestration-taxonomy}).
+and machine-learning-based methods~\cite{DBLP:journals/csur/TalebGD25}.
+%
+This chapter follows that classification loosely, with one addition.
+%
+The first two categories are treated together under constrained optimisation, with energy as an objective of its own (\cref{subsec:constraint-based-placement,subsec:energy-aware-orchestration}).
+%
+The addition is how the problem itself is stated, rather than how it is solved, a concern the classification leaves implicit (\cref{subsec:declarative-deployment}).
+%
+The third category, learning-based methods, is the most active recent trend in both surveys (\cref{sec:ml-for-topologies,fig:orchestration-taxonomy}).
 
 \begin{figure}[t]
     \centering
@@ -128,27 +119,32 @@ Miloradovic and Papadopoulos solve the same assignment for application offloadin
 %
 Their objective folds the carbon footprint of the offloaded computation in alongside resource utilisation.
 %
-Across these proposals, and more broadly across the graph-based category, the same pattern recurs.
+The same pattern recurs across these proposals, and across the graph-based category more broadly.
 %
-Exact methods give an optimal answer for a snapshot of the infrastructure, but their cost grows too fast with the number of nodes and services to be recomputed as often as \cref{subsec:network-volatility} suggests a volatile continuum demands.
+Exact methods give an optimal answer for a snapshot of the infrastructure, but their cost grows too fast with the number of nodes and services to be recomputed as often as a volatile continuum demands (\cref{subsec:network-volatility}).
 %
-This is why heuristics -- and, later, the learning-based methods of \cref{sec:ml-for-topologies} -- take over as problem size and reconfiguration frequency both grow.
+Heuristics -- and, later, the learning-based methods of \cref{sec:ml-for-topologies} -- therefore take over as problem size and reconfiguration frequency both grow.
 
-A distinct line of work brings the reconfiguration frequency concern into the container runtime itself, for applications with real-time constraints that ordinary container orchestration does not preserve~\cite{DBLP:conf/fogiot/StruharBAP20}.
+A distinct line of work brings the reconfiguration-frequency concern into the container runtime itself, for applications with real-time constraints that ordinary container orchestration does not preserve~\cite{DBLP:conf/fogiot/StruharBAP20}.
 %
-Struhár et al. decompose the problem into an offline phase that computes an optimal initial placement and dimensioning of containers from a system model, and an online phase that adapts each container's resource allocation at runtime in response to workload variation and interference, without which a real-time containerised application would drift out of its timing requirements~\cite{DBLP:journals/tecs/StruharCABP24}.
+Struhár et al. decompose the problem into two phases.
 %
-A companion proposal narrows the online objective further, replacing the generic timing bound with a specific one: it adapts a containerised control application's resource allocation to bound the deviation of its response from the ideal~\cite{DBLP:conf/etfa/StruharABPC23}.
+An offline phase computes an optimal initial placement and dimensioning of containers from a system model.
 %
-Both examples make the offline/online split implicit in \cref{sec:the-deployment-problem}'s framing explicit and load-bearing: they build reconfiguration into the deployment model as a second, continuously running phase alongside the initial placement.
+An online phase then adapts each container's resource allocation at run time in response to workload variation and interference,
+without which a real-time containerised application would drift out of its timing requirements~\cite{DBLP:journals/tecs/StruharCABP24}.
+%
+A companion proposal narrows the online objective, replacing the generic timing bound with a specific one: it adapts a containerised control application's resource allocation to bound the deviation of its response from the ideal~\cite{DBLP:conf/etfa/StruharABPC23}.
+%
+Both examples make that split explicit: reconfiguration is part of the deployment model, a second phase running continuously alongside the initial placement.
 
-What is deployed operationally lags behind this literature.
+Operational practice lags behind this literature.
 %
 Cilic et al. benchmark existing edge orchestration platforms against the \ac{QoS} attributes they target and their ability to schedule work onto remote, edge-located resources~\cite{DBLP:journals/sensors/CilicKZK23}.
 %
 They find Kubernetes and its distributions the most ready deployment vehicle available today, but still short of the dynamic, distributed character of edge environments.
 %
-This gap matches the limitation \cref{subsec:paradigm-limitations} identified in the underlying architectural paradigms:
+This gap matches the limitation identified in the underlying architectural paradigms (\cref{subsec:paradigm-limitations}):
 the placement policy belongs to the orchestrator,
 stays comparatively coarse,
 and is never exposed to the application as a first-class, programmable artefact able to host the richer objective functions surveyed above.
@@ -156,7 +152,7 @@ and is never exposed to the application as a first-class, programmable artefact 
 \subsection{Energy-aware Orchestration}
 \label{subsec:energy-aware-orchestration}
 
-\Cref{subsec:continuum-characteristics} identified energy as an axis of heterogeneity that does not track computational capacity, and promised to return to it here as a first-class deployment concern.
+Energy is an axis of heterogeneity that does not track computational capacity (\cref{subsec:continuum-characteristics}), and it is a deployment concern in its own right.
 %
 Energy-aware placement predates the edge.
 %
@@ -166,13 +162,13 @@ Because no exact solver handles that scale, they rely on heuristics aimed at the
 %
 That formulation assumes hosts of roughly uniform energy cost, with consolidation as the main lever.
 %
-Neither assumption survives the move to the edge, where \cref{subsec:continuum-characteristics} showed energy budgets varying by orders of magnitude between nodes, from mains-powered gateways to battery-limited robots to intermittent harvested supplies.
+Neither assumption survives the move to the edge, where energy budgets vary by orders of magnitude between nodes (\cref{subsec:continuum-characteristics}), from mains-powered gateways to battery-limited robots to intermittent harvested supplies.
 %
-At that far end the supply is not only small but unreliable in kind:
+At that end the supply is also unreliable:
 an energy-harvesting device can lose power in the middle of a computation and resume only once it has stored enough charge to continue,
 so that its computation advances in bursts separated by power failures~\cite{DBLP:conf/snapl/LuciaBCMR17}.
 %
-Orchestration cannot then treat such a node as continuously available for the work assigned to it, which already rules out a placement decided once and left to stand.
+Orchestration cannot then treat such a node as continuously available for the work assigned to it, which rules out a placement decided once and left to stand.
 
 Fog- and edge-specific proposals adjust the objective accordingly.
 %
@@ -182,9 +178,11 @@ Their scheduler is one of many heuristic and metaheuristic fog schedulers that p
 %
 These schedulers still treat energy as a quantity to be minimised wherever and whenever the work runs.
 %
-Wiesner et al. change what is counted, shifting the objective from energy to carbon: because the emissions per unit of electricity vary through the day as the grid's generation mix changes, they defer flexible workloads to the intervals when the supply is least carbon-intensive, guided by forecasts of that intensity~\cite{DBLP:conf/middleware/WiesnerBSGT21}.
+Wiesner et al. change what is counted, shifting the objective from energy to carbon.
 %
-What a placement should track is then not the amount of energy it draws alone but the moment at which it draws it, against a supply signal that is itself a function of time.
+Emissions per unit of electricity vary through the day as the grid's generation mix changes, so they defer flexible workloads to the intervals when the supply is least carbon-intensive, guided by forecasts of that intensity~\cite{DBLP:conf/middleware/WiesnerBSGT21}.
+%
+A placement should then track when it draws energy, not only how much.
 %
 At the edge, a node's energy budget is not fixed either: when it is drawn from renewable or harvested sources rather than a stable grid, the available supply fluctuates over time.
 %
@@ -192,7 +190,7 @@ Struhár et al. address this by framing container placement at the edge as a mul
 %
 The orchestrator then learns online which placement to prefer as each node's green-energy supply fluctuates, instead of optimising a fixed budget assumed at deployment time.
 %
-How a planner is told what a green deployment is -- how the components, the infrastructure, and objectives such as these are stated for it -- is a question of its own, taken up next.
+How such an objective is stated to a planner, together with the components and the infrastructure, is a separate question, taken up next.
 
 \subsection{Declarative Deployment Specification}
 \label{subsec:declarative-deployment}
@@ -207,53 +205,56 @@ TOSCA, the \emph{Topology and Orchestration Specification for Cloud Applications
 %
 Kubernetes' operating model is itself declarative: the operator declares a desired state, and controllers continuously reconcile the running system towards it.
 %
-The declared state, however, remains an operations artefact: it belongs to whoever runs the platform, not to the application -- the same boundary \cref{subsec:constraint-based-placement} found around the placement policy itself.
+The declared state, however, remains an operations artefact: it belongs to whoever runs the platform, not to the application -- the same boundary found around the placement policy itself in \cref{subsec:constraint-based-placement}.
 
 The declarative statement can also drive the placement search.
 %
 The constraint-filtering model of Brogi and Forti, reviewed in \cref{subsec:constraint-based-placement}, develops into \emph{declarative continuous reasoning}: the deployment goal is stated once, and an incremental reasoner repairs the placement as the infrastructure drifts, keeping the goal satisfied instead of re-solving from scratch at every change~\cite{DBLP:journals/logcom/FortiBB22}.
 %
-For collective systems, the declarative statement need not stop at operations: it can become the artefact the application itself manipulates at runtime, the direction taken for pulverised deployments~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+For collective systems, the declarative statement need not stop at operations: it can become the artefact the application itself manipulates at run time, the direction taken for pulverised deployments~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
 
-Energy and carbon objectives tracked against a time-varying supply (\cref{subsec:energy-aware-orchestration}) and a deployment goal stated once and kept satisfied are exactly the two threads \cref{chap:deployment-and-reconfiguration} combines into a declarative planner for green deployments on the continuum.
+Two of these strands are combined into a declarative planner for green deployments on the continuum in \cref{chap:deployment-and-reconfiguration}:
+energy and carbon objectives tracked against a time-varying supply (\cref{subsec:energy-aware-orchestration}),
+and a deployment goal stated once and kept satisfied.
 %
-Treating placement as something learned online, rather than declared and repaired, is the shift that carries the chapter into the learning-based methods examined in \cref{sec:ml-for-topologies}.
+Placement can also be learned online instead of declared and repaired, which is the subject of \cref{sec:ml-for-topologies}.
 
 \section{Machine Learning for Distributed Network Topologies}
 \label{sec:ml-for-topologies}
 
-The methods reviewed in \cref{sec:edge-orchestration-sota} share a weakness under the conditions \cref{subsec:network-volatility} established:
+The methods reviewed in \cref{sec:edge-orchestration-sota} share a weakness under the conditions established in \cref{subsec:network-volatility}:
 each recomputes a placement or a schedule from a model of the infrastructure assumed accurate at the moment the computation runs.
 %
 A mobile, intermittently connected continuum keeps violating that assumption.
 %
 Struhár et al.'s bandit formulation (\cref{subsec:energy-aware-orchestration}) is the first proposal reviewed here to loosen it, learning online which placement to prefer instead of re-solving against a budget assumed fixed at deployment.
 %
-Machine learning generalises that move, and both surveys cited in \cref{sec:edge-orchestration-sota} register it as the most active recent trend in edge orchestration~\cite{DBLP:journals/csur/Ait-SalahtDL20,DBLP:journals/csur/TalebGD25}.
+Machine learning generalises that move, and both surveys cited in \cref{sec:edge-orchestration-sota} report it as the most active recent trend in edge orchestration~\cite{DBLP:journals/csur/Ait-SalahtDL20,DBLP:journals/csur/TalebGD25}.
 
 A learned policy takes a different route to the same decision.
 %
 Instead of solving an optimisation problem anew against the latest known state, it is trained to map states of the environment directly to placement or offloading decisions, whatever form those states take.
 %
-This moves the cost of search into a training phase that runs once, offline; at runtime the decision reduces to a single forward pass through the learned function.
+This moves the cost of search into a training phase that runs once, offline; at run time the decision reduces to a single forward pass through the learned function.
 %
 The methods examined below separate training from operation more sharply than the online bandit, which learns as it runs: they train against a model of the environment ahead of time, before any decision is taken.
 %
-This separation pays off only if the trained policy generalises to states it did not meet during training, a requirement \cref{subsec:gnns-for-edge} returns to.
+This separation pays off only if the trained policy generalises to states it did not meet during training, a requirement returned to in \cref{subsec:gnns-for-edge}.
 %
 Not every kind of learning fits this setting.
 %
-Supervised learning would need a supply of ground-truth optimal placements to imitate, precisely the expensive optimisation outputs the learned approach exists to avoid computing.
+Supervised learning would need a supply of ground-truth optimal placements to imitate, the expensive optimisation outputs the learned approach exists to avoid computing.
 %
 \ac{RL}, by contrast, asks only for a reward signal that scores a placement after the fact.
 %
-A survey of deep \ac{RL} in communications and networking catalogues its application across exactly this class of resource-allocation and offloading problems~\cite{DBLP:journals/comsur/LuongHGNWLK19}, and it is the route the rest of this section, and \cref{chap:heterogeneous-gnn}, take.
+A survey of deep \ac{RL} in communications and networking catalogues its application across this class of resource-allocation and offloading problems~\cite{DBLP:journals/comsur/LuongHGNWLK19}, and it is the route the rest of this section, and \cref{chap:heterogeneous-gnn}, take.
 
-The three subsections that follow build that route, each depending on the one before:
-the contrast between the learned approach and the heuristics of \cref{sec:edge-orchestration-sota} on task offloading, where the decision narrows to a single unit and a binary choice of host so the contrast with a re-solved optimisation stands out most sharply (\cref{subsec:learning-based-offloading});
+The three subsections that follow take that route in order:
+task offloading, where the decision narrows to a single unit and a binary choice of host, so the contrast with a re-solved optimisation is sharpest (\cref{subsec:learning-based-offloading});
 the \ac{RL} formulation and the deep Q-learning algorithm that realises it at scale (\cref{subsec:reinforcement-learning});
-and the \acp{GNN} needed to feed such a policy a representation of a topology that is itself heterogeneous and changing (\cref{subsec:gnns-for-edge}),
-the combination later developed into a full offloading policy (\cref{chap:heterogeneous-gnn}).
+and the \acp{GNN} needed to feed such a policy a representation of a topology that is itself heterogeneous and changing (\cref{subsec:gnns-for-edge}).
+%
+The combination is later developed into a full offloading policy (\cref{chap:heterogeneous-gnn}).
 
 \subsection{Traditional vs. Learning-based Offloading}
 \label{subsec:learning-based-offloading}
@@ -268,13 +269,20 @@ Huang et al. take the same problem to a learned policy instead, training an agen
 %
 Their network learns these binary decisions from experience, dispensing with the combinatorial search the constraint-based formulation would rerun for every new channel state.
 %
-The distinction is not that the learned policy reaches a different answer than the heuristic would on a fixed instance -- on a static snapshot of the channel, framing the problem as one to solve exactly still works -- but that it shifts where the cost of adapting to change is paid.
+The learned policy does not reach a different answer from the heuristic on a fixed instance:
+on a static snapshot of the channel, solving the problem exactly still works.
 %
-An optimisation-based policy pays that cost at every decision, resolving the problem instance whenever the channel or workload changes; a learned policy pays it once, during training, and reduces every later decision to a forward pass through the trained model (\cref{fig:cost-shift}).
+The two differ in where the cost of adapting to change is paid.
 %
-That shift matters exactly under the conditions \cref{subsec:network-volatility} already established for the continuum, where the channel and the topology change faster than a fresh optimisation could be solved and applied.
+An optimisation-based policy pays that cost at every decision, re-solving the problem instance whenever the channel or workload changes.
 %
-It does not remove the need for a model of the problem -- the agent still needs a representation of states, actions, and rewards, a formulation \cref{subsec:reinforcement-learning} develops next -- but it moves the burden from finding a solution online to finding one during a training phase that need not run in real time.
+A learned policy pays it once, during training, and reduces every later decision to a forward pass through the trained model (\cref{fig:cost-shift}).
+%
+That matters under the conditions already established for the continuum (\cref{subsec:network-volatility}), where the channel and the topology change faster than a fresh optimisation could be solved and applied.
+%
+It does not remove the need for a model of the problem: the agent still needs a representation of states, actions, and rewards, developed next in \cref{subsec:reinforcement-learning}.
+%
+The burden moves from finding a solution online to finding one during a training phase that need not run in real time.
 
 \begin{figure}[t]
     \centering
@@ -327,13 +335,17 @@ This locality has made \acp{GNN} a standard tool for problems posed over communi
 Kipf and Welling formulate this aggregation as a graph convolution, propagating each node's features to its neighbours through an operation derived from a first-order approximation of spectral graph filtering, so that a node's learned representation comes to depend on the features of the nodes around it and, through further layers, on increasingly distant ones~\cite{DBLP:conf/iclr/KipfW17}.
 %
 Veli\v{c}kovi\'{c} et al. replace the fixed aggregation weights of the graph-convolutional formulation with an attention mechanism that learns how much weight one node's representation should give to each neighbour, rather than fixing that weight from the graph's connectivity alone~\cite{DBLP:conf/iclr/VelickovicCCRLB18} --
-a property that matters once the nodes being aggregated over are not interchangeable, as \cref{subsec:continuum-characteristics} already showed they are not towards the edge of the continuum.
+a property that matters once the nodes being aggregated over are not interchangeable, which they are not towards the edge of the continuum (\cref{subsec:continuum-characteristics}).
 %
-Both formulations, though, still assume a graph with a single type of node and a single type of link, an assumption a continuum topology does not meet: gateways, edge servers, and end devices differ in the resources and capabilities \cref{subsec:continuum-characteristics} catalogued, and the links between them differ correspondingly in bandwidth and volatility.
+Both formulations, though, still assume a graph with a single type of node and a single type of link, an assumption a continuum topology does not meet: gateways, edge servers, and end devices differ in the resources and capabilities catalogued in \cref{subsec:continuum-characteristics}, and the links between them differ correspondingly in bandwidth and volatility.
 %
-Wang et al. address this mismatch directly with a \emph{heterogeneous} graph attention network, learning both how much a node should attend to each of its neighbours and how much it should weigh each type of relation that connects it to them, rather than treating every neighbour and every link as an instance of the same relation~\cite{DBLP:conf/www/WangJSWCYY19} (\cref{fig:gnn-aggregation}).
+Wang et al. address this mismatch with a \emph{heterogeneous} graph attention network (\cref{fig:gnn-aggregation}).
 %
-Applied to an edge-cloud topology, this two-level attention gives a placement or offloading policy a representation that mirrors the topology's own heterogeneity, distinguishing, say, a link to a battery-limited robot from a link to a mains-powered gateway rather than folding both into an undifferentiated edge~\cite{DBLP:conf/www/WangJSWCYY19}.
+It learns both how much a node should attend to each of its neighbours and how much to weigh each type of relation that connects it to them,
+rather than treating every neighbour and every link as an instance of the same relation~\cite{DBLP:conf/www/WangJSWCYY19}.
+%
+Applied to an edge-cloud topology, this two-level attention gives a placement or offloading policy a representation that mirrors the topology's own heterogeneity:
+it distinguishes a link to a battery-limited robot from a link to a mains-powered gateway, rather than folding both into an undifferentiated edge~\cite{DBLP:conf/www/WangJSWCYY19}.
 
 \begin{figure}[t]
     \centering
@@ -343,25 +355,28 @@ Applied to an edge-cloud topology, this two-level attention gives a placement or
 \end{figure}
 
 %
-Heterogeneity is not the only property of a continuum topology a \ac{GNN} must accommodate: the graph presented at runtime is rarely the one seen during training, since nodes join, leave, and move, as \cref{subsec:network-volatility} established.
+Heterogeneity is not the only property of a continuum topology a \ac{GNN} must accommodate: the graph presented at run time is rarely the one seen during training, since nodes join, leave, and move (\cref{subsec:network-volatility}).
 %
 The spectral convolution of Kipf and Welling is transductive, trained on a fixed graph and not, on its own, defined for nodes or topologies absent at training time~\cite{DBLP:conf/iclr/KipfW17}.
 %
 Hamilton et al. lift this restriction with an inductive formulation that learns the aggregation function itself rather than an embedding bound to one graph, so that the trained model applies unchanged to nodes -- and to whole topologies -- it never saw~\cite{DBLP:conf/nips/HamiltonYL17}.
 %
-An inductive, heterogeneity-aware representation of the topology is what lets the deep Q-learning agent of \cref{subsec:reinforcement-learning}, trained offline, act on a continuum that keeps changing under it -- the combination \cref{chap:heterogeneous-gnn} develops into a full offloading policy.
+An inductive, heterogeneity-aware representation of the topology lets the deep Q-learning agent of \cref{subsec:reinforcement-learning}, trained offline, act on a continuum that keeps changing under it.
+%
+This is the combination developed into a full offloading policy in \cref{chap:heterogeneous-gnn}.
 
 Whatever the method, the object of every decision reviewed in this chapter is the same kind of unit:
 a service, a container, a function, a task --
-inherited from the architectural paradigms whose deployment limitations \cref{chap:edge-cloud-continuum} established.
+inherited from the architectural paradigms whose deployment limitations were established in \cref{chap:edge-cloud-continuum}.
 %
 The problem posed in \cref{sec:the-deployment-problem} is therefore only half answered.
 %
-The optimisation and orchestration methods of \cref{sec:edge-orchestration-sota} and the learned policies of \cref{sec:ml-for-topologies} say how a mapping is computed and revised;
-none of the reviewed work supplies a model of what is mapped at a granularity finer than these units,
+The optimisation and orchestration methods of \cref{sec:edge-orchestration-sota} and the learned policies of \cref{sec:ml-for-topologies} say how a mapping is computed and revised.
+%
+None of the reviewed work supplies a model of what is mapped at a granularity finer than these units,
 matched to the collective programs of \cref{chap:programming-models}.
 %
-Part II begins with exactly that model:
-\cref{chap:pulverization} defines the deployable units,
+Part II begins with that model:
+the deployable units are defined in \cref{chap:pulverization},
 the strategies of \cref{chap:deployment-and-reconfiguration} and the offloading policy of \cref{chap:heterogeneous-gnn} then decide where those units run,
-and \cref{chap:demonstrator} puts the whole chain to work on a self-organising robot team.
+and one such deployment is built on a self-organising robot team in \cref{chap:demonstrator}.

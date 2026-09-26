@@ -107,37 +107,145 @@ This guide isn't a set of rigid rules but a reference point to keep the voice of
 
 **Context:** the thesis addresses the challenges of developing, deploying, and dynamically reconfiguring collective adaptive systems (IoT ecosystems, robot swarms) across the highly heterogeneous and mobile edge-cloud continuum. It bridges high-level programming models for collective intelligence with the low-level mechanics of dynamic physical infrastructure.
 
-**Research questions:**
-- **RQ1 (Programming Models):** how can unified macroprogramming paradigms (Aggregate Computing, Choreography, Multitier) and advanced language abstractions (capabilities, monads, LLM-based support) simplify the coordination and development of collective adaptive systems?
-- **RQ2 (Architectural Abstractions):** how does the "pulverisation" model conceptually decouple application logic from physical infrastructure to enable flexible, fine-grained deployment across the continuum?
-- **RQ3 (Dynamic Reconfiguration):** what self-organizing and machine-learning-based techniques (e.g., heterogeneous GNNs via Deep Q-learning, declarative green planning) are required to effectively orchestrate dynamic runtime reconfiguration and intelligent task offloading?
+**Research questions.** Ordered as the thesis is: the model comes first, because it is what licenses the other
+two. Each is phrased so that a negative answer would be recognisable; keep them that way. Reference them by
+label (`rq:model`, `rq:languages`, `rq:deployment`), never by a hardcoded number in prose.
+
+- **RQ1 — Deployment model** (`rq:model`, Chapter 5). *Under what conditions can a collective macro-program be
+  partitioned into independently deployable components so that its observable behaviour does not depend on how
+  those components are mapped onto physical devices?*
+  Answered by the DAG-of-components partitioning (`subsec:macroprogram-dag`), by `thm:deployment-independence`
+  under its hypotheses (i) and (ii), and by simulation validation (`subsec:pulverization-validation`).
+  Chapter 10 adds scoped realisability evidence — one admissible deployment built on nine physical robots — and
+  states in its own discussion what it leaves untested.
+- **RQ2 — Language and coordination support** (`rq:languages`, Chapter 6). *What linguistic support lets a
+  single program combine aggregate, choreographic, and multitier coordination — and yield the deployable
+  components the model requires — while statically rejecting the coordination errors their ad-hoc combination
+  admits?*
+  Answered by capabilities over placement types (CaMiL: soundness proved, 46 use cases from the literature,
+  three applications mixing paradigms) and by differentiated communication primitives (ScalaTropy, §6.5).
+  - **RQ2.1 — Generation** (Chapter 7). *Can such a program be obtained from a natural-language specification
+    rather than written by hand, and what must a model be told about the language for that to work?*
+    Answered by the body of knowledge and its abstraction ladder: the ladder decides the outcome, not model
+    scale — the largest model in the study leads at no knowledge level.
+- **RQ3 — Runtime deployment decision** (`rq:deployment`, Chapters 8–9). *Once the choice among admissible
+  deployments is functionally free, how can that choice be made and revised while the system runs, on
+  non-functional grounds alone — by a policy stated in advance or by one learned from experience — and what does
+  the improvement in the targeted quantity cost in the others?*
+  Answered by three hand-written policies, each reducing the quantity it targets at a bounded secondary cost and
+  each requiring a person to say what a good deployment is (Chapter 8), and by a learned policy that removes
+  that requirement, given a representation preserving the continuum's heterogeneity together with a collective
+  summary the learner would otherwise have to rediscover (Chapter 9).
+
+Do not write a research question that names the technique used to answer it, asks how an existing model works,
+or turns on a verb the thesis does not measure. "Simplify", "flexible", "effective", and "required" are all
+unsupported by the evidence the chapters actually report: the results are a soundness proof, a set of expressible
+use cases, an invariance theorem, and measured trade-offs.
 
 **Core arguments — keep every claim you write consistent with these:**
-- **Beyond node-centric:** traditional node-centric programming is insufficient for expressing the global behavior and coordination of large-scale, mobile systems.
-- **Logical vs. physical:** macroprogramming provides the right logical abstractions, but it requires a robust architectural counterpart — the pulverisation model — to map those logical components onto a constantly changing physical topology.
-- **Necessity of runtime adaptation:** because the physical infrastructure in the edge-cloud continuum is highly dynamic, deployment cannot be static; runtime context demands data-driven approaches and declarative planning to maintain optimal, green, and self-organizing deployments.
+- **Deployment independence is the keystone.** Under stated conditions, every correct deployment of a
+  well-formed macro-program yields the same observable behaviour (`thm:deployment-independence`). This is the
+  thesis' central technical result and the licence for everything after Chapter 5: it is what makes the
+  assignment of components to hosts a free choice, revisable while the system runs and driven by non-functional
+  concerns alone, without putting correctness at stake. Chapters 6, 8, and 9 each open by invoking it, and
+  Chapter 10's discussion turns on one of its hypotheses. Any claim about deployment freedom traces back here.
+- **Beyond node-centric:** traditional node-centric programming is insufficient for expressing the global
+  behaviour and coordination of large-scale, mobile systems.
+- **Logical and physical, in that order:** the model of Chapter 5 says what a deployable component is. The three
+  paradigms of Chapter 3 produce such components, but in mutually incompatible terms, which is why a system
+  built from more than one of them cannot be pulverised as a whole; one notion of placement for all three
+  removes that obstacle (Chapter 6). Do not write this as macroprogramming needing an architectural counterpart
+  bolted on afterwards — the thesis states the model first and reaches the languages from it.
+- **Runtime adaptation is necessary, not optional:** because the infrastructure of the edge-cloud continuum is
+  highly dynamic, a deployment cannot be fixed at release time, and the revision has to be driven by runtime
+  context — through self-organisation, declarative planning, or a learned policy. Do not call the outcome
+  *optimal*: Chapter 9 states that a weighted sum reaches only the convex portion of the trade-off, so a policy
+  that would be optimal in a concave region of the Pareto front is unreachable by any choice of weights.
+- **Claims are scoped, never total.** The evidence is simulated for Chapters 5, 8, and 9; qualitative, with no
+  measurements, for Chapter 10; and `pass@k` against co-designed test cases for Chapter 7. No chapter validates
+  the thesis end to end, and Chapter 10's discussion says exactly that. Every contribution chapter states its
+  own limits — three in Chapter 5, three in Chapter 7, four in Chapter 9 — and those statements are deliberate.
+  Do not soften them, drop them, or resolve them with a reassuring closing sentence.
 
-**Current stage:** all core papers behind the thesis contributions (2024–2026) are published, accepted, or under review. The narrative is fixed into three parts: Background (Part I), Model and Languages (Part II), Deployments and Reconfiguration (Part III).
+**Pulverisation is not the thesis' own invention.** The five-role partitioning — sensing, actuation, behaviour,
+state, communication — is due to Casadei et al. The thesis' contribution is a different, *orthogonal* cut: a
+macro-program divided along its own data flow, one deployable unit per component of that flow, plus the
+independence theorem and the reconfigurable middleware. Chapter 5's discussion puts it as "the two cuts are
+orthogonal, not competing". Never write a sentence that credits the original model to this thesis, and never
+describe the thesis' partitioning as a refinement of the five roles.
+
+**Current stage:** all core papers behind the thesis contributions (2024–2026) are published, accepted, or under
+review. The narrative is fixed into three parts: Background (Part I), Model and Languages (Part II), Deployments
+and Reconfiguration (Part III). Chapters 2–10 are proofread drafts. Chapter 1 and Chapter 11 are still
+skeletons: `\lipsum[1]` bodies under `TODO(canovaccio)` markers, with guiding comments stating what each section
+has to contain. The research questions are therefore not yet in the thesis prose — they exist only as those
+comments, and nothing in Chapters 2–10 references an RQ.
 
 ## Thesis structure
 
-- **Part I — Background:** state of the art and background material.
-  - Chapter 2 — Programming Models for Large-scale Distributed Systems (macroprogramming shift, Aggregate Computing, Choreographic Programming, Multitier Programming, monads/effects/capabilities, LLMs in software engineering).
-  - Chapter 3 — Architectures and Platforms in the Edge-Cloud Continuum (continuum definition/topology, CPS & swarms, microservices to pulverisation, collective adaptive systems).
-  - Chapter 4 — Dynamic Reconfiguration and Intelligent Offloading (static vs. dynamic deployment, declarative/green deployment planning, RL/Deep Q-learning, GNNs).
-- **Part II — Model and Languages:** the model-related contributions, from pulverization to language and coordination support.
-  - Chapter 5 — The Pulverization Model (motivation, local vs. collective components, infrastructural vs. application devices, DAG of deployable units, forward chain to physical devices, semantics and guarantees).
-  - Chapter 6 — Language and Coordination Support for Collective Systems (unifying Aggregate Computing, Choreography, Multitier; optionally ScalaTropy's monadic communication primitives).
-  - Chapter 7 — Language-based Macroprogramming for IoT Systems through Large Language Models.
-- **Part III — Deployments and Reconfiguration:** from reconfiguration policies and declarative planning to deep reinforcement learning for offloading, ending with an end-to-end demonstrator.
-  - Chapter 8 — Deployment and Reconfiguration Strategies on the ECC (macro-programming and self-organisation as deployment control, dynamic IoT reconfiguration, declarative green deployment planning).
-  - Chapter 9 — Heterogeneous GNN for Collective-task Offloading in Cloud-Edge via Deep Q-learning (offloading as a learning problem, heterogeneous topology representation, deep Q-learning, experimental validation).
-  - Chapter 10 — A Demonstrator for Self-organizing Robot Teams (demonstrator architecture, end-to-end workflow, evaluation).
+The numbers and titles below match the files. Check against them rather than from memory; Chapters 2 and 3 are
+easy to transpose, and getting them wrong routes an edit into the wrong chapter.
 
-When drafting or revising a section, place its argument in this structure: check which research question and which core argument it serves, and make sure it doesn't duplicate or contradict material that belongs in a different chapter.
+- **Chapter 1 — Introduction** (`01-introduction.tex`, skeleton) — context and motivation, research questions,
+  contributions, structure of the thesis.
+- **Part I — Background:** state of the art and background material.
+  - **Chapter 2 — The Edge-Cloud Continuum and Its Architectural Paradigms** (`02-edge-cloud-continuum.tex`) —
+    continuum evolution and topology, infrastructure heterogeneity, network volatility and partitioning; IoT
+    ecosystems, swarm robotics, collective adaptive systems, and their deployment and coordination challenges;
+    microservices and FaaS at the edge, the actor model, and why each falls short of fine-grained dynamic
+    deployment.
+  - **Chapter 3 — Programming Models for Large-scale Distributed Systems** (`03-programming-models.tex`) — the
+    macroprogramming shift; aggregate computing, choreographic programming, and multitier programming, each with
+    its execution model and application scenarios; platforms and toolchains for collective intelligence; monadic
+    effects and direct-style effect systems; LLMs for code generation and DSLs, scoped to code generation rather
+    than a general LLM survey.
+  - **Chapter 4 — Dynamic Reconfiguration and Intelligent Offloading** (`04-dynamic-reconfiguration.tex`) —
+    deployment problems in pervasive systems; optimisation and constraint-based placement, energy-aware
+    orchestration, declarative deployment specification; traditional against learning-based offloading,
+    reinforcement learning and deep Q-learning, GNNs for edge topologies.
+- **Part II — Model and Languages:** the deployment model, then the language support that feeds it.
+  - **Chapter 5 — The Pulverization Model** (`05-pulverization.tex`) — motivation against the original fixed
+    five-role partitioning; application and infrastructural devices, the macro-program as a DAG of components,
+    local against collective components, forwarding chains to physical devices; execution model,
+    `thm:deployment-independence` and its proof, empirical validation in Alchemist. Answers RQ1.
+  - **Chapter 6 — Language and Coordination Support for Collective Systems**
+    (`06-language-and-coordination.tex`) — §§6.1–6.4 develop CaMiL: placement and paradigm capabilities,
+    composition, safety properties, the Scala 3 realisation, the soundness result, and an evaluation over 46 use
+    cases; §6.5 develops ScalaTropy: communication patterns, the DSL, its monadic realisation, case studies and
+    communication cost. Both are finished drafts, §6.5 included. Answers RQ2.
+  - **Chapter 7 — Macroprogramming IoT Systems with Large Language Models**
+    (`07-language-based-macroprogramming.tex`) — natural language as the entry point; the body of knowledge and
+    its co-design; the prompt, the test cases, and validation by simulation; an evaluation over sixteen models,
+    with failure modes and composition beyond the manual. Answers RQ2.1, and closes the language side of
+    Part II.
+- **Part III — Deployments and Reconfiguration:** who uses the freedom the model establishes, and how.
+  - **Chapter 8 — Deployment and Reconfiguration Strategies on the Edge-Cloud Continuum**
+    (`08-deployment-and-reconfiguration.tex`) — three hand-written policies, compared at the end of the chapter
+    on what each improves and what the improvement costs: a battery-triggered offloading rule, a field-based
+    policy over self-organising coordination regions, and a declarative planner for green deployments. Answers
+    RQ3. It is the thinnest mature chapter relative to what it carries — three publications, no subsections.
+  - **Chapter 9 — Learning-based Collective Task Offloading with Heterogeneous Graph Neural Networks**
+    (`09-heterogeneous-gnn.tex`) — collective offloading as a learning problem; the continuum as a heterogeneous
+    graph with a GNN as the Q-function; the collective state term; experimental validation on a stated
+    trade-off. Answers RQ3.
+  - **Chapter 10 — A Demonstrator for Self-organizing Robot Teams** (`10-demonstrator.tex`) — what a physical
+    deployment requires, the demonstrator's architecture, the deployment read as a pulverised one, observed
+    behaviour. Scoped realisability evidence for RQ1, not end-to-end validation: its own discussion states that
+    it exercises none of Chapters 6–9 and reports no measurements. Do not describe it as validating the thesis
+    as a whole, and do not present Part III as culminating in it.
+- **Chapter 11 — Conclusions** (`11-conclusions.tex`, skeleton) — answers to the research questions,
+  limitations, future work. Typeset outside Part III, with a part-sized gap in the ToC.
+
+When drafting or revising a section, place its argument in this structure: check which research question and
+which core argument it serves, and make sure it doesn't duplicate or contradict material that belongs in a
+different chapter. Each contribution chapter opens by stating the gap it closes and ends with a discussion
+stating what it established and what it hands to the next chapter. That chain is deliberate and already
+consistent across Chapters 5–10 — extend it rather than re-deriving it, and check the neighbouring chapters'
+discussions before writing a claim that crosses a chapter boundary.
 
 ## Operational rules
 
+- Reference the thesis-level research questions by label (`rq:model`, `rq:languages`, `rq:deployment`), never by a hardcoded "RQ1" in prose, so that renumbering stays safe. The `rq:`/`RQ` namespace is reserved for them: the chapter-local questions — three at the end of §7.1.2, two at the head of §9.4 — are deliberately left unlabelled prose questions, and should stay that way.
 - Edit prose under `chapters/` and `front.tex`. Don't modify `bibliography.bib`, `background.bib`, or files under `figures/` unless the user explicitly asks you to.
 - If a claim needs a citation that doesn't already exist in the bibliography, flag it to the user instead of inventing or silently adding one.
 - After a substantive editorial decision (a rewrite, a structural change, a deferred issue), append a dated entry to `logs/ai_session_log.md` describing what changed and why, following the format of existing entries in that file.

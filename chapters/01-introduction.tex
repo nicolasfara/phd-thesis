@@ -1,39 +1,360 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-% TODO(canovaccio): expand into full prose.
-\lipsum[1]
+Engineering a collective system means deciding three things:
+what the collective computes,
+where each piece of that computation runs,
+and what to do with that placement once the infrastructure has changed.
+%
+The three decisions are taken by unrelated means, at different moments:
+the computation in a programming model,
+the placement in a deployment descriptor written before the system starts,
+and its revision by an operator working from outside the application.
+
+What a \ac{CAS} computes is a property of the collective:
+the system is built from many autonomous entities that interact locally,
+and its useful behaviour belongs to the collective they form and not to any single one of them~\cite{DBLP:journals/sttt/NicolaJW20}.
+%
+Its membership is not fixed:
+entities join, leave, and fail while the system runs,
+and an ensemble is identified by the properties its members hold at the time~\cite{DBLP:journals/taas/NicolaLPT14}.
+%
+A specification therefore states what the collective achieves, and what any single entity does follows from it:
+a robot team holds a formation~\cite{DBLP:journals/swarm/BrambillaFBD13},
+the phones carried through a public event estimate how crowded it is~\cite{DBLP:journals/computer/BealPV15}.
+%
+Correctness is argued the same way, over the behaviour of the collective as membership and environment change;
+self-stabilisation is one established criterion~\cite{DBLP:journals/tomacs/ViroliABDP18}.
+
+Such a system can take advantage of being deployed across the edge-cloud continuum,
+where computation can sit close to the devices that produce its data,
+or on hosts with the capacity to run it.
+%
+The same infrastructure works against it:
+hosts differ by orders of magnitude in capability,
+join and leave without notice,
+and lose connectivity to one another.
+%
+The program does not say which host runs which piece of it, so someone has to decide.
+
+That decision is normally taken once and left untouched.
+%
+This thesis makes it a variable of the running system.
+%
+A macro-program, the program that states what the collective achieves,
+can be partitioned into components whose collective behaviour does not depend on where each component runs;
+under conditions this thesis states and proves,
+the assignment of components to hosts stops being a correctness concern.
+%
+It becomes a choice that can be made and remade while the system runs,
+on non-functional grounds alone: battery, latency, load, carbon.
+
+The model alone does not build a system.
+%
+The components it partitions have to come from a program,
+and today such a program is written in one of three paradigms: aggregate, choreographic, or multitier.
+%
+Each yields deployable units in terms that do not translate into the others.
+%
+Choosing a deployment and revising it as the infrastructure drifts then takes a middleware that can relocate a running component,
+and a policy that says which deployment to move to.
+%
+This thesis develops both sides: the language support, and the platform with the policies that drive it.
 
 \section{Context and Motivation}
 \label{sec:context-and-motivation}
 
-% Focus: why engineering collective adaptive systems on the edge-cloud continuum
-% is hard, and why current models and platforms fall short.
-\lipsum[1]
+Latency budgets, data locality, bandwidth, and intermittent connectivity pushed computation out of the cloud~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
+%
+What remains is a continuum of hosts running from the microcontroller embedded in the physical world to the server rack in the data centre (\cref{sec:the-continuum,subsec:continuum-characteristics}).
+%
+Its topology is unstable: devices move, batteries drain, links fail, and the network partitions (\cref{subsec:network-volatility}).
+%
+A placement that was good when the system started need not stay good for an hour.
+
+This thesis targets two families of collective system on that infrastructure:
+\ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} and robot swarms~\cite{DBLP:journals/swarm/BrambillaFBD13} (\cref{sec:target-environments}).
+%
+Both are built from many devices, each unreliable and each replaceable.
+%
+A correctness argument assembled device by device therefore has to be reassembled whenever a device joins or leaves~\cite{DBLP:journals/sttt/NicolaJW20}.
+
+Macroprogramming moves the unit of description to the collective:
+one program states what the collective achieves, and each device's behaviour is derived from it~\cite{DBLP:journals/csur/Casadei23} (\cref{sec:macro-programming}).
+%
+Three paradigms realise that idea (\cref{sec:foundational-paradigms}).
+%
+Aggregate computing computes over a field spanning an ensemble;
+choreographic programming states a protocol among roles and projects it onto each participant;
+multitier programming annotates the scopes of a single program with the tier they belong to.
+%
+All three derive logical units of computation from a global specification.
+
+None of them decides where those units run.
+%
+Aggregate computing assumes every device evaluates a complete instance of the program, never a fragment;
+endpoint projection fixes one process per role;
+multitier placement is resolved at compile time.
+%
+The mapping onto physical hosts is therefore either implicit in the execution model or settled before the program is released,
+and it is that mapping a volatile infrastructure keeps invalidating.
+
+The architectures used to structure distributed software do not let the application set that mapping while it runs either (\cref{sec:architectural-paradigms}).
+%
+A microservice's deployment unit is a container under an orchestrator,
+and re-placing it is an operations action that the application can neither express nor trigger.
+%
+\ac{FaaS} narrows the unit but makes it stateless,
+so application state moves to backing services, usually cloud-hosted.
+%
+Actor runtimes keep state inside the actor and can place actors automatically,
+but the placement policy belongs to the runtime and is tuned for data-centre clusters (\cref{subsec:paradigm-limitations}).
+
+Pulverisation closes part of that gap.
+%
+Casadei et al.\ split each logical device into sensing, actuation, behaviour, state, and communication components,
+each deployable wherever the continuum offers the resources it needs~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+%
+The partitioning is fixed in advance, though:
+five deployable units per logical device whatever the application computes,
+and a logical device is relocated as a whole.
+%
+So is the deployment: the model says which deployments are admissible,
+not who chooses among them or on what grounds (\cref{chap:dynamic-reconfiguration}).
+%
+PulvReAKt, an earlier step of this work, moved that assignment into a declarative specification and made it revisable at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+% the five roles stayed as they were, and it still took a person to say which deployment to move to.
 
 \section{Research Questions}
 \label{sec:research-questions}
 
-% RQ1 (Programming Models): how unified macroprogramming paradigms and advanced
-% language abstractions simplify the development of collective adaptive systems.
-% RQ2 (Architectural Abstractions): how pulverisation decouples application logic
-% from physical infrastructure to enable fine-grained deployment.
-% RQ3 (Dynamic Reconfiguration): which self-organising and learning-based
-% techniques support runtime reconfiguration and intelligent offloading.
-\lipsum[1]
+Three questions follow from that gap.
+%
+The model comes first because it licenses the other two:
+until a deployable component is defined, and the consequences of moving one are known,
+the mapping of components to hosts cannot be posed as a runtime decision.
+
+\rqhead{rq:model}{Deployment model}
+A macro-program is written against the collective,
+and its components end up on devices that differ in what they can run.
+%
+The five-role partitioning fixes how many deployable units there are before the application is known,
+and the paradigms that produce those units leave their placement implicit.
+%
+\emph{Under what conditions can a collective macro-program be partitioned into independently deployable components so that its observable behaviour does not depend on how those components are mapped onto physical devices?}
+%
+Answering it requires stating the conditions and proving the invariance under them.
+%
+Both are given in \cref{chap:pulverization}, for macro-programs partitioned along their own data flow (\cref{subsec:macroprogram-dag}),
+and simulation measures how far apart two deployments run before they agree (\cref{subsec:pulverization-validation}).
+%
+A negative answer would be a well-formed macro-program with two correct deployments whose outputs settle on different values.
+
+\rqhead{rq:languages}{Language and coordination support}
+The three paradigms each produce deployable components, in terms that do not translate into one another:
+a placed value, a projected role, and a field over an ensemble are not the same kind of object.
+%
+A system built from more than one of them therefore cannot be pulverised as a whole,
+and running separate frameworks side by side gives up the guarantees each provides on its own.
+%
+\emph{What linguistic support lets a single program combine aggregate, choreographic, and multitier coordination -- and yield the deployable components the model requires -- while statically rejecting the coordination errors their ad-hoc combination admits?}
+%
+Two requirements pull against each other:
+the discipline has to be sound, and it has to keep the programs the three paradigms support writable.
+%
+A soundness proof settles the first (\cref{subsec:camil-formalization}),
+and reimplementing use cases drawn from the literature of all three settles the second (\cref{subsec:camil-expressivity}).
+%
+A negative answer would be a discipline that accepts a program violating one paradigm's own rules,
+or one so restrictive that those use cases can no longer be written.
+
+\subrqhead{rq:generation}{Generation}
+Whatever the discipline, a program still has to be written,
+in a \ac{DSL} whose operators are rare in the corpora general-purpose models are pretrained on.
+%
+\emph{Can such a program be obtained from a natural-language specification rather than written by hand, and what must a model be told about the language for that to work?}
+%
+The evidence is generated programs scored with \emph{pass@k} against test cases co-designed with the tasks and checked in simulation (\cref{sec:llm-pipeline}),
+over sixteen models and three levels of supplied knowledge (\cref{sec:llm-evaluation}).
+%
+A negative answer would be models that stay at zero however much they are told,
+or an outcome decided by model size and not by what the model is given.
+
+\rqhead{rq:deployment}{Runtime deployment decision}
+Deployment independence makes the choice among admissible deployments free, and leaves it unmade.
+%
+Whatever is chosen, the infrastructure will invalidate it,
+so the choice has to be revisable while the system runs (\cref{sec:the-deployment-problem}).
+%
+\emph{Once the choice among admissible deployments is functionally free, how can that choice be made and revised while the system runs, on non-functional grounds alone -- by a policy stated in advance or by one learned from experience -- and what does the improvement in the targeted quantity cost in the others?}
+%
+The second half of the question is what makes it answerable:
+showing that a policy improves what it targets settles nothing on its own,
+so the simulations measure the cost elsewhere as well (\cref{chap:deployment-and-reconfiguration,chap:heterogeneous-gnn}).
+%
+A negative answer would be a policy whose gain in one quantity is paid for by an unbounded loss in another,
+or one that reaches its target only by changing what the application computes.
 
 \section{Contributions}
 \label{sec:contributions}
 
-% Focus: map each contribution to its chapter and to the publication it is based
-% on, and to the research question it addresses.
-\lipsum[1]
+Each contribution below names the chapter that develops it, the publication it comes from, and the question it answers;
+\cref{tab:contributions} collects the same mapping.
+
+\paragraph{A deployment model for macro-programs.}
+A macro-program is partitioned along its own data flow into a \ac{DAG} of components:
+one deployable unit per component of that flow,
+each classified by whether its computation involves neighbouring devices,
+and each reached through a forwarding chain from the device that owns it (\cref{sec:pulverization-abstractions}).
+%
+Under two hypotheses -- every component computes a self-stabilising function,
+and the sensor state is uniform along every forwarding chain --
+the behaviour observed at the macro-program's output ports stabilises to a value that does not depend on the deployment (\cref{thm:deployment-independence}).
+%
+Simulations in Alchemist over networks of 50, 100, and 200 mobile nodes compare a monolithic deployment against an offloaded one,
+and the two converge to the same result once the nodes stop moving (\cref{subsec:pulverization-validation}).
+%
+The partitioning and the theorem are the thesis' central technical result, published as~\cite{DBLP:conf/acsos/FarabegoliVC24}, and they answer \cref{rq:model}.
+%
+An earlier step of this work, the PulvReAKt middleware, made the component-to-host assignment revisable at runtime through a declarative specification,
+while leaving the original five-role partitioning unchanged~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+%
+The two partitionings cut along different axes and compose (\cref{sec:pulverization-discussion}).
+
+\paragraph{One type discipline for three coordination paradigms.}
+\camil turns each paradigm into a \emph{capability}: a value that code must hold in order to use that paradigm's operations.
+%
+Placement types are shared by all of them,
+so a value produced under one paradigm reaches another through its placement, with no ad-hoc bridge between them (\cref{sec:capabilities-unification}).
+%
+The discipline is realised with the contextual abstractions, capture checking, and separation checking of Scala~3, and it is proved sound (\cref{thm:camil-soundness}).
+%
+The evaluation reimplements 46 use cases drawn from the multitier, choreographic, and aggregate literature, with none left out,
+and three applications combine paradigms within a single program (\cref{sec:camil-evaluation}).
+%
+The design is under review as~\cite{Farabegoli:2026:CaMiL}, and with the next contribution it answers \cref{rq:languages}.
+
+\paragraph{Differentiated communication primitives for multiparty coordination.}
+Choreographic and multitier languages offer point-to-point exchange and leave every other pattern to be encoded on top of it,
+usually by broadcasting and filtering.
+%
+ScalaTropy gives each pattern an operation of its own:
+isotropic, anisotropic, and co-anisotropic communication alongside the point-to-point case.
+%
+The \ac{DSL} is monadic, and its types record the architecture a choreography is written against (\cref{sec:scalatropy}).
+%
+On a matrix-vector product, the selective primitive keeps the bytes the master transmits nearly flat as workers are added,
+while the same scatter encoded as broadcast-and-filter grows linearly (\cref{subsec:scalatropy-evaluation}).
+%
+The design is accepted for publication as~\cite{Farabegoli:2026:ScalaTropy}.
+
+\paragraph{A body of knowledge for generating aggregate programs.}
+An \ac{LLM} handles the surface syntax of a Scala \ac{DSL} fluently, but misses the meaning of the operators that make it a field language.
+%
+The \emph{body of knowledge} supplies that meaning:
+a short operational manual, placed in the model's context at generation time,
+introducing each operator through a minimal program and the values it produces over successive rounds (\cref{sec:body-of-knowledge}).
+%
+Its entries are added only where an observed failure demanded one, and never where an entry would contain a test case's solution (\cref{subsec:bok-codesign}).
+%
+Across sixteen models, the outcome is decided by what the model is told and not by model scale:
+the largest model in the study leads at no knowledge level (\cref{sec:llm-evaluation}).
+%
+The contribution is published as~\cite{DBLP:journals/tiot/AguzziFV25} and answers \cref{rq:generation}.
+
+\paragraph{Three hand-written reconfiguration policies.}
+A device offloads one expensive component as soon as its own battery falls below a threshold, and moves it again when the host becomes unreachable~\cite{DBLP:conf/acsos/FarabegoliVC24}.
+%
+Infrastructural devices compete for the components application devices are better off not running, and each resizes the region it leads through a collectively built field~\cite{DBLP:journals/iot/FarabegoliPCV24}.
+%
+A planner searches the admissible deployments against a stated objective over energy and carbon, and repeats the search as the network drifts~\cite{DBLP:conf/coordination/BrogiCFFV25}.
+%
+Each policy reduces the quantity it targets at a bounded cost in another (extra messages, a stabilisation transient, or added latency),
+and each requires a person to state in advance what a good deployment is (\cref{chap:deployment-and-reconfiguration}).
+%
+The three answer the first half of \cref{rq:deployment}.
+
+\paragraph{A learned policy for collective offloading.}
+The continuum is represented as a heterogeneous graph, with application devices, edge servers, and cloud servers as distinct node types,
+and a \ac{GNN} over that graph serves as the Q-function of a deep Q-learning agent (\cref{sec:hetero-graph-state}).
+%
+An aggregate program running on the same devices whose deployment is being decided supplies a collective summary of local density that the graph alone does not carry (\cref{subsec:collective-information}).
+%
+Under a scalarised reward the learned policies move continuously between the extremes the weights ask for,
+and with the collective term they differentiate by position, offloading part of a device's components at the fringe of a crowd, which no binary rule can do (\cref{sec:idhgql-evaluation}).
+%
+This removes the requirement that a person state the rule, and so answers the second half of \cref{rq:deployment}.
+%
+It is published as~\cite{Farabegoli:2026:HeteroGNN}.
+
+\paragraph{A physical demonstrator.}
+Project Emerge runs a single aggregate program on nine mobile robots that form spatial patterns and recover them after one of them is displaced by hand (\cref{chap:demonstrator}).
+%
+The robots carry a microcontroller and no aggregate runtime, and a server evaluates the program on their behalf,
+which in the terms of the model is a deployment with the robots as owners and the server as their shared surrogate (\cref{sec:emerge-as-pulverisation}).
+%
+This is scoped realisability evidence for \cref{rq:model}:
+a deployment the model admits, running on hardware and not in simulation.
+%
+It exercises none of the reconfiguration policies and reports no measurements, so it is not end-to-end validation of the thesis (\cref{sec:emerge-discussion}).
+%
+The contribution is published as~\cite{Farabegoli:2027:ProjectEmerge}, extending~\cite{DBLP:conf/coordination/AguzziBBCCDFPV25}.
+
+\begin{table}[t]
+    \centering
+    \small
+    \caption[Contributions, chapters, publications, and research questions]{Each contribution, the chapter that develops it, the publication it comes from, and the research question it answers.}
+    \label{tab:contributions}
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xcll@{}}
+        \toprule
+        \textbf{Contribution} & \textbf{Ch.} & \textbf{Publication} & \textbf{Question} \\
+        \midrule
+        Declarative runtime reconfiguration of a pulverised deployment (PulvReAKt)
+            & \labelcref{chap:pulverization} & FGCS 2024 & \cref{rq:model} \\
+        Data-flow partitioning of a macro-program, with deployment independence
+            & \labelcref{chap:pulverization} & ACSOS 2024 & \cref{rq:model} \\
+        \camil: capabilities unifying three coordination paradigms
+            & \labelcref{chap:language-and-coordination} & TOPLAS, under review & \cref{rq:languages} \\
+        ScalaTropy: monadic communication primitives
+            & \labelcref{chap:language-and-coordination} & COORDINATION 2026 & \cref{rq:languages} \\
+        A body of knowledge for generating aggregate programs
+            & \labelcref{chap:language-based-macroprogramming} & ACM TIoT 2025 & \cref{rq:generation} \\
+        Battery-triggered offloading rule
+            & \labelcref{chap:deployment-and-reconfiguration} & ACSOS 2024 & \cref{rq:deployment} \\
+        Field-based reconfiguration over self-organising coordination regions
+            & \labelcref{chap:deployment-and-reconfiguration} & Internet of Things 2024 & \cref{rq:deployment} \\
+        Declarative planner for green deployments
+            & \labelcref{chap:deployment-and-reconfiguration} & COORDINATION 2025 & \cref{rq:deployment} \\
+        Learned collective offloading over a heterogeneous graph
+            & \labelcref{chap:heterogeneous-gnn} & FGCS 2026 & \cref{rq:deployment} \\
+        Project Emerge: one admissible deployment on physical robots
+            & \labelcref{chap:demonstrator} & SCP 2027 & \cref{rq:model} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 \section{Structure of the Thesis}
 \label{sec:thesis-structure}
 
-% Reading guide: Part I background (Chapters 2-4), Part II model and languages
-% (Chapters 5-7), Part III deployments and reconfiguration (Chapters 8-9),
-% closing with the end-to-end demonstrator (Chapter 10) and the conclusions
-% (Chapter 11).
-\lipsum[1]
+Part~I is background:
+the continuum and the architectural paradigms used on it (\cref{chap:edge-cloud-continuum}),
+the macroprogramming paradigms and the linguistic machinery built around them (\cref{chap:programming-models}),
+and the placement, orchestration, and learning techniques a deployment decision can draw on (\cref{chap:dynamic-reconfiguration}).
+%
+Part~II states the deployment model and then the language support that feeds it,
+from the model itself (\cref{chap:pulverization}) to the two designs that unify the paradigms (\cref{chap:language-and-coordination})
+and the generation of macro-programs from natural language (\cref{chap:language-based-macroprogramming}).
+%
+Part~III asks who uses the freedom the model establishes, and how:
+reconfiguration policies written by hand (\cref{chap:deployment-and-reconfiguration}),
+one learned from experience (\cref{chap:heterogeneous-gnn}),
+and a physical realisation of one admissible deployment (\cref{chap:demonstrator}).
+%
+The conclusions answer the research questions, gather the limits the chapters state, and list what is left open (\cref{chap:conclusions}).
+
+The demonstrator closes Part~III without concluding it:
+it realises one point of the deployment space on hardware and exercises none of the policies that precede it,
+so the part does not culminate there.
+%
+A reader already familiar with the continuum and with macroprogramming can start at \cref{chap:pulverization}.

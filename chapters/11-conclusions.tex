@@ -9,17 +9,60 @@
 \section{Answers to the Research Questions}
 \label{sec:rq-answers}
 
-% Revisit RQ1--RQ3 (\cref{sec:research-questions}) against the results of
-% Parts II--III: RQ1 -> Chapters 6-7, RQ2 -> Chapter 5, RQ3 -> Chapters 8-9,
-% with Chapter 10 as end-to-end evidence.
+% One subsection per question, each in the same four moves: (1) the question in
+% one sentence; (2) the answer as a claim -- a declarative sentence that could
+% be false, not a summary of what the chapter did; (3) the specific result
+% backing it, named; (4) the boundary of the claim. "Yes, under hypotheses (i)
+% and (ii) of \cref{thm:deployment-independence}" is an answer; "the thesis
+% explored how pulverisation enables flexible deployment" is not one.
+%
+% RQ1 -> Chapter 5: \cref{thm:deployment-independence}, confirmed in simulation
+% by \cref{subsec:pulverization-validation}. \Cref{chap:demonstrator} adds
+% scoped realisability evidence -- one admissible deployment, built on physical
+% robots -- and nothing more than that. It is not end-to-end validation:
+% \cref{sec:emerge-discussion} states that it exercises none of
+% \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn}, uses
+% neither \cref{chap:language-and-coordination} nor
+% \cref{chap:language-based-macroprogramming}, and reports no measurements. Do
+% not contradict that statement here.
+%
+% RQ2 -> Chapter 6: CaMiL's soundness result over the three paradigms, its 46
+% use cases, and ScalaTropy's communication primitives -- with the price both
+% designs pay, refusing programs the paradigms they unify would accept.
+% RQ2.1 -> Chapter 7: the abstraction ladder decides the outcome, not model
+% scale.
+%
+% RQ3 -> Chapters 8-9: three hand-written policies, each reducing the quantity
+% it targets at a bounded secondary cost and each needing a person to state what
+% a good deployment is, then a learned policy that removes that requirement,
+% given a representation that keeps the continuum's heterogeneity and a
+% collective summary.
 \lipsum[1]
 
 \section{Limitations}
 \label{sec:limitations}
 
+% Aggregate the limits the chapters already state, grouped by research question
+% rather than restated chapter by chapter: three in
+% \cref{sec:pulverization-discussion}, three in
+% \cref{sec:llm-macroprogramming-discussion}, four in
+% \cref{sec:idhgql-discussion}, and the gaps in \cref{sec:emerge-discussion}.
+% Grouping them by question shows which answer is weakest -- RQ3, whose evidence
+% is entirely simulated.
 \lipsum[1]
 
 \section{Future Work}
 \label{sec:future-work}
 
+% Four steps that would close the distance between the demonstrator and the rest
+% of the thesis are named in \cref{sec:emerge-discussion}, which promises they
+% are taken up here: a local runtime instance on every robot with localisation
+% decentralised through radio ranging, communication delays injected into the
+% simulation engine so the mixed deployments have a cost, the perturbation
+% experiments repeated under controlled conditions, and the collective
+% behaviours generated from a natural-language specification. That promise has
+% to be kept. Also open, from \cref{sec:idhgql-discussion}: multi-objective
+% methods that learn a set of policies covering the Pareto front instead of one
+% policy per weight vector, distinguishing application devices by profile, and
+% placing bound components jointly rather than independently.
 \lipsum[1]

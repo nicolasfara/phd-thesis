@@ -50,7 +50,7 @@ how its deployment reads in the vocabulary of \cref{chap:pulverization} (\cref{s
 what the robots did (\cref{sec:emerge-demonstration}),
 and what the demonstrator establishes and leaves untouched (\cref{sec:emerge-discussion}).
 %
-The contribution is published as~\cite{Farabegoli:2026:ProjectEmerge}, extending~\cite{DBLP:conf/coordination/AguzziBBCCDFPV25}.
+The contribution is published as~\cite{Farabegoli:2027:ProjectEmerge}, extending~\cite{DBLP:conf/coordination/AguzziBBCCDFPV25}.
 
 \section{What a Physical Deployment Requires}
 \label{sec:emerge-requirements}
@@ -125,7 +125,7 @@ nothing in the runtime knows whether the positions it reads come from a camera o
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.85\textwidth]{emerge-architecture.pdf}
-    \caption[System-level architecture of the demonstrator]{System-level architecture of the demonstrator. The localisation system tracks robot positions, the neighbourhood system maintains the adjacency relation, the aggregate runtime evaluates the collective program, and the dashboard supports monitoring and perturbation. Solid arrows are message flows through the broker; dashed arrows are logical dependencies. Adapted from~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \caption[System-level architecture of the demonstrator]{System-level architecture of the demonstrator. The localisation system tracks robot positions, the neighbourhood system maintains the adjacency relation, the aggregate runtime evaluates the collective program, and the dashboard supports monitoring and perturbation. Solid arrows are message flows through the broker; dashed arrows are logical dependencies. Adapted from~\cite{Farabegoli:2027:ProjectEmerge}.}
     \label{fig:emerge-architecture}
 \end{figure}
 
@@ -167,7 +167,7 @@ The \texttt{AggregateService} composes the three into a loop that samples an env
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.6\textwidth]{emerge-execution-cycle.pdf}
-    \caption[One evaluation cycle of the aggregate runtime]{One evaluation cycle of the aggregate runtime. The environment provider builds a logical network model from the physical robot states at time $t$; the orchestrator evaluates the aggregate program over it, producing actuation commands; the updater dispatches them; the robots execute them, carrying the system to $t+1$. Adapted from~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \caption[One evaluation cycle of the aggregate runtime]{One evaluation cycle of the aggregate runtime. The environment provider builds a logical network model from the physical robot states at time $t$; the orchestrator evaluates the aggregate program over it, producing actuation commands; the updater dispatches them; the robots execute them, carrying the system to $t+1$. Adapted from~\cite{Farabegoli:2027:ProjectEmerge}.}
     \label{fig:emerge-execution-cycle}
 \end{figure}
 
@@ -346,7 +346,7 @@ Between them they cover symmetry, alignment, leader-based coordination, and glob
         \includegraphics[width=\textwidth]{emerge-formation-pointleader.jpg}
         \caption{Point-the-leader}
     \end{subfigure}
-    \caption[Spatial patterns formed by the robot team]{Four of the spatial patterns the team formed during the demonstration, each produced by a different aggregate program loaded into the running system. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \caption[Spatial patterns formed by the robot team]{Four of the spatial patterns the team formed during the demonstration, each produced by a different aggregate program loaded into the running system. From~\cite{Farabegoli:2027:ProjectEmerge}.}
     \label{fig:emerge-formations}
 \end{figure}
 
@@ -360,7 +360,7 @@ and a visitor could change the neighbourhood radius and watch the formation reor
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=\textwidth]{emerge-dashboard.png}
-    \caption[The dashboard used to observe and perturb the running team]{The dashboard used to observe and perturb the running team. Lines between robots draw the current neighbourhood relation, which is otherwise invisible to an observer. The controls load a different aggregate program and retune the neighbourhood radius; selecting a robot exposes its state, a manual movement control, and the option to elect it leader. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \caption[The dashboard used to observe and perturb the running team]{The dashboard used to observe and perturb the running team. Lines between robots draw the current neighbourhood relation, which is otherwise invisible to an observer. The controls load a different aggregate program and retune the neighbourhood radius; selecting a robot exposes its state, a manual movement control, and the option to elect it leader. From~\cite{Farabegoli:2027:ProjectEmerge}.}
     \label{fig:emerge-dashboard}
 \end{figure}
 
@@ -403,7 +403,7 @@ In every case tried, the team absorbed the perturbation and recovered the format
         \includegraphics[width=\textwidth]{emerge-selfhealing-3.png}
         \caption{Formation recovered}
     \end{subfigure}
-    \caption[Recovery of a line formation after manual perturbation]{Recovery of a line formation after a robot is displaced by hand during execution. From~\cite{Farabegoli:2026:ProjectEmerge}.}
+    \caption[Recovery of a line formation after manual perturbation]{Recovery of a line formation after a robot is displaced by hand during execution. From~\cite{Farabegoli:2027:ProjectEmerge}.}
     \label{fig:emerge-selfhealing}
 \end{figure}
 

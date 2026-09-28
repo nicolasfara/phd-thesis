@@ -51,14 +51,14 @@ on non-functional grounds alone: battery, latency, load, carbon.
 The model alone does not build a system.
 %
 The components it partitions have to come from a program,
-and today such a program is written in one paradigm, while others can be adopted,
-like aggregate computing~\cite{VIROLI2019100486},
-choreographic~\cite{Montesi2023chor},
-or multitier~\cite{DBLP:journals/csur/WeisenburgerWS20}.
+and today such a program is written in a single paradigm,
+such as aggregate computing~\cite{VIROLI2019100486},
+choreographic programming~\cite{Montesi2023chor},
+or multitier programming~\cite{DBLP:journals/csur/WeisenburgerWS20}.
 %
 Each yields deployable units in terms that do not translate into the others.
 %
-Choosing a deployment and revising it as the infrastructure drifts then takes a middleware that can relocate a running component,
+Choosing a deployment and revising it as the infrastructure drifts then requires a middleware that can relocate a running component,
 and a policy that says which deployment to move to.
 %
 This thesis develops both sides: the language support, and the platform with the policies that drive it.
@@ -69,7 +69,7 @@ This thesis develops both sides: the language support, and the platform with the
 Latency budgets, data locality, bandwidth,
 and intermittent connectivity pushed computation out of the cloud~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
 %
-What remains is a continuum of hosts running from the microcontroller embedded in the physical world to the server rack in the data centre (\cref{sec:the-continuum,subsec:continuum-characteristics}).
+The result is a continuum of hosts that runs from the microcontroller embedded in the physical world to the server rack in the data centre (\cref{sec:the-continuum,subsec:continuum-characteristics}).
 %
 Its topology is unstable:
 devices move,
@@ -80,12 +80,12 @@ and the network partitions (\cref{subsec:network-volatility}).
 A placement chosen when the system starts can stop being a good one as load and battery levels change,
 and it can stop being satisfiable once the host it names disappears or the link to it breaks (\cref{sec:the-deployment-problem}).
 %
-Energy is one of the quantities a placement answers for.
+A placement also decides how much energy the system spends.
 %
 Energy budgets differ by orders of magnitude between a mains-powered gateway and a battery-limited robot,
 and the carbon cost of the same computation varies with where and when it runs (\cref{subsec:energy-aware-orchestration}).
 
-This thesis targets mainly two families of collective system on that infrastructure:
+This thesis mainly targets two families of collective systems on that infrastructure:
 \ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} and robot swarms~\cite{DBLP:journals/swarm/BrambillaFBD13} (\cref{sec:target-environments}).
 %
 Both consist of many devices,
@@ -96,7 +96,7 @@ Reasoning about such a system one device at a time means redoing the correctness
 Macroprogramming moves the unit of description to the collective:
 one program states what the collective achieves, and each device's behaviour is derived from it~\cite{DBLP:journals/csur/Casadei23} (\cref{sec:macro-programming}).
 %
-In this thesis we consider three paradigms that realise that idea,
+Three paradigms realise that idea,
 each deriving logical units of computation from a global specification (\cref{sec:foundational-paradigms}).
 %
 In aggregate computing,
@@ -133,16 +133,16 @@ Each paradigm checks its guarantees against its own model of where computation h
 Run side by side, the frameworks leave unchecked every value that crosses from one to another,
 and one paradigm's code can break another's guarantee,
 for instance a choreography's deadlock freedom (\cref{subsec:multiparty-challenge}).
-%
-Writing any of these programs has a cost of its own.
-%
-Their operators carry a semantics that has to be learned before the first program runs,
-and the \acp{DSL} implementing them are rare in the corpora \acp{LLM} are pretrained on (\cref{sec:llms-for-code-generation}).
 
-The architectures used to structure distributed software do not let the application set that mapping while it runs either (\cref{sec:architectural-paradigms}).
+Programs in these paradigms are also costly to write.
+%
+The operators of each paradigm have a semantics that must be learned before the first program runs,
+and the \acp{DSL} that implement them are rare in the corpora \acp{LLM} are pretrained on (\cref{sec:llms-for-code-generation}).
+
+Nor do the architectures used to structure distributed software let the application change where its units run while it is running (\cref{sec:architectural-paradigms}).
 %
 A microservice's deployment unit is a container under an orchestrator,
-and re-placing it is an operations action that the application can neither express nor trigger.
+and moving it is an operator's action, which the application can neither express nor trigger.
 %
 \ac{FaaS} narrows the unit but makes it stateless,
 so application state moves to backing services, usually cloud-hosted.
@@ -150,7 +150,7 @@ so application state moves to backing services, usually cloud-hosted.
 Actor runtimes keep state inside the actor and can place actors automatically,
 but the placement policy belongs to the runtime and is tuned for data-centre clusters (\cref{subsec:paradigm-limitations}).
 
-Pulverisation closes part of that gap.
+Pulverisation closes part of the placement gap.
 %
 Casadei et al.\ split each logical device into sensing, actuation, behaviour, state, and communication components,
 each deployable wherever the continuum offers the resources it needs~\cite{DBLP:journals/fi/CasadeiPPVW20}.
@@ -172,14 +172,17 @@ The model also says which deployments are admissible,
 but not who chooses among them or on what grounds.
 %
 PulvReAKt, an earlier step of this work,
-moved that choice into a declarative specification and made it revisable at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24},
-through a rule-based middleware that moves a component from one host to another.
+moved that choice into a declarative specification and made it revisable at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
+%
+A rule-based middleware applies the specification by moving components between hosts.
 %
 The five roles stayed as they were,
 and the developer still has to write the rules that say which deployment to move to, and when.
 %
-Such rules anticipate the conditions they respond to,
-and on the continuum the topology changes faster than a placement problem can be re-solved (\cref{subsec:learning-based-offloading}).
+Such rules cover only the conditions their author anticipated.
+%
+Re-solving the placement problem at every change does not remove that limit,
+since on the continuum the topology can change faster than the problem is solved (\cref{subsec:learning-based-offloading}).
 
 \section{Research Questions}
 \label{sec:research-questions}
@@ -197,7 +200,7 @@ but its components run on devices with different capabilities.
 The five-role partitioning fixes the number of deployable units before the application is known,
 and the paradigms that produce these units leave their placement implicit.
 %
-\emph{Under what conditions can a collective macro-program be split into independently deployable components so that its observable behaviour does not depend on how those components are mapped onto physical devices?}
+\emph{Under what conditions can a collective macro-program be partitioned into independently deployable components so that its observable behaviour does not depend on how those components are mapped onto physical devices?}
 %
 An answer has to state the conditions and prove that the behaviour is invariant under them.
 %
@@ -224,12 +227,12 @@ and it must still accept the programs each paradigm supports.
 A soundness proof covers the first,
 showing that no accepted program breaks the rules of any of the three paradigms (\cref{subsec:camil-formalization}).
 %
-The second is tested by checking that 46 use cases from the literature of the three paradigms can all be written in it (\cref{subsec:camil-expressivity}),
-together with three applications that mix the paradigms in one program (\cref{subsec:inter-paradigm}).
+The second is tested on 46 use cases from the literature of the three paradigms, all of which can be written in it (\cref{subsec:camil-expressivity}),
+and on three applications that mix the paradigms in one program (\cref{subsec:inter-paradigm}).
 
 \subrqhead{rq:generation}{Generation}
 Even with a sound discipline, someone still has to write the program,
-in a \ac{DSL} whose operators are rare in the data general-purpose models are trained on.
+in a \ac{DSL} that is rare in the training data of general-purpose models.
 %
 \emph{Can such a program be generated from a natural-language specification instead of being written by hand, and what does a model need to be told about the language for this to work?}
 %
@@ -247,7 +250,7 @@ so the choice must be revisable while the system runs (\cref{sec:the-deployment-
 %
 \emph{Once all admissible deployments are functionally equivalent, how can the system choose among them and revise that choice at runtime, on non-functional grounds only, with a policy stated in advance or one learned from experience, and what does improving the targeted quantity cost in the others?}
 %
-The second part of the question matters because a gain in the targeted quantity means little on its own.
+The question asks about cost because a gain in the targeted quantity means little on its own.
 %
 The simulations therefore also measure what the other quantities lose,
 and whether that loss stays bounded (\cref{chap:deployment-and-reconfiguration,chap:heterogeneous-gnn}).
@@ -256,7 +259,7 @@ and whether that loss stays bounded (\cref{chap:deployment-and-reconfiguration,c
 \label{sec:contributions}
 
 Each contribution below names the chapter that develops it, the paper it comes from, and the research question it answers.
-\cref{tab:contributions} collects this information.
+\Cref{tab:contributions} collects this information.
 
 \paragraph{A deployment model for macro-programs.}
 A macro-program is partitioned along its own data flow into a \ac{DAG} of components,
@@ -287,7 +290,7 @@ An earlier step of this work, the PulvReAKt middleware~\cite{DBLP:journals/fgcs/
 kept the original five-role partitioning
 and made the assignment of components to hosts revisable at runtime through a declarative specification.
 %
-The two partitionings cut along different axes and can be combined (\cref{sec:pulverization-discussion}).
+The five-role partitioning and the data-flow partitioning cut along different axes and can be combined (\cref{sec:pulverization-discussion}).
 
 \paragraph{One type discipline for three coordination paradigms.}
 \camil turns each paradigm into a \emph{capability}: a value that code must hold to use that paradigm's operations.
@@ -318,14 +321,14 @@ isotropic, anisotropic, and co-anisotropic communication, alongside point-to-poi
 %
 The \ac{DSL} is monadic, and its types record the architecture that a choreography targets (\cref{sec:scalatropy}).
 %
-In a matrix-vector product, the selective primitive keeps the bytes sent by the master nearly constant as workers are added.
+In a matrix-vector product, the anisotropic primitive keeps the bytes sent by the master nearly constant as workers are added.
 %
 With broadcast-and-filter, the same scatter sends a number of bytes that grows linearly with the workers (\cref{subsec:scalatropy-evaluation}).
 %
 The design is accepted for publication~\cite{Farabegoli:2026:ScalaTropy}.
 
 \paragraph{A body of knowledge for generating aggregate programs.}
-An \ac{LLM} writes the syntax of a Scala \ac{DSL} fluently,
+An \ac{LLM} writes the syntax of ScaFi, an aggregate \ac{DSL} embedded in Scala, fluently,
 but misses the meaning of the operators that make it a field language.
 %
 The \emph{body of knowledge} supplies that meaning.
@@ -370,15 +373,15 @@ A \ac{GNN} over this graph is the Q-function of a deep Q-learning agent (\cref{s
 An aggregate program runs on the same devices whose deployment is being decided,
 and computes a collective summary of local density that the graph alone does not provide (\cref{subsec:collective-information}).
 %
-With a scalarised reward,
-the learned policies move continuously between the extremes that the reward weights ask for.
+Varying the weights of a scalarised reward moves the learned policy continuously between the extremes that each single objective asks for.
 %
 With the collective term, they also act differently depending on a device's position:
 at the fringe of a crowd, a device offloads only part of its components,
 which no binary rule can do (\cref{sec:idhgql-evaluation}).
 %
-Since the policy is learned, no person has to state the rule,
-and this answers the second half of \cref{rq:deployment}.
+Because the policy is learned, no person has to state what a good deployment is.
+%
+This answers the second half of \cref{rq:deployment}.
 %
 The contribution is published in~\cite{Farabegoli:2026:HeteroGNN}.
 
@@ -453,7 +456,8 @@ reconfiguration policies written by hand (\cref{chap:deployment-and-reconfigurat
 a policy learned from experience (\cref{chap:heterogeneous-gnn}),
 and one admissible deployment running on physical robots (\cref{chap:demonstrator}).
 %
-The conclusions answer the research questions, collect the limitations stated in each chapter, and list open problems (\cref{chap:conclusions}).
+The research questions are answered in the conclusions (\cref{chap:conclusions}),
+which also collect the limitations stated in each chapter and list open problems.
 
 The demonstrator is the last chapter of Part~III, but it does not build on the policies before it:
 it realises one deployment on hardware and uses none of them.

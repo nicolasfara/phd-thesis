@@ -217,7 +217,7 @@ The \code{Placement} capability provides two operations:
   caption={The placement capability: placing a value on a peer and reading it back.},
   label={lst:placement-capability},
 ]
-def helloOnSmartphone(using Placement): String on Phone = on[Phone] { "Hello" }(*@\label{line:placement-on}@*)
+def helloOnSmartphone(using Placement): String on Phone = on[Phone]("Hello")(*@\label{line:placement-on}@*)
 def reply(using Placement): String on Phone = on[Phone]:(*@\label{line:placement-take}@*)
   val hello: String = take(helloOnSmartphone)
   s"${(*@hello@*)}, Smartphone!"
@@ -371,18 +371,18 @@ The architecture, not the capability that produced the value, decides who may re
   label={lst:composition-recommendation},
 ]
 object RecommendationSystem:
-  def recomm(smartphoneToken: Token on Phone)
-            (using Placement, Choreography, Multitier) =(*@\label{line:comp-caps}@*)
-    Multitier:
-      val authRequests = on[Edge] { asLocalAll(smartphoneToken) }
-      val authPeers = Choreography:(*@\label{line:comp-chor}@*)
-        val requests = comm[Edge, Cloud](authRequests)(*@\label{line:comp-comm}@*)
-        val authGranted = on[Cloud] { /* grant access */ }
-        comm[Cloud, Edge](authGranted)
-      val recommendations = on[Edge]:
-        createRecommendations(take(authPeers))(*@\label{line:comp-take}@*)
-      on[Phone]:
-        asLocal(recommendations).subscribe: recommendation => /* display */(*@\label{line:comp-aslocal}@*)
+  def recomm(smartphoneToken: Token on Phone)(using
+    Placement, Choreography, Multitier(*@\label{line:comp-caps}@*)
+  ) = Multitier:
+    val authRequests = on[Edge] { asLocalAll(smartphoneToken) }
+    val authPeers = Choreography:(*@\label{line:comp-chor}@*)
+      val requests = comm[Edge, Cloud](authRequests)(*@\label{line:comp-comm}@*)
+      val authGranted = on[Cloud] { /* grant access */ }
+      comm[Cloud, Edge](authGranted)
+    val recommendations = on[Edge]:
+      createRecommendations(take(authPeers))(*@\label{line:comp-take}@*)
+    on[Phone]:
+      asLocal(recommendations).subscribe: recommendation => /* display */(*@\label{line:comp-aslocal}@*)
 \end{lstlisting}
 
 The function declares the three capabilities it needs (\cref{line:comp-caps}), which makes their operations available in its body.

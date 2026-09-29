@@ -78,9 +78,10 @@
 \node[anchor=south,font=\small\bfseries] at (infdev.north) {infrastructural device $\deviceId_2$};
 
 % ================= forwarding chain =================
-\draw[bind] (c2.east) to[out=0,in=180]
-  node[midway,above,font=\scriptsize,align=center] {forwarding\\chain}
-  (relay.west);
+% The label sits above the relay, clear of both device borders: the gaps
+% between the devices are too narrow to hold it.
+\draw[bind] (c2.east) to[out=0,in=180] (relay.west);
+\node[anchor=south,font=\scriptsize] at ([yshift=1mm]relay.north) {forwarding chain};
 \draw[bind] (relay.east) to[out=0,in=180] (c2r.west);
 
 \end{tikzpicture}

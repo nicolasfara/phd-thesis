@@ -12,15 +12,16 @@
   comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=22mm,minimum height=9mm,align=center},
   collcomp/.style={comp,double,double distance=0.6pt,fill=orange!10,draw=orange!55!black},
   port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
-  bind/.style={->,thick,black!75},
+  bind/.style={-{Latex[length=2.6mm,width=2mm]},line width=0.9pt,black},
+  junction/.style={circle,fill=black,inner sep=0pt,minimum size=1.2mm},
 ]
 
 % ---------- components ----------
-\node[comp]     (ba) at (-1.5,5.0)  {\begin{tabular}[c]{c}Biometrics\\Acquisition\end{tabular}};
-\node[collcomp] (es) at (-1.5,3.3)  {\begin{tabular}[c]{c}Emergency\\Service\end{tabular}};
-\node[collcomp] (ss) at (-1.5,1.6)  {\begin{tabular}[c]{c}Steering\\Service\end{tabular}};
-\node[comp]     (ns) at (-1.5,-0.1) {\begin{tabular}[c]{c}Navigation\\System\end{tabular}};
-\node[comp]     (da) at (2.1,2.45)  {\begin{tabular}[c]{c}Data\\Analysis\end{tabular}};
+\node[comp]     (ba) at (-1.5,6.3)  {\begin{tabular}[c]{c}Biometrics\\Acquisition\end{tabular}};
+\node[collcomp] (es) at (-1.5,4.2)  {\begin{tabular}[c]{c}Emergency\\Service\end{tabular}};
+\node[collcomp] (ss) at (-1.5,2.1)  {\begin{tabular}[c]{c}Steering\\Service\end{tabular}};
+\node[comp]     (ns) at (-1.5,0.0)  {\begin{tabular}[c]{c}Navigation\\System\end{tabular}};
+\node[comp]     (da) at (2.6,4.2)   {\begin{tabular}[c]{c}Data\\Analysis\end{tabular}};
 
 % ---------- ports ----------
 \node[port] (bao)  at (ba.south) {};
@@ -35,11 +36,19 @@
 \node[port] (dao)  at (da.south) {};
 
 % ---------- bindings ----------
+% The outputs of Biometrics Acquisition and Emergency Service fan out to two
+% consumers each: the branch towards Data Analysis leaves the vertical binding
+% at a junction dot and is routed orthogonally in its own lane, so that no
+% binding runs along a component border or crosses another binding.
 \draw[bind] (bao) -- (esi);
 \draw[bind] (eso) -- (ssi);
 \draw[bind] (sso) -- (nsi);
-\draw[bind] (bao) to[out=0,in=180]   (dai1);
-\draw[bind] (eso) to[out=-15,in=180] (dai2);
+\node[junction] (j1) at ([yshift=-4mm]bao.south) {};
+\node[junction] (j2) at ([yshift=-4mm]eso.south) {};
+\coordinate (lane1) at (0.75,0);
+\coordinate (lane2) at (0.35,0);
+\draw[bind,rounded corners=2mm] (j1.center) -- (j1 -| lane1) |- (dai1);
+\draw[bind,rounded corners=2mm] (j2.center) -- (j2 -| lane2) |- (dai2);
 
 % ---------- global output ports ----------
 \draw (nso) -- ++(0,-3mm);

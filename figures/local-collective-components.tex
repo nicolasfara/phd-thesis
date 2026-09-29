@@ -46,9 +46,12 @@
 \node[anchor=south,font=\small] at (mp.north) {macro-program};
 
 % ---------- local / collective callouts ----------
-\draw[callout] (c1.east) -- ++(9mm,3mm)  node[right,font=\scriptsize] {local component};
-\draw[callout] (c4.east) -- ++(9mm,-3mm) node[right,font=\scriptsize] {local component};
-\draw[callout] (c3.west) -- ++(-9mm,0mm) node[left,font=\scriptsize]  {collective component};
-\draw[callout] (c2.east) -- ++(9mm,0mm)  node[right,font=\scriptsize] {collective component};
+% Labels sit outside the macro-program box; leader lines cross its border.
+\coordinate (calloutR) at ([xshift=4mm]mp.east);
+\coordinate (calloutL) at ([xshift=-4mm]mp.west);
+\draw[callout] (c1.east) -- (c1.east -| calloutR) node[right,font=\scriptsize] {local component};
+\draw[callout] (c4.east) -- (c4.east -| calloutR) node[right,font=\scriptsize] {local component};
+\draw[callout] (c3.west) -- (c3.west -| calloutL) node[left,font=\scriptsize]  {collective component};
+\draw[callout] (c2.east) -- (c2.east -| calloutR) node[right,font=\scriptsize] {collective component};
 
 \end{tikzpicture}

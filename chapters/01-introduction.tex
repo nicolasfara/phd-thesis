@@ -220,40 +220,44 @@ because each framework's guarantees stop at its own boundary.
 %
 \emph{What language support lets a single program combine aggregate, choreographic, and multitier coordination, produce the deployable components the model requires, and reject at compile time the coordination errors that an ad-hoc combination allows?}
 %
-Two requirements pull against each other:
-the discipline must be sound,
+The type discipline that rejects these errors must be sound,
 and it must still accept the programs each paradigm supports.
 %
-A soundness proof covers the first,
-showing that no accepted program breaks the rules of any of the three paradigms (\cref{subsec:camil-formalization}).
+A soundness proof shows that no accepted program breaks the rules of the three paradigms (\cref{subsec:camil-formalization}).
 %
-The second is tested on 46 use cases from the literature of the three paradigms, all of which can be written in it (\cref{subsec:camil-expressivity}),
-and on three applications that mix the paradigms in one program (\cref{subsec:inter-paradigm}).
+A reimplementation study shows that all 46 use cases from the literature of the three paradigms can be written in the language (\cref{subsec:camil-expressivity}),
+and so can three applications that mix the paradigms in one program (\cref{subsec:inter-paradigm}).
 
 \subrqhead{rq:generation}{Generation}
-Even with a sound discipline, someone still has to write the program,
-in a \ac{DSL} that is rare in the training data of general-purpose models.
+Even with a sound discipline, someone still has to write the program.
 %
-\emph{Can such a program be generated from a natural-language specification instead of being written by hand, and what does a model need to be told about the language for this to work?}
+\acp{LLM} generate code from natural language,
+but the \ac{DSL} is rare in the data they are trained on.
+%
+\emph{Can an \ac{LLM} generate such a program from a natural-language specification, and what does it need to be told about the language for this to work?}
 %
 Generated programs are scored with \emph{pass@k} against eleven test cases checked in simulation (\cref{sec:llm-pipeline}).
 %
-Sixteen models are compared at three levels of supplied knowledge,
+Sixteen \acp{LLM} are compared at three levels of supplied knowledge,
 to test whether the score rises with what a model is told more than with its size (\cref{sec:llm-evaluation}).
 
 \rqhead{rq:deployment}{Runtime deployment decision}
 Deployment independence makes all admissible deployments functionally equivalent,
 but it does not say which one to choose.
 %
-Changes in the infrastructure will eventually invalidate any choice,
+Changes in the infrastructure eventually invalidate any choice,
 so the choice must be revisable while the system runs (\cref{sec:the-deployment-problem}).
 %
-\emph{Once all admissible deployments are functionally equivalent, how can the system choose among them and revise that choice at runtime, on non-functional grounds only, with a policy stated in advance or one learned from experience, and what does improving the targeted quantity cost in the others?}
+\emph{How can a policy, written in advance or learned from experience, choose among these deployments and revise the choice at runtime on non-functional grounds only, and what does improving one non-functional quantity cost in the others?}
 %
-The question asks about cost because a gain in the targeted quantity means little on its own.
+Three hand-written policies each target one quantity, such as battery life or carbon emissions.
 %
-The simulations therefore also measure what the other quantities lose,
-and whether that loss stays bounded (\cref{chap:deployment-and-reconfiguration,chap:heterogeneous-gnn}).
+Simulations measure the gain on that quantity together with its cost in messages, latency, or convergence time,
+and check that this cost stays bounded (\cref{chap:deployment-and-reconfiguration}).
+%
+A learned policy weighs several quantities at once through the weights of its reward.
+%
+Simulations vary these weights to check that the resulting deployments follow the stated trade-off (\cref{chap:heterogeneous-gnn}).
 
 \section{Contributions}
 \label{sec:contributions}
@@ -312,26 +316,30 @@ The design is under review~\cite{Farabegoli:2026:CaMiL}.
 Together with the next contribution, it answers \cref{rq:languages}.
 
 \paragraph{Differentiated communication primitives for multiparty coordination.}
-Choreographic and multitier languages offer only point-to-point exchange.
+Choreographic and multitier languages support several communication patterns besides point-to-point exchange.
 %
-Every other pattern has to be encoded on top of it, usually by broadcasting and filtering.
+Each language provides them through its own constructs,
+which differ from one language to the other and can be hard to use.
 %
-ScalaTropy gives each pattern its own operation:
-isotropic, anisotropic, and co-anisotropic communication, alongside point-to-point.
+ScalaTropy is a monadic \ac{DSL} that gives each classical pattern its own typed operation:
+point-to-point, isotropic, anisotropic, and co-anisotropic communication.
 %
-The \ac{DSL} is monadic, and its types record the architecture that a choreography targets (\cref{sec:scalatropy}).
+Its types also record the architecture that a choreography targets (\cref{sec:scalatropy}).
 %
 In a matrix-vector product, the anisotropic primitive keeps the bytes sent by the master nearly constant as workers are added.
 %
 With broadcast-and-filter, the same scatter sends a number of bytes that grows linearly with the workers (\cref{subsec:scalatropy-evaluation}).
 %
-The design is accepted for publication~\cite{Farabegoli:2026:ScalaTropy}.
+The design is published in~\cite{Farabegoli:2026:ScalaTropy}.
 
 \paragraph{A body of knowledge for generating aggregate programs.}
-An \ac{LLM} writes the syntax of ScaFi, an aggregate \ac{DSL} embedded in Scala, fluently,
-but misses the meaning of the operators that make it a field language.
+ScaFi is an aggregate \ac{DSL} embedded in Scala,
+so an \ac{LLM} easily writes ScaFi programs that compile.
 %
-The \emph{body of knowledge} supplies that meaning.
+Some of these programs still compute the wrong result,
+because the model can misinterpret what operators such as \code{rep} and \code{nbr} compute at each device and round.
+%
+The \emph{body of knowledge} supplies the semantics of these operators.
 %
 It is a short operational manual, placed in the model's context at generation time.
 %
@@ -396,11 +404,10 @@ and a server evaluates the program for all of them.
 In the terms of the model,
 this is a deployment where the robots are the owners and the server is their shared surrogate (\cref{sec:emerge-as-pulverisation}).
 %
-It gives limited evidence for \cref{rq:model}:
-a deployment that the model admits runs on real hardware, not only in simulation.
+It supports \cref{rq:model} by showing that a deployment admitted by the model runs on real hardware.
 %
-It uses none of the reconfiguration policies and reports no measurements,
-so it does not validate the thesis end to end (\cref{sec:emerge-discussion}).
+It is a first step toward an end-to-end validation,
+which the reconfiguration policies and quantitative measurements can extend (\cref{sec:emerge-discussion}).
 %
 The contribution is published in~\cite{Farabegoli:2027:ProjectEmerge}, which extends~\cite{DBLP:conf/coordination/AguzziBBCCDFPV25}.
 
@@ -459,7 +466,4 @@ and one admissible deployment running on physical robots (\cref{chap:demonstrato
 The research questions are answered in the conclusions (\cref{chap:conclusions}),
 which also collect the limitations stated in each chapter and list open problems.
 
-The demonstrator is the last chapter of Part~III, but it does not build on the policies before it:
-it realises one deployment on hardware and uses none of them.
-%
 A reader already familiar with the continuum and with macroprogramming can start at \cref{chap:pulverization}.

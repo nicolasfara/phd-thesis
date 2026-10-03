@@ -3,66 +3,319 @@
 \chapter{Conclusions}
 \label{chap:conclusions}
 
-% TODO(canovaccio): expand into full prose.
-\lipsum[1]
+This thesis studies the assignment of components of a collective computation to execution hosts.
+%
+A deployment descriptor commonly records this assignment before execution begins.
+%
+The recorded assignment is therefore based on the infrastructure available when the descriptor was written.
+%
+On the edge-cloud continuum, host capabilities span orders of magnitude,
+while mobility, battery depletion, and connectivity loss change which hosts remain available.
+%
+A fixed assignment can consequently cease to meet its non-functional objective or become infeasible.
+
+Under the two conditions in \cref{thm:deployment-independence},
+a macro-program partitioned along its data flow produces the same stabilised output under every correct deployment.
+%
+This result separates component placement from functional correctness,
+allowing a policy to choose and revise a deployment according to non-functional criteria.
+%
+The remaining contributions provide language support for producing deployable components from multiple coordination paradigms,
+and runtime policies that choose among the admissible deployments.
 
 \section{Answers to the Research Questions}
 \label{sec:rq-answers}
 
-% One subsection per question, each in the same four moves: (1) the question in
-% one sentence; (2) the answer as a claim -- a declarative sentence that could
-% be false, not a summary of what the chapter did; (3) the specific result
-% backing it, named; (4) the boundary of the claim. "Yes, under hypotheses (i)
-% and (ii) of \cref{thm:deployment-independence}" is an answer; "the thesis
-% explored how pulverisation enables flexible deployment" is not one.
+\subsection{Deployment Model}
+\label{subsec:answer-model}
+
+The first question asks under what conditions a collective macro-program can be partitioned into independently deployable components
+so that its observable behaviour does not depend on how those components are mapped onto physical devices (\cref{rq:model}).
 %
-% RQ1 -> Chapter 5: \cref{thm:deployment-independence}, confirmed in simulation
-% by \cref{subsec:pulverization-validation}. \Cref{chap:demonstrator} adds
-% scoped realisability evidence -- one admissible deployment, built on physical
-% robots -- and nothing more than that. It is not end-to-end validation:
-% \cref{sec:emerge-discussion} states that it exercises none of
-% \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn}, uses
-% neither \cref{chap:language-and-coordination} nor
-% \cref{chap:language-based-macroprogramming}, and reports no measurements. Do
-% not contradict that statement here.
+The partition contains one deployable component for each node of the macro-program's data-flow \ac{DAG} (\cref{subsec:macroprogram-dag}).
 %
-% RQ2 -> Chapter 6: CaMiL's soundness result over the three paradigms, its 46
-% use cases, and ScalaTropy's communication primitives -- with the price both
-% designs pay, refusing programs the paradigms they unify would accept.
-% RQ2.1 -> Chapter 7: the abstraction ladder decides the outcome, not model
-% scale.
+The independence result requires two conditions.
 %
-% RQ3 -> Chapters 8-9: three hand-written policies, each reducing the quantity
-% it targets at a bounded secondary cost and each needing a person to state what
-% a good deployment is, then a learned policy that removes that requirement,
-% given a representation that keeps the continuum's heterogeneity and a
-% collective summary.
-\lipsum[1]
+Every component must implement a self-stabilising computation,
+and the sensor state must be uniform along every forwarding chain.
+Under these conditions, the values at the macro-program's global output ports stabilise to the same result for every correct deployment.
+
+The proof of \cref{thm:deployment-independence} treats the extra hops in a forwarding chain as a transient perturbation
+that the components' self-stabilisation absorbs.
+%
+The result concerns eventual behaviour and does not bound the difference between deployment outputs before convergence.
+%
+Simulations characterised this transient for a gradient and a region-partitioning service on networks of 50, 100, and 200 mobile nodes.
+They compared a monolithic deployment with one that offloads components to infrastructural devices.
+%
+The results show that the outputs of the two deployments remain close while the nodes move.
+Once movement stops, the error falls to the small residual predicted by self-stabilisation (\cref{subsec:pulverization-validation}).
+
+One admissible deployment was also implemented on hardware.
+%
+A server evaluates one aggregate program for nine robots.
+%
+Each robot carries an ESP32 microcontroller and no aggregate runtime,
+and a camera above the arena supplies the positions the robots cannot sense themselves (\cref{sec:emerge-as-pulverisation}).
+%
+This implementation provides evidence that an admissible deployment can be realised on physical devices.
+Using ceiling-based rather than chassis-based sensing satisfies condition \emph{(ii)} of the theorem.
+%
+The evidence is limited to a deployment fixed by hand before the run:
+no policy revised it, and the study reported no measurements (\cref{sec:emerge-discussion}).
+
+The result establishes functional equivalence for eventual behaviour but does not determine the convergence time of a deployment.
+%
+The choice among functionally equivalent deployments is the subject of \cref{rq:deployment}.
+
+\subsection{Language and Coordination Support}
+\label{subsec:answer-languages}
+
+The second question asks what language support lets a single program combine aggregate, choreographic, and multitier coordination,
+produce the deployable components the model requires,
+and reject at compile time the coordination errors their ad-hoc combination allows (\cref{rq:languages}).
+%
+The required support represents each paradigm as a capability and gives all three paradigms the same notion of placement.
+
+\camil implements this design in Scala~3 and has a soundness proof (\cref{thm:camil-soundness}).
+%
+The proof establishes two properties.
+%
+Every communication step follows a tie specified by the architecture, so a well-typed program conforms to its declared architecture.
+%
+The three capability sets are disjoint, so a well-typed program cannot execute an operation under the semantics of another paradigm.
+%
+The paradigms compose only through placed values and therefore require no pairwise compatibility rules (\cref{subsec:paradigm-composition}).
+%
+To assess expressivity, all 46 use cases collected from the multitier, choreographic, and aggregate literature were reimplemented in \camil (\cref{subsec:camil-expressivity}).
+Three further applications combine paradigms within one program (\cref{subsec:inter-paradigm}).
+%
+Placement types provide the information required by the deployment model:
+they identify where a component's value resides, while the architecture specifies which placements may exchange values (\cref{sec:pulverization-abstractions}).
+
+ScalaTropy addresses differentiated communication patterns in choreographic and multitier programs.
+%
+Choreographic and multitier languages support more communication patterns than point-to-point exchange,
+but commonly express them through ad-hoc constructs.
+%
+ScalaTropy assigns each pattern a distinct typed operation and records the target architecture in the types (\cref{sec:scalatropy}).
+%
+The choice of primitive also determines the transmitted data:
+in a matrix-vector product, the anisotropic primitive keeps the volume of data sent by the master nearly constant as workers are added,
+whereas encoding the same scatter as broadcast-and-filter makes this volume grow linearly (\cref{subsec:scalatropy-evaluation}).
+
+Both designs impose restrictions to obtain their guarantees.
+%
+\camil rejects every nested placed scope, not only the ones that deadlock,
+and ScalaTropy requires an architecture to be declared before a choreography can be written.
+%
+Neither design selects a deployment:
+the architecture defines the admissible deployments, and \cref{rq:deployment} concerns the choice among them.
+
+\subsection{Generation}
+\label{subsec:answer-generation}
+
+The sub-question asks whether such a program can be obtained from a natural-language specification,
+and what a model has to be told about the language for that to work (\cref{rq:generation}).
+%
+The evaluated pipeline generates aggregate programs in ScaFi from such specifications.
+%
+Performance depends more on a concise operational manual of the operators' round-by-round semantics than on model size.
+
+The evaluation compared sixteen models at three levels of supplied knowledge.
+Generated programs were scored with \emph{pass@k} against eleven test cases checked in simulation (\cref{sec:llm-pipeline}).
+%
+Without a body of knowledge, twelve of the sixteen models pass no test case at any $k$, and most generated programs do not compile.
+%
+Supplying the core operators raises most compile rates above 0.90,
+and nine of those twelve models reach a pass@10 between 0.45 and 0.75.
+%
+Performance depends more on the supplied knowledge than on model size:
+the largest model leads at no knowledge level,
+while higher-level building blocks improve some models but reduce the scores of others (\cref{sec:llm-evaluation}).
+
+The result covers aggregate programs in one \ac{DSL}, not the capability-annotated programs of \cref{chap:language-and-coordination}.
+%
+The failures that remain after supplying the manual are semantic rather than syntactic (\cref{subsec:llm-failure-modes}).
+The pipeline therefore validates generated programs by simulation rather than relying on compilation alone.
+
+\subsection{Runtime Deployment Decision}
+\label{subsec:answer-deployment}
+
+The third question asks how a policy, written in advance or learned from experience,
+can choose among admissible deployments and revise that choice at runtime on non-functional grounds alone,
+and what improving one non-functional quantity costs in the others (\cref{rq:deployment}).
+%
+The evaluations show that both kinds of policy can revise deployments at runtime.
+Every measured improvement in a targeted quantity incurs a bounded cost in another quantity.
+
+Three hand-written policies were evaluated for this task (\cref{chap:deployment-and-reconfiguration}).
+%
+The first policy offloads an expensive component after a device's battery falls below a threshold.
+It leaves the device with a higher battery level than the monolithic deployment,
+at the cost of the additional messages required by the forwarding chain (\cref{sec:battery-triggered-offloading}).
+%
+The second policy uses load-weighted fields through which infrastructural devices compete for components.
+It increases the proportion of application devices that offload components.
+%
+During stabilisation, this proportion can temporarily fall below the nearest-host baseline (\cref{sec:global-self-organising-reconfiguration}).
+%
+The third policy is a planner that searches the admissible deployments using an energy and carbon objective.
+Its deployments consume roughly one third of the energy consumed by the baseline at every tested network size.
+%
+This reduction increases intra-component latency because devices must reach remotely placed units,
+while the latency between neighbouring devices increases only slightly (\cref{sec:declarative-green-planning}).
+%
+Each policy also requires an operator to specify its deployment criterion in advance:
+a threshold, a quantity for regions to compete over, or an objective and its constraints.
+
+A learned policy instead derives the deployment rule from experience when supplied with two forms of state information (\cref{chap:heterogeneous-gnn}).
+%
+The state representation must preserve the continuum's heterogeneity.
+It represents application devices, edge servers, and cloud servers as distinct node types,
+with a \ac{GNN} over the resulting graph as the Q-function (\cref{sec:hetero-graph-state}).
+%
+The input must also include a collective summary that is not explicit in the individual device states.
+Here, an aggregate program computes a density field on the devices whose deployment is being decided (\cref{subsec:collective-information}).
+%
+Varying the weights of the scalarised reward produces policies at different points along the trade-off curve (\cref{subsec:idhgql-multiobjective}).
+%
+The collective term provides spatial context.
+%
+Without it, the policy assigns about the same fraction of locally executed components regardless of device position.
+%
+With it, the locally executed fraction varies by position and changes when devices move between regions,
+without further network training (\cref{subsec:idhgql-density}).
+
+These experiments demonstrate control over the trade-off, not global optimality.
+%
+A weighted sum reaches the convex portion of the trade-off,
+so no choice of weights can produce a deployment in a concave region of the Pareto front.
 
 \section{Limitations}
 \label{sec:limitations}
 
-% Aggregate the limits the chapters already state, grouped by research question
-% rather than restated chapter by chapter: three in
-% \cref{sec:pulverization-discussion}, three in
-% \cref{sec:llm-macroprogramming-discussion}, four in
-% \cref{sec:idhgql-discussion}, and the gaps in \cref{sec:emerge-discussion}.
-% Grouping them by question shows which answer is weakest -- RQ3, whose evidence
-% is entirely simulated.
-\lipsum[1]
+The limitations below are grouped by research question rather than by contribution chapter.
+
+\paragraph{The deployment model (\cref{rq:model}).}
+Component instances are assumed to hold no state across rounds beyond what their inputs supply.
+%
+This assumption allows one surrogate instance to serve multiple owners.
+A component with private state would prevent such instance sharing but would not invalidate the theorem (\cref{sec:pulverization-discussion}).
+%
+The theorem concerns eventual behaviour and provides no bound on convergence time.
+%
+The hardware evidence covers one hand-selected deployment.
+It evaluates none of the runtime policies developed in \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn},
+uses neither the language support in \cref{chap:language-and-coordination} nor the generation pipeline in \cref{chap:language-based-macroprogramming},
+and reports no measurements (\cref{sec:emerge-discussion}).
+%
+Possible extensions of this evidence are described in \cref{sec:future-work}.
+
+\paragraph{Language and coordination support (\cref{rq:languages}).}
+\camil uses a coarse rule to prevent deadlock.
+It rejects all nested placed scopes, including those permitted by existing multitier languages that would not deadlock.
+%
+ScalaTropy covers two paradigms while \camil covers three,
+and of the two designs only the capability-based one has a soundness result.
+%
+The expressivity evidence consists of reimplemented use cases drawn from the literature of the three paradigms.
+%
+The effort required from developers who did not design the languages has not been evaluated and would require a user study.
+
+\paragraph{Generation (\cref{rq:generation}).}
+The body of knowledge was refined against the test cases used for its evaluation,
+so the reported rates measure performance within the task family used to co-design the manual rather than transfer to a new task family (\cref{sec:llm-macroprogramming-discussion}).
+%
+\emph{pass@k} counts programs that satisfy assertions.
+%
+A program that satisfies the assertions without implementing the intended behaviour is still scored as a success,
+and the metric does not account for evaluation cost.
+%
+Because providers revise hosted models without notice, the reported ranking may change over time even when the evaluation method remains fixed.
+
+\paragraph{Runtime deployment decision (\cref{rq:deployment}).}
+The evidence for this answer is simulated throughout.
+%
+The energy models and the price points come from published measurements,
+but no policy of either kind has run on physical devices, and the discrepancy between simulation and hardware has not been quantified (\cref{sec:idhgql-discussion}).
+%
+The three hand-written policies were each evaluated in the setting its own publication used, not over a shared workload.
+%
+The available results therefore support comparison only in terms of the quantity each policy improves and the associated cost.
+%
+Only the field-based policy was tested on more than one topology.
+%
+The learned policy has three further limitations.
+%
+Its weights express priorities rather than calibrated quantities and are selected by trial.
+%
+All application devices form a single node type, so the representation cannot distinguish a device with an unusual battery or workload profile from its peers.
+The resulting policies tend to select either edge or cloud servers instead of mixing the two.
+%
+Components are also placed independently of one another,
+so two components joined by a binding can be assigned to different surrogates.
+%
+Deployment independence preserves functional behaviour, but the policy does not account for the latency introduced by this forwarding chain.
 
 \section{Future Work}
 \label{sec:future-work}
 
-% Four steps that would close the distance between the demonstrator and the rest
-% of the thesis are named in \cref{sec:emerge-discussion}, which promises they
-% are taken up here: a local runtime instance on every robot with localisation
-% decentralised through radio ranging, communication delays injected into the
-% simulation engine so the mixed deployments have a cost, the perturbation
-% experiments repeated under controlled conditions, and the collective
-% behaviours generated from a natural-language specification. That promise has
-% to be kept. Also open, from \cref{sec:idhgql-discussion}: multi-objective
-% methods that learn a set of policies covering the Pareto front instead of one
-% policy per weight vector, distinguishing application devices by profile, and
-% placing bound components jointly rather than independently.
-\lipsum[1]
+\paragraph{Integrating the demonstrator with the deployment platform.}
+Four extensions would connect the physical deployment to the other contributions of this thesis (\cref{sec:emerge-discussion}).
+%
+The first is to give every robot a local runtime instance and replace camera-based localisation with decentralised radio ranging:
+this would add a monolithic deployment to the centralised deployment already implemented and give a policy two alternatives.
+%
+Adding communication delays to the simulation engine would provide a measurable cost for mixed deployments
+that the policies of \cref{chap:deployment-and-reconfiguration} or \cref{chap:heterogeneous-gnn} could optimise.
+%
+Repeating the perturbation experiments under controlled conditions would provide a quantitative measure of convergence time.
+%
+Generating the collective behaviours from a natural-language specification, as done for ScaFi in \cref{chap:language-based-macroprogramming},
+would test the complete path from specification to physical actuation.
+
+\paragraph{Extending learned deployment policies.}
+Three extensions address the limitations of the learned policy (\cref{sec:idhgql-discussion}).
+%
+Multi-objective methods that learn a set of policies covering the Pareto front, instead of one policy per weight vector,
+would avoid both the convexity restriction and the need to tune weights by trial.
+The architecture defined in \cref{subsec:heterognn-q-function} is compatible with these methods.
+%
+The graph already distinguishes application devices from infrastructural devices.
+Encoding application-device profiles would also allow the representation to distinguish their battery and workload characteristics.
+%
+Placing bound components jointly, by reasoning over the \ac{DAG} as well as over the topology,
+would incorporate information expressed by the model of \cref{chap:pulverization} but not used by the current policy.
+
+\paragraph{Relaxing the model's assumptions.}
+One extension to \cref{chap:pulverization} would allow a component to retain state across rounds.
+This would require a migration protocol and a definition of which state persists across a move.
+This extension would prevent multiple owners from sharing one surrogate instance but would not invalidate the theorem.
+%
+A quantitative account of convergence under a given deployment would complement \cref{thm:deployment-independence},
+which establishes functional equivalence between deployments but provides no timing bounds.
+%
+Such an account would allow a policy to choose a deployment on timing grounds rather than on energy or cost alone.
+
+\paragraph{Extending language support.}
+\camil could support the four communication patterns in \cref{subsec:communication-patterns} through its choreography capability.
+The capability design does not require point-to-point exchange to be the only choreographic primitive (\cref{sec:language-coordination-discussion}).
+%
+A metatheory for ScalaTropy would provide a formal result corresponding to the soundness result for the capability-based design.
+%
+A finer rule for nested placed scopes, rejecting the nestings that deadlock rather than all of them,
+would admit safe programs that \camil currently rejects.
+%
+The generation pipeline of \cref{chap:language-based-macroprogramming} is currently limited to one \ac{DSL}.
+%
+Whether a body of knowledge can be written for a capability-annotated language is open,
+and extending generation to such a language would require detecting placement errors in addition to misinterpretations of field semantics.
+
+\paragraph{End-to-end validation.}
+An end-to-end experiment would integrate the contributions:
+a macro-program written with the capabilities of \cref{chap:language-and-coordination} or generated from a natural-language specification,
+partitioned into the components of \cref{chap:pulverization},
+and deployed on physical devices by a policy that revises the deployment as batteries drain and links fail.
+%
+No experiment in this thesis covers this complete sequence.

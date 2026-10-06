@@ -19,31 +19,36 @@ a capability-annotated Scala program under \camil,
 a monadic pipeline in ScalaTropy,
 or, for the collective part of either, a field program in ScaFi or Protelis.
 %
-Macroprogramming changes what has to be written --
-one description of the collective instead of one description per device --
-but someone still has to write it,
-in a language whose operators carry a semantics that must be learned before the first program runs.
+Macroprogramming changes what has to be written:
+one description of the collective instead of one description per device.
+%
+Someone still has to write that description,
+and the operators it is written with have to be learned before the first program runs.
 
 That learning cost is the practical obstacle.
 %
 The abstractions of \cref{subsec:aggregate-computing} make a collective specification short,
-and a newcomer has to acquire them before writing one.
+but a newcomer has to acquire them before writing one.
 %
 Learning them is not incremental,
 because a field operator does not behave like its sequential namesake.
 %
 For mainstream languages, an \ac{LLM} trained on source code turns a description of intended behaviour into a program that passes its tests (\cref{sec:llms-for-code-generation}).
 %
-A \ac{DSL} is the hard instance:
+A \ac{DSL} is the hard case:
 it barely appears in the corpora these models are pretrained on,
 so fluency in Python or Scala does not carry over to it.
 
-The target here is a macroprogramming \ac{DSL}:
-what a general-purpose model can produce for it, and what it has to be given in order to produce it.
+The target here is a macroprogramming \ac{DSL}.
 %
-Neither fine-tuning nor a constrained decoder is needed:
-what the model lacks is the abstraction ladder,
-and supplying it in the prompt takes models that produce nothing usable to models that solve most of the tasks put to them~\cite{DBLP:journals/tiot/AguzziFV25}.
+Two questions follow:
+what a general-purpose model produces for it,
+and what it has to be given in order to produce it.
+%
+Neither fine-tuning nor a constrained decoder is needed.
+%
+What the model lacks is the abstraction ladder,
+and supplying it in the prompt turns models that produce nothing usable into models that solve most of the tasks put to them~\cite{DBLP:journals/tiot/AguzziFV25}.
 
 The rest of the chapter answers the questions this raises:
 what a model needs to know about the language (\cref{sec:body-of-knowledge}),
@@ -58,18 +63,18 @@ Any macroprogramming language could be the target of generation.
 Aggregate computing is chosen here for four properties,
 three of them from \cref{subsec:aggregate-computing} and one from \cref{chap:pulverization}.
 
-The global-to-local perspective is what makes a natural-language specification a plausible input at all.
+The global-to-local perspective makes a natural-language specification a plausible input.
 %
 A program describes the behaviour of the collective,
 and the per-device behaviour is derived from it rather than written,
-so the language asks for what a domain expert can state without knowing how the devices coordinate.
+so the language requires only what a domain expert can state without knowing how the devices coordinate.
 %
 Self-stabilisation carries over to generated code.
 %
 A program assembled out of self-stabilising building blocks inherits their convergence guarantee,
-and recovers a correct output after perturbation even though no one reasoned about the recovery when writing it.
+and recovers a correct output after perturbation, even when no one reasoned about the recovery.
 %
-Space-time universality keeps the target from being a narrow one,
+Space-time universality makes the target a general one,
 since the field calculus can express every computation over a space-time event structure that is computable at all~\cite{DBLP:conf/coordination/AudritoBDV18}.
 %
 Deployment independence is proved for the pulverisation model in \cref{thm:deployment-independence}.
@@ -79,7 +84,7 @@ by construction,
 a program whose components can be pulverised and placed anywhere the infrastructure admits,
 so nothing about the way it was produced constrains where it will run.
 
-Everything established about aggregate programs in Part~II holds of a generated one,
+Everything established about aggregate programs in Part~II holds for a generated one,
 because the artefact is an ordinary program in the language and not a special object requiring its own theory.
 
 \subsection{The Task}
@@ -87,7 +92,7 @@ because the artefact is an ordinary program in the language and not a special ob
 
 Of \cityevt's three parts (\cref{sec:multiparty-motivation}), one was treated as given:
 the crowding monitor,
-which estimates how dense the crowd is around each participant and reports critical situations to the organisers.
+which estimates how dense the crowd is around each participant and reports to the organisers which areas exceed a density threshold.
 %
 That part is the aggregate one, and a developer cannot write it without the operators of \cref{subsec:aggregate-computing}.
 %
@@ -96,7 +101,7 @@ density is estimated from proximity between participants' phones,
 never from their positions,
 and an alert has to reach the region around a crowded area rather than the whole system.
 %
-Written as a specification a non-expert would state, the task is one sentence --
+A non-expert states the task in one sentence --
 mark the areas where devices are packed more densely than a threshold, and tell every device how far it is from the nearest such area.
 %
 Written in ScaFi it is five lines,
@@ -119,39 +124,40 @@ before deployment,
 and its output is a program.
 %
 Nothing of the model remains in the deployed system:
-the aggregate runtime executes a text a person can read,
+the aggregate runtime executes a program a person can read,
 compile,
 and simulate.
 
 The difference decides what can be checked before deployment.
 %
-An orchestrator's decision cannot be checked before the situation that produced it arises,
-and it cannot be checked at all except by observing its effects.
+An orchestrator's decision cannot be examined before the situation that produced it arises,
+and even then only by observing its effects.
 %
 A program can be type-checked,
 executed against assertions on its emergent behaviour,
 and --
 because it is an aggregate program --
-deployed by the machinery of \cref{chap:pulverization} without any of that machinery knowing how it was written.
+deployed by the model of \cref{chap:pulverization}, which needs to know nothing about how it was written.
 
 Three questions organise what follows:
 whether a current general-purpose model produces valid aggregate code when given nothing but the task;
-whether prompting alone can convey the paradigm's abstractions,
-separating the temporal ones, the spatial ones, and the spatio-temporal ones that require composing both;
+whether prompting alone can convey the paradigm's temporal abstractions,
+its spatial ones,
+and the spatio-temporal ones that compose both;
 and whether a model that has been given the vocabulary composes it into solutions it was not shown.
 
 \section{The Body of Knowledge}
 \label{sec:body-of-knowledge}
 
-The model is not missing the ability to write Scala.
+The models can write Scala.
 %
 ScaFi is a Scala \ac{DSL} (\cref{subsec:cas-platforms}),
-so the models handle its surface syntax fluently;
+so they handle its surface syntax fluently;
 what they lack is the meaning of the dozen operators that make it a field language~\cite{casadei2022scafi}.
 %
 The \emph{body of knowledge} is the artefact that supplies that meaning:
-a short operational manual, placed in the model's context at generation time,
-that introduces the operators through executable examples rather than through definitions.
+a short operational manual that introduces the operators through executable examples rather than through definitions,
+placed in the model's context at generation time.
 
 \subsection{Structure}
 \label{subsec:bok-structure}
@@ -207,7 +213,7 @@ sensing, state across rounds, access to neighbours' values, folding over the nei
 %
 The second group is the self-organising building blocks of \cref{subsec:aggregate-computing}.
 %
-None of them is primitive -- each is a composition of the first group --
+None of them is primitive -- each is built from the core operators --
 but they raise the level at which a program is written, from operators to patterns.
 
 % The signature column is a fixed-width paragraph column: at \textwidth the
@@ -249,7 +255,7 @@ but they raise the level at which a program is written, from operators to patter
 
 The split between the two groups is not a matter of presentation.
 %
-The evaluation varies three knowledge levels --
+The evaluation compares three knowledge levels --
 no body of knowledge, the field-calculus core alone, and the core together with the building blocks --
 and the third level does not dominate the second for every model (\cref{sec:llm-evaluation}).
 
@@ -279,14 +285,15 @@ an entry showing how to compute a gradient that avoids obstacles is not,
 because a test case asks for exactly that.
 %
 Automating the loop is conceivable,
-by treating the body of knowledge as a parameter optimised against test outcomes,
-but a human is needed for the distinction between raising the abstraction and giving away the answer,
-and the evaluation means nothing without it.
+by treating the body of knowledge as a parameter optimised against test outcomes.
+%
+The distinction between raising the abstraction and giving away the answer still needs a person to draw it,
+and the evaluation means nothing if it is not drawn.
 
 \section{Generation and Validation}
 \label{sec:llm-pipeline}
 
-\Cref{fig:llm-pipeline} shows how the two roles fit together.
+\Cref{fig:llm-pipeline} shows how the expert's work and the practitioner's fit together.
 %
 On the left, the body of knowledge is built against test cases in the co-design loop of \cref{subsec:bok-codesign};
 on the right, a practitioner writes a task in natural language and receives a program.
@@ -354,7 +361,7 @@ The reference program, written by an expert, fixes what correct behaviour is, an
 %
 The initial state is a network graph whose nodes are devices carrying positions, sensor values, and identifiers, and whose edges are communication links.
 
-The assertions are the fourth part, and they are what separates this from ordinary benchmarking of code generation.
+The assertions are the fourth part, and they are what separates these test cases from ordinary benchmarking of code generation.
 %
 They check local values at named devices,
 but they also check emergent properties of the whole field --
@@ -370,18 +377,17 @@ which is the correct outcome for a paradigm whose claim is self-stabilisation.
 A generated program passes three stages before it is trusted.
 %
 The ScaFi compiler rejects what is not syntactically valid or not well typed,
-which is where a model's inventions about the API are caught.
+and catches the API calls a model invents.
 %
 Simulation in Alchemist (\cref{subsec:cas-platforms}) runs the program over a configured network and checks its emergent behaviour against the assertions~\cite{DBLP:journals/jos/PianiniMV13}.
 %
 Deployment then places it on real infrastructure, with monitoring in place,
 since neither of the first two stages says anything about conditions the simulation did not reproduce.
 
-Each stage is available only because the artefact is a program.
+All three stages exist because the artefact is a program.
 %
-An orchestration decision has no compiler to reject it and no simulation to run it in,
-whereas a field program can be inspected before anything is deployed,
-and can then be deployed by the model of \cref{chap:pulverization} exactly as a hand-written one would be.
+It can be inspected before anything is deployed,
+and then deployed by the model of \cref{chap:pulverization} exactly as a hand-written one would be.
 
 \section{Evaluation}
 \label{sec:llm-evaluation}
@@ -391,13 +397,13 @@ and can then be deployed by the model of \cref{chap:pulverization} exactly as a 
 
 Eleven test cases were built, in three groups.
 %
-Five exercise a single dimension:
+Five exercise either time or space, not both:
 counting down from a fixed value, which needs only \code{rep};
-counting neighbours, in a variant that includes the device itself and one that does not;
+counting neighbours, in two variants, one counting the device itself and one not;
 gathering neighbours' identifiers;
 and computing the minimum distance to a neighbour.
 %
-Three require both dimensions at once:
+Three require time and space at once:
 the maximum identifier over the whole network,
 the gradient from a source,
 and the same gradient with obstacles to route around.
@@ -423,7 +429,7 @@ and the gap between the two separates a model that cannot write the language fro
 \label{subsec:llm-results}
 
 \Cref{tab:llm-pass-rates} reports seven representative models;
-\cref{fig:llm-knowledge-improvement} shows the same movement for ten of the sixteen, together with their average.
+\cref{fig:llm-knowledge-improvement} shows the same three levels for ten of the sixteen, together with their average.
 
 \begin{table}[t]
     \centering
@@ -477,7 +483,7 @@ Compile rates rise in every case, most of them into the nineties:
 GPT-4.1 Mini goes from 0.45 to 0.99,
 Claude 3.7 Sonnet from 0.62 to 1.00.
 %
-Pass rates follow, though less far.
+Pass rates follow, but by less.
 %
 Of the twelve models that were at zero, nine end between 0.45 and 0.75;
 the remaining three stay below 0.30, and Mistral 8B never rises above 0.05 at any level.
@@ -487,7 +493,11 @@ a short manual, no weights touched, no decoder constrained.
 %
 The body of knowledge does not teach the language; it makes the model's existing fragments of it addressable.
 %
-The models with more aggregate computing in their pretraining therefore gain the most from the smallest input.
+The largest movements therefore belong to the models that started at zero,
+where none of those fragments was reachable before.
+%
+Of the four exceptions, Gemini 2.5 Pro moves the least, from 0.50 to 0.73,
+since it was the one model that could already pass half the cases without the manual.
 
 Adding the building blocks does not continue the trend.
 %
@@ -496,8 +506,9 @@ and Gemini 2.5 Pro reaches 0.76 on the channel with obstacles and 0.70 on the ar
 the two tasks on which the core-operator level left every model weak.
 %
 Two models move the other way:
-Llama 3.3 70B falls from 0.75 to 0.61 and its compile rate from 0.97 to 0.80,
-and Llama 4 Maverick from 0.55 to 0.50;
+Llama 3.3 70B falls from 0.75 to 0.61, and its compile rate from 0.97 to 0.80;
+Llama 4 Maverick falls from 0.55 to 0.50.
+%
 Claude 3.7 Sonnet stays where it was.
 %
 The regression is not noise, and it is not a property of the blocks.
@@ -577,14 +588,15 @@ The model applies the sequential reading of a construct whose field reading is d
 and nothing in the syntax signals the difference.
 %
 The round-by-round traces of \cref{subsec:bok-structure} are the answer to both:
-they state the field reading in terms a model cannot resolve into the sequential one.
+they give the value at each device in each round,
+which the sequential reading of either construct does not reproduce.
 
 \subsection{Composition Beyond the Manual}
 \label{subsec:llm-novelty}
 
 The third question was whether a model given the vocabulary composes it into something it was not shown.
 %
-Two results from Gemini 2.5 Pro say that it does.
+Two results from Gemini 2.5 Pro show that it does.
 
 The first is the channel with obstacles.
 %
@@ -601,8 +613,8 @@ It avoids obstacles by returning an infinite value from the metric at obstacle d
 so the potential routes around them by construction.
 %
 Neither move appears in the manual.
-%
-The second reconstructs a pattern that has a name in the literature.
+
+The second result reconstructs a pattern that has a name in the literature.
 %
 \Cref{lst:scr-rediscovery} is the model's answer to the area-wise alarm.
 
@@ -644,7 +656,7 @@ The reading this supports is narrow but useful.
 With the core operators alone, no model produced a working solution for this task,
 so the building blocks are not just a shorter notation for programs the model could otherwise write.
 %
-They are the level at which the distance between a sentence describing a collective behaviour and a program realising it becomes small enough to cross.
+They are the level at which a model can get from a sentence describing a collective behaviour to a program realising it.
 
 \subsection{The Crowding Monitor}
 \label{subsec:llm-case-study}
@@ -687,7 +699,7 @@ so the privacy constraint of \cref{sec:multiparty-motivation} is met by the choi
 %
 The gradient cast from \cref{line:crowd-source} then turns the boolean field of overcrowded devices into a distance field,
 so every device knows how far the nearest crowded area is
-and an alert can be scoped to the devices within a given distance of one.
+and an alert can be scoped to the devices whose distance is below a given bound.
 
 The program was run in Alchemist on mobility traces from a city marathon,
 with about 300 mobile devices, realistic movement, and modelled Bluetooth propagation~\cite{DBLP:journals/computer/BealPV15}.
@@ -746,11 +758,10 @@ a program that passes may be needlessly expensive to evaluate,
 and a program that passes by accident is scored as a success.
 %
 The numbers are also attached to hosted models that are revised without notice,
-so they date in a way the method does not.
+so the ranking will date in a way the method does not.
 %
-The ranking will date; the shape of the failures will not.
-%
-They are misreadings of field semantics that a syntactic guarantee cannot catch,
+The shape of the failures will not:
+they are misreadings of field semantics that a syntactic guarantee cannot catch,
 which is why the pipeline of \cref{subsec:llm-validation} keeps validation by simulation instead of relying on the compiler alone.
 
 Part~II ends here.

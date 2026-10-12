@@ -1,161 +1,184 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-Engineering a collective system means deciding what the collective computes,
-where each piece of that computation runs,
-and how that placement is revised when the infrastructure changes.
-%
-These three decisions are made by unrelated means and at different times.
-A programming model expresses the computation,
-a deployment descriptor fixes the placement before execution,
-and an operator outside the application revises it.
-
 A \ac{CAS} consists of many autonomous entities that interact locally.
 Its useful behaviour is a property of the resulting collective, not of any single entity~\cite{DBLP:journals/sttt/NicolaJW20}.
 %
-Its membership changes while the system runs, as entities join, leave, and fail,
+This thesis focuses on two families of such systems:
+\ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} and robot swarms~\cite{DBLP:journals/swarm/BrambillaFBD13}.
+Their devices cooperate to achieve a system-level objective,
+such as estimating crowd density from attendees' phones~\cite{DBLP:journals/computer/BealPV15}
+or maintaining a robot formation.
+%
+Membership changes during operation as devices join, leave, or fail,
 and an ensemble is identified by the properties its members hold at the time~\cite{DBLP:journals/taas/NicolaLPT14}.
-%
-A specification therefore states what the collective achieves,
-for instance that a robot team holds a formation~\cite{DBLP:journals/swarm/BrambillaFBD13}
-or that crowd density at a public event is estimated from attendees' phones~\cite{DBLP:journals/computer/BealPV15}.
-What any single entity does follows from that specification.
-%
-Correctness is assessed at the collective level as membership and the environment change;
-self-stabilisation is one established criterion~\cite{DBLP:journals/tomacs/ViroliABDP18}.
 
-Deploying such a system across the edge-cloud continuum allows computations to execute near the devices that produce their data
-or on hosts with greater capacity.
+Correctness is assessed at the collective level as membership and the environment change.
 %
-However, this infrastructure is heterogeneous and volatile:
-its hosts differ by orders of magnitude in capability,
-join and leave without notice,
-and lose connectivity to one another.
+This motivates \emph{self-*} properties~\cite{DBLP:journals/computer/KephartC03}
+such as self-organisation~\cite{DBLP:conf/atal/WolfH04},
+self-adaptation~\cite{DBLP:conf/dagstuhl/ChengLGIMABBBCSDFGGGKKKLMMMPSTTWW09},
+and self-healing~\cite{DBLP:journals/computer/KephartC03}:
+the system organises its interactions, adjusts to changing conditions, and recovers from disruptions autonomously.
 %
-The program does not specify which host executes each part of the computation,
-so the placement must be decided separately.
+Of particular importance here is \emph{self-stabilisation}:
+from an arbitrary state, the system eventually converges to correct behaviour and maintains it,
+provided that its inputs and environment remain stable long enough~\cite{DBLP:journals/tomacs/ViroliABDP18}.
+%
+This allows reasoning about the eventual collective result independently of the transient states traversed during recovery.
 
-The placement is normally fixed once and remains unchanged during execution.
+Engineering these systems requires both an effective specification of collective behaviour
+and a deployment that fits the resources available to execute it.
 %
-This thesis instead treats placement as a runtime variable.
+The \emph{edge-cloud continuum} provides an infrastructure spanning end devices, edge hosts, and cloud data centres.
+It allows computation to run near its data sources or on hosts with greater capacity,
+but its heterogeneity and volatility require deployment decisions to be revised during operation.
+
+\emph{Macroprogramming} is a family of approaches in which the programmer describes the behaviour of a distributed system as a whole.
+A \emph{macro-program} expresses this collective behaviour in a single program,
+and a compiler or runtime derives the computation performed by each participating device~\cite{DBLP:journals/csur/Casadei23}.
 %
-A macro-program states what the collective achieves.
-It can be partitioned into components whose collective behaviour does not depend on where each component executes.
-This thesis states and proves conditions under which the component-to-host assignment does not affect functional correctness.
+A program for a \ac{CAS} should specify the collective computation without fixing which physical host executes each part.
+This thesis treats that placement as a runtime variable.
+
+The central result establishes conditions under which a macro-program partitioned into independently deployable components
+converges to the same observable outputs under every correct deployment,
+meaning one that satisfies the model's structural deployment rules.
 %
-The assignment can then be selected and revised at runtime according only to non-functional criteria:
+Under these conditions, the component-to-host assignment can be selected and revised according to non-functional criteria:
 battery level, latency, load, and carbon emissions.
-
-The deployment model defines the components that can be moved,
-but those components must be obtained from a program.
 %
-Current programs generally use a single paradigm,
-such as aggregate computing~\cite{VIROLI2019100486},
-choreographic programming~\cite{Montesi2023chor},
-or multitier programming~\cite{DBLP:journals/csur/WeisenburgerWS20}.
-%
-Each paradigm represents its deployable units differently,
-and the representations are not directly compatible.
-%
-Runtime deployment also requires middleware that can relocate an executing component as the infrastructure changes.
-A policy must select the next deployment.
-%
-This thesis develops the language support, the runtime platform, and the policies that revise deployments.
+Language support must produce the components this model defines.
+The thesis therefore develops support for combining coordination paradigms,
+examines natural-language generation of aggregate macro-programs,
+and provides the runtime platform and policies that revise their deployments.
 
 \section{Context and Motivation}
 \label{sec:context-and-motivation}
 
-Latency constraints, data locality, limited bandwidth,
-and intermittent connectivity have moved computation from the cloud towards edge devices~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
+The devices in these systems differ in processing power, memory, and energy supply.
+A battery-limited sensor or robot cannot sustain the same workload as a mains-powered gateway or cloud server.
 %
-The resulting continuum spans hosts from microcontrollers embedded in the physical world to server racks in the data centre (\cref{sec:the-continuum,subsec:continuum-characteristics}).
+At scale, communication also becomes a constraint:
+transmitting every observation to a central host consumes bandwidth and energy,
+and intermittent connectivity can prevent a device from reaching that host.
 %
-Its topology changes as devices move, batteries drain, links fail, and the network partitions (\cref{subsec:network-volatility}).
-%
-A placement chosen when the system starts can cease to meet its objective as load and battery levels change.
-It can become infeasible if a required host disappears or a link fails (\cref{sec:the-deployment-problem}).
-%
-A placement also affects the system's energy consumption.
-%
-Energy budgets differ by orders of magnitude between a mains-powered gateway and a battery-limited robot,
-and the carbon cost of a computation depends on where and when it executes (\cref{subsec:energy-aware-orchestration}).
+Mobility, battery depletion, failures, and network partitions change which devices can cooperate
+and which resources are available to execute the computation~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
 
-This thesis mainly targets two families of collective systems on that infrastructure:
-\ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} and robot swarms~\cite{DBLP:journals/swarm/BrambillaFBD13} (\cref{sec:target-environments}).
+These characteristics create two distinct engineering problems.
+The first is architectural: \emph{where should each part of the computation execute, and how should that choice change during operation?}
+The second concerns specification: \emph{how can the intended collective behaviour be expressed effectively and translated into coordinated device-level execution?}
 %
-Both consist of many devices,
-any of which may fail or be replaced during operation.
-%
-A device-level correctness argument must be reconstructed whenever a device joins or leaves~\cite{DBLP:journals/sttt/NicolaJW20}.
+The two problems interact, because the specification determines what can be deployed,
+but choosing a host should not require rewriting the collective behaviour.
 
-Macroprogramming specifies behaviour at the collective level:
-one program states what the collective achieves, from which each device's behaviour is derived~\cite{DBLP:journals/csur/Casadei23} (\cref{sec:macro-programming}).
+For the architectural problem, the edge-cloud continuum offers resources between the constrained devices and remote data centres.
+Latency constraints, data locality, limited bandwidth, and intermittent connectivity motivate execution near the devices that produce the data,
+while computationally demanding tasks can benefit from hosts with greater capacity~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
 %
-Three paradigms realise that idea,
-each deriving logical units of computation from a global specification (\cref{sec:foundational-paradigms}).
+An application must therefore be decomposed into units that can be assigned to these hosts.
+Microservices use independently deployable services~\cite{DBLP:books/sp/17/DragoniGLMMMS17};
+\ac{FaaS} uses event-triggered functions whose execution is managed by a platform~\cite{DBLP:books/sp/17/BaldiniCCCFIMMRSS17};
+the actor model uses stateful entities that communicate by asynchronous messages~\cite{DBLP:conf/ijcai/HewittBS73}.
 %
-Aggregate computing specifies a computation over a field spanning an ensemble of devices.
-Choreographic programming specifies a protocol among roles and projects it onto each participant.
-Multitier programming annotates the scopes of a single program with the tiers to which they belong.
+These architectures provide different units and lifecycles for distributed execution.
 
-These paradigms do not expose physical placement as a runtime decision.
+For the specification problem, macroprogramming provides abstractions over the ensemble,
+so that the programmer can describe collective behaviour without reconstructing it from separately written device programs~\cite{DBLP:journals/csur/Casadei23}.
 %
-Aggregate computing assumes every device evaluates a complete instance of the program,
-even when a device is a microcontroller too small to host the runtime (\cref{sec:emerge-as-pulverisation});
-endpoint projection fixes one process per role;
-multitier placement is resolved at compile time.
+The three paradigms considered in this thesis emphasise complementary aspects of that behaviour.
+Multitier programming describes the system's organisation:
+placed values and computations belong to logical tiers or peer types, and cross-tier communication connects them~\cite{DBLP:journals/csur/WeisenburgerWS20}.
 %
-Their execution models either imply the mapping to physical hosts or fix it before release.
+Choreographic programming describes a protocol among participants,
+including the ordering of their interactions, and projects it into the program executed by each role~\cite{Montesi2023chor}.
 %
-On a volatile infrastructure,
-changes after release can invalidate that placement.
+Aggregate computing describes computations over fields, distributed values spanning an ensemble of devices.
+Its spatial and temporal abstractions express behaviours such as propagating information through a neighbourhood
+or maintaining a distance estimate as the network changes~\cite{VIROLI2019100486}.
 
-Implementations of the three paradigms also do not compose directly.
+Automatic placement alone does not resolve the architectural problem.
+A container orchestrator can reschedule a service, and an actor runtime such as Orleans can place actors automatically~\cite{DBLP:conf/cloud/BykovGKLPT11}.
 %
-A system may require all three:
-an application supporting a public event registers participants in a multitier program,
-negotiates recommendations through a choreography,
-and estimates crowding with an aggregate computation (\cref{sec:multiparty-motivation}).
-%
-Each paradigm checks its guarantees against its own model of where computation happens.
-%
-Running the frameworks side by side leaves values that cross framework boundaries unchecked.
-Operations in one framework can therefore violate another framework's guarantees,
-for instance a choreography's deadlock freedom (\cref{subsec:multiparty-challenge}).
+However, the runtime's deployment units and placement policy need not match a collective application's data flow or objectives.
+A container runtime may be too demanding for a small device,
+while stateless functions require persistent application state to be managed separately.
 
-Programs in these paradigms require specialised language knowledge.
+The programming abstractions leave physical deployment unresolved.
+Aggregate computing typically assumes that each device evaluates a complete instance of the program,
+and endpoint projection produces a process for each choreographic role.
 %
-A developer must learn the semantics of each paradigm's operators.
-Moreover, the \acp{DSL} that implement them are rare in the corpora used to pretrain \acp{LLM} (\cref{sec:llms-for-code-generation}).
+A common multitier approach fixes logical placement before execution:
+ML5 and ScalaLoci assign computations to tiers through placement types,
+and the compiler generates the corresponding per-tier code~\cite{DBLP:journals/csur/WeisenburgerWS20}.
+%
+These choices identify logical execution units or constrain their locations,
+but leave the mapping of those units to available physical hosts as a separate concern.
 
-Existing distributed-software architectures also do not allow an application to change the placement of its units at runtime (\cref{sec:architectural-paradigms}).
-%
-A microservice's deployment unit is a container under an orchestrator,
-and only the operator can move it; the application can neither express nor trigger the move.
-%
-\ac{FaaS} uses a finer unit but treats functions as stateless,
-so application state moves to backing services, usually cloud-hosted.
-%
-Actor runtimes keep state inside the actor and can place actors automatically,
-but the runtime controls the placement policy and tunes it for data-centre clusters (\cref{subsec:paradigm-limitations}).
-
-Pulverisation partially addresses the placement problem.
+Pulverisation addresses this separation by distinguishing a device's logical execution from the hosts that carry it out.
 %
 Casadei et al.\ split each logical device into sensing, actuation, behaviour, state, and communication components,
 each deployable wherever the continuum offers the resources it needs~\cite{DBLP:journals/fi/CasadeiPPVW20}.
 %
 The partitioning is fixed in advance:
-each logical device has five deployable units regardless of the application,
-and a logical device is relocated as a whole.
+each logical device has five deployable units regardless of the application.
 %
 A behaviour component that runs an entire aggregate program is placed as one unit,
 even when its parts have different resource requirements and are suited to different hosts (\cref{sec:pulverization-motivation}).
 %
-Any finer partition must re-establish the defining guarantee of pulverisation:
-the computed result does not depend on where the components execute.
+A finer partition must preserve the defining guarantee of pulverisation:
+deployments satisfying the model's conditions converge to the same collective result.
 
-The original model defines which deployments are admissible,
-but not who chooses among them or on what grounds.
+The specification problem has a corresponding gap: each paradigm makes one aspect of coordination convenient to express,
+but applications can require all three.
+An application supporting a public event, for instance, can use multitier organisation to register participants and connect phones to cloud services,
+a choreography to negotiate recommendations,
+and an aggregate computation to estimate crowding.
+%
+A tier assignment alone does not describe the ordering constraints of the recommendation protocol,
+and a protocol among fixed roles does not directly express a field over a changing neighbourhood.
+Encoding every requirement in one paradigm therefore requires additional coordination logic outside its main abstractions.
+
+Combining implementations of the paradigms introduces another difficulty.
+Each framework checks its guarantees against its own model of communication and execution,
+and values crossing framework boundaries are not checked by a common discipline.
+%
+Running the frameworks side by side can therefore lose guarantees about their interaction,
+for instance when an external operation disrupts a choreography's communication order.
+The problem is to compose organisational, protocol, and spatial abstractions while preserving the guarantees of each.
+
+The specification problem remains demanding even when suitable abstractions are available.
+The macroprogramming literature identifies a fragmented landscape of approaches,
+with different abstractions for expressing and reasoning about system-level behaviour~\cite{DBLP:journals/csur/Casadei23}.
+%
+Their \acp{DSL} reduce the amount of device-level code a developer must write,
+but the developer still has to learn the operators and translate a collective objective into their composition.
+For example, an aggregate computation may combine state and observations across devices and rounds;
+understanding its syntax alone is insufficient to predict the resulting collective behaviour.
+
+Generative AI offers one possible route to reducing this specification effort.
+\Acp{LLM} have demonstrated code generation from natural-language descriptions in mainstream languages~\cite{DBLP:journals/corr/abs-2107-03374}.
+Applying the same idea to a macroprogramming \ac{DSL} could let a developer state the collective objective
+and obtain a candidate implementation using the language's abstractions.
+%
+However, specialised languages are sparsely represented in pretraining corpora,
+and their syntax and semantics are difficult to infer from a few examples~\cite{DBLP:conf/nips/WangW0CSK23}.
+%
+A generated program can use nonexistent constructs or compile successfully while computing the wrong collective result.
+Grammar information can help with syntactic validity,
+but validation must also check that the generated computation realises the intended behaviour.
+%
+For aggregate programming, supplying operational knowledge of the \ac{DSL} offers a way to address this gap~\cite{DBLP:journals/tiot/AguzziFV25}.
+This motivates examining both what knowledge a model needs and how its output can be evaluated beyond compilation.
+
+Once a specification yields deployable components, the remaining problem is to choose their hosts and revise that choice during operation.
+A placement can become infeasible when a host disappears or a link fails,
+or cease to meet its objective as load and battery levels change.
+Its energy cost also varies between hosts, and its carbon cost depends on where and when it executes.
+%
+Deployment independence allows these objectives to guide the choice among correct deployments under the model's conditions,
+but does not itself select a deployment or prescribe when to revise it.
 %
 PulvReAKt, an earlier step of this work,
 represented that choice in a declarative specification and allowed it to be revised at runtime~\cite{DBLP:journals/fgcs/FarabegoliPCV24}.
@@ -167,7 +190,13 @@ and the developer must still write rules that select a deployment and trigger ea
 %
 Such rules cover only the conditions their author anticipated.
 %
-Repeated optimisation does not remove this limitation because the topology may change before the solver produces a new placement (\cref{subsec:learning-based-offloading}).
+Repeated optimisation offers a different way to select a deployment from explicit objectives and constraints,
+but incurs a computational cost for each new assignment.
+On a rapidly changing infrastructure, the topology may change before the solver produces and applies a new placement.
+%
+A learned policy can derive decision rules from experience and shift much of this computation to training,
+leaving a faster decision step at runtime (\cref{subsec:learning-based-offloading}).
+The operator still defines the objectives and their relative importance through the reward supplied to the learner.
 
 \section{Research Questions}
 \label{sec:research-questions}
@@ -182,72 +211,43 @@ and placement becomes a runtime decision only after different deployments are kn
 A macro-program describes the behaviour of the whole collective,
 but its components run on devices with different capabilities.
 %
-The five-role partitioning fixes five deployable units for every logical device regardless of the application,
-and the paradigms that produce these units leave their placement implicit.
+The five-role partitioning fixes the deployment granularity regardless of the application's data flow.
+A finer partition requires conditions under which relocating its components preserves their stabilised outputs.
 %
-\emph{Under what conditions can a collective macro-program be partitioned into independently deployable components so that its observable behaviour does not depend on how those components are mapped onto physical devices?}
-%
-The answer requires explicit conditions and a proof that behaviour is invariant under them.
-%
-For a partition along the macro-program's data flow, the thesis defines the conditions and proves the invariance (\cref{subsec:macroprogram-dag,thm:deployment-independence}).
-%
-Simulations check that different deployments of the same macro-program stabilise to the same values,
-and measure their difference before stabilisation (\cref{subsec:pulverization-validation}).
+\emph{Under what conditions can a collective macro-program be partitioned into independently deployable components so that its stabilised observable outputs do not depend on how those components are mapped onto physical devices?}
 
 \rqhead{rq:languages}{Language and coordination support}
 Each of the three paradigms represents deployable components differently:
 a placed value, a projected role, and a field over an ensemble are different kinds of object.
 %
-A system built from more than one paradigm therefore cannot be pulverised as a whole.
+Combining them requires a common account of coordination and deployable components.
 %
 Running one framework per paradigm side by side does not solve this,
 because each framework verifies only code written in its own paradigm.
 %
 \emph{What language support lets a single program combine aggregate, choreographic, and multitier coordination, produce the deployable components the model requires, and reject at compile time the coordination errors that an ad-hoc combination allows?}
-%
-The type discipline that rejects these errors must be sound,
-and it must still accept the programs each paradigm supports.
-%
-A soundness proof establishes that every accepted program respects the constraints of all three paradigms (\cref{subsec:camil-formalization}).
-%
-The evaluation uses the language to reimplement all 46 use cases from the literature of the three paradigms (\cref{subsec:camil-expressivity}),
-together with three applications that mix the paradigms in one program (\cref{subsec:inter-paradigm}).
 
-\subrqhead{rq:generation}{Generation}
-A sound discipline does not remove the need to write the program.
+As a subcase of this question, language support also concerns how the program is obtained from a collective objective.
+A sound discipline does not remove the effort required to write the program.
 %
-\acp{LLM} generate code from natural language,
-but the \ac{DSL} is rare in their training data.
+The generation subcase focuses on aggregate macro-programs in ScaFi, a Scala-based \ac{DSL}.
+Its specialised operators may be sparsely represented in an \ac{LLM}'s training data.
 %
-\emph{Can an \ac{LLM} generate such a program from a natural-language specification, and what does it need to be told about the language for this to work?}
-%
-Generated programs are evaluated using \emph{pass@k} against eleven test cases run in simulation (\cref{sec:llm-pipeline}).
-%
-Sixteen \acp{LLM} are compared at three levels of supplied knowledge,
-to test whether the score depends more on supplied knowledge than on model size (\cref{sec:llm-evaluation}).
+\emph{Can an \ac{LLM} generate an aggregate macro-program in ScaFi from a natural-language specification, and what does it need to be told about the language for this to work?}
 
 \rqhead{rq:deployment}{Runtime deployment decision}
-Deployment independence makes all admissible deployments functionally equivalent,
+Under the model's conditions, deployment independence gives every correct deployment the same stabilised outputs,
 but it does not say which one to choose.
 %
 Infrastructure changes can invalidate a fixed deployment,
-so the system must be able to revise it at runtime (\cref{sec:the-deployment-problem}).
+so the system must be able to revise it at runtime.
 %
 \emph{How can a policy, written in advance or learned from experience, choose among these deployments and revise the choice at runtime on non-functional grounds only, and what does improving one non-functional quantity cost in the others?}
-%
-Three hand-written policies each target one quantity, such as battery life or carbon emissions.
-%
-Simulations measure the improvement in the target quantity and its effect on message count, latency, or convergence time,
-and check that the secondary cost remains bounded (\cref{chap:deployment-and-reconfiguration}).
-%
-A learned policy combines several quantities in a weighted reward.
-%
-Simulations vary these weights to check that the resulting deployments reflect the stated trade-off (\cref{chap:heterogeneous-gnn}).
 
 \section{Contributions}
 \label{sec:contributions}
 
-Each contribution below identifies the chapter that develops it, its associated publication, and the research question it answers.
+Each contribution below identifies the chapter that develops it, its associated publication, and the research question it addresses or supports.
 \Cref{tab:contributions} summarises this information.
 
 \paragraph{A deployment model for macro-programs.}
@@ -255,23 +255,23 @@ A macro-program is partitioned along its own data flow into a \ac{DAG} of indepe
 %
 A component is local if its computation involves one device and collective if it involves neighbouring devices.
 %
-A forwarding chain connects the device that owns a component to the host that executes it (\cref{sec:pulverization-abstractions}).
+A component can execute on behalf of its application device on a different host.
+A forwarding chain connects that device to the executing host (\cref{sec:pulverization-abstractions}).
 %
 The main theorem assumes that
 every component computes a self-stabilising function,
 and the sensor state is the same along every forwarding chain.
 %
-Under these hypotheses,
-the values at the macro-program's output ports stabilise to a result that does not depend on the deployment (\cref{thm:deployment-independence}).
+For a well-formed macro-program and correct deployments satisfying these hypotheses,
+the values at the output ports stabilise to the same result (\cref{thm:deployment-independence}).
 %
 Simulations in Alchemist~\cite{DBLP:journals/jos/PianiniMV13} compare a monolithic deployment with an offloaded deployment
 in networks of 50, 100, and 200 mobile nodes.
 %
-The two deployments converge to the same result once the nodes stop moving (\cref{subsec:pulverization-validation}).
+Once the nodes stop moving, the difference between the deployments falls to a small recovering residual (\cref{subsec:pulverization-validation}).
 %
-The partitioning and the theorem constitute the central technical result of the thesis.
-%
-They are published in~\cite{DBLP:conf/acsos/FarabegoliVC24} and answer \cref{rq:model}.
+The partitioning and the theorem are the thesis' central technical result,
+published in~\cite{DBLP:conf/acsos/FarabegoliVC24} and answering \cref{rq:model}.
 %
 The PulvReAKt middleware, an earlier step of this work~\cite{DBLP:journals/fgcs/FarabegoliPCV24},
 retains the original five-role partitioning
@@ -280,22 +280,22 @@ and makes the component-to-host assignment revisable at runtime through a declar
 The five-role partitioning and the data-flow partitioning cut along different axes and can be combined (\cref{sec:pulverization-discussion}).
 
 \paragraph{One type discipline for three coordination paradigms.}
-\camil turns each paradigm into a \emph{capability}: a value that code must hold to use that paradigm's operations.
+\camil combines the three paradigms through \emph{capabilities},
+values that code must hold to use a paradigm's operations.
 %
 All paradigms share the same placement types,
 so a value produced under one paradigm reaches another through its placement,
 without an ad-hoc bridge (\cref{sec:capabilities-unification}).
 %
-The Scala~3 implementation uses contextual abstractions, capture checking, and separation checking.
-The discipline is proved sound (\cref{thm:camil-soundness}).
+The Scala~3 implementation checks placement and permitted coordination operations at compile time,
+and the discipline is proved sound (\cref{thm:camil-soundness}).
 %
 The evaluation reimplements all 46 use cases collected from the multitier, choreographic, and aggregate literature.
 %
 Three further applications combine paradigms in a single program (\cref{sec:camil-evaluation}).
 %
-The design is under review~\cite{Farabegoli:2026:CaMiL}.
-%
-Together, \camil and ScalaTropy answer \cref{rq:languages}.
+The design is under review~\cite{Farabegoli:2026:CaMiL}
+and addresses the composition and static guarantees required by \cref{rq:languages}.
 
 \paragraph{Differentiated communication primitives for multiparty coordination.}
 Choreographic and multitier languages support several communication patterns besides point-to-point exchange.
@@ -303,77 +303,78 @@ Choreographic and multitier languages support several communication patterns bes
 Each language exposes different constructs,
 and some patterns are encoded indirectly rather than represented by dedicated operations.
 %
-ScalaTropy is a monadic \ac{DSL} that gives each classical pattern its own typed operation:
-point-to-point, isotropic, anisotropic, and co-anisotropic communication.
+ScalaTropy is a \ac{DSL} for composing typed communication steps.
+It gives point-to-point exchange, broadcast, scatter, and gather their own operations:
+one recipient, the same value to many recipients, a different value for each recipient, and collection of values from many senders.
 %
 Its types also record the architecture that a choreography targets (\cref{sec:scalatropy}).
 %
-In a matrix-vector product, the anisotropic primitive keeps the bytes sent by the master nearly constant as workers are added.
+In the evaluated matrix-vector product, the scatter operation keeps the bytes sent by the master nearly constant as workers are added.
 %
 With broadcast-and-filter, the same scatter sends a number of bytes that grows linearly with the workers (\cref{subsec:scalatropy-evaluation}).
 %
-The design is published in~\cite{Farabegoli:2026:ScalaTropy}.
+The design is published in~\cite{Farabegoli:2026:ScalaTropy}
+and addresses the multiparty communication aspect of \cref{rq:languages}.
 
 \paragraph{A body of knowledge for generating aggregate programs.}
 ScaFi is an aggregate \ac{DSL} embedded in Scala,
-and an \ac{LLM} can generate ScaFi programs that compile.
+and the contribution examines how an \ac{LLM} can generate its programs from natural-language specifications.
 %
-Some of these programs still compute the wrong result,
-because the model can misinterpret what operators such as \code{rep} and \code{nbr} compute at each device and round.
+Compilation alone does not establish that a generated program computes the intended collective result.
+A model can misinterpret how operators maintain state across rounds or exchange observations with neighbours.
 %
-The \emph{body of knowledge} supplies the semantics of these operators.
+The \emph{body of knowledge} is a short operational manual supplied at generation time.
+It explains the operators through minimal programs and their outputs over successive rounds (\cref{sec:body-of-knowledge}).
 %
-It is a short operational manual, placed in the model's context at generation time.
+In the evaluation of sixteen models, performance varies with the knowledge supplied,
+and model size alone does not explain the ranking:
+the largest tested model is not the best at any knowledge level (\cref{sec:llm-evaluation}).
 %
-It introduces each operator through a minimal program and the values that program produces over successive rounds (\cref{sec:body-of-knowledge}).
-%
-An entry is added only when an observed failure requires it,
-and never when it would contain the solution to a test case (\cref{subsec:bok-codesign}).
-%
-Across sixteen models, the result depends on what the model is told, not on its size:
-the largest model in the study is not the best at any knowledge level (\cref{sec:llm-evaluation}).
-%
-The contribution is published in~\cite{DBLP:journals/tiot/AguzziFV25} and answers \cref{rq:generation}.
+The contribution is published in~\cite{DBLP:journals/tiot/AguzziFV25}
+and addresses the generation subcase of \cref{rq:languages}.
 
-\paragraph{Three hand-written reconfiguration policies.}
-Three policies, each written by hand, choose a deployment and revise it at runtime (\cref{chap:deployment-and-reconfiguration}).
+\paragraph{Collective reconfiguration and declarative deployment planning.}
+Two complementary strategies select deployments and revise them as the infrastructure changes (\cref{chap:deployment-and-reconfiguration}).
 %
-In the first, a device offloads one expensive component as soon as its battery falls below a threshold,
-and moves the component again when its host becomes unreachable~\cite{DBLP:conf/acsos/FarabegoliVC24}.
-%
-In the second, infrastructural devices compete to host the components that application devices should not run,
+In collective reconfiguration, infrastructural devices compete to host components offloaded by application devices,
 and each resizes the region it leads through a collectively built field~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 %
-The third is a planner: it searches the admissible deployments using an objective defined over energy and carbon,
+Declarative planning instead expresses an objective over energy and carbon together with component requirements.
+A planner selects assignments according to this objective while satisfying the requirements,
 and repeats the search as the network changes~\cite{DBLP:conf/coordination/BrogiCFFV25}.
+The evaluation uses the original five deployment units per logical device.
+
+A simpler local policy illustrates reconfiguration triggered by an individual device's condition.
+A device offloads one expensive component as soon as its battery falls below a threshold,
+and moves the component again when its host becomes unreachable~\cite{DBLP:conf/acsos/FarabegoliVC24}.
 %
-Each policy improves its target quantity while bounding a secondary cost:
-extra messages, a stabilisation transient, or added latency.
+In the evaluated scenarios, improvements in each policy's target quantity incur measured costs:
+additional messages, added latency, or a temporary reduction in service quality during stabilisation.
 %
-Each also requires a developer to define in advance what makes a deployment desirable.
+Each policy requires a developer to specify its deployment criterion in advance.
 %
-The three policies answer the first half of \cref{rq:deployment}.
+These strategies address the policy design and non-functional trade-offs asked about in \cref{rq:deployment}.
 
 \paragraph{A learned policy for collective offloading.}
-The continuum is represented as a heterogeneous graph
-whose node types are application devices, edge servers, and cloud servers.
+The continuum is represented as a heterogeneous graph that distinguishes application devices from infrastructural devices,
+including edge and cloud servers.
 %
-A \ac{GNN} over this graph is the Q-function of a deep Q-learning agent (\cref{sec:hetero-graph-state}).
+A \ac{GNN} processes device and link information to guide a deployment policy learned through deep Q-learning (\cref{sec:hetero-graph-state}).
 %
 The application devices also execute an aggregate program that computes a collective summary of local density,
 which the graph alone does not provide (\cref{subsec:collective-information}).
 %
-Changing the weights of a scalarised reward yields policies that vary continuously between the single-objective extremes.
+The operator specifies deployment objectives and their relative importance through a weighted reward.
+Across the tested weight settings, the resulting deployments vary gradually between the single-objective extremes.
 %
-Including the collective term makes the selected action depend on a device's position:
-at the fringe of a crowd, a device offloads only part of its components,
-which no binary rule can do (\cref{sec:idhgql-evaluation}).
+Including the collective term makes decisions sensitive to a device's position within the crowd.
+In the evaluated setting, devices at the fringe offload only part of their components,
+a choice that whole-program binary offloading cannot express (\cref{sec:idhgql-evaluation}).
 %
-Training the policy from experience removes the need for a person to define a desirable deployment in advance.
+Learning derives the decision rules from experience rather than requiring the operator to prescribe them.
 %
-This answers the second half of \cref{rq:deployment}.
-%
-The contribution is published in~\cite{Farabegoli:2026:HeteroGNN}.
+The contribution is published in~\cite{Farabegoli:2026:HeteroGNN}
+and addresses \cref{rq:deployment} through learned policies and their non-functional trade-offs.
 
 \paragraph{A physical demonstrator.}
 Project Emerge runs one aggregate program on nine mobile robots (\cref{chap:demonstrator}).
@@ -383,8 +384,8 @@ The robots form spatial patterns and restore them after one robot is moved by ha
 Each robot carries only a microcontroller, with no aggregate runtime,
 and a server evaluates the program for all of them.
 %
-Under the model,
-the robots own the components and the server is their shared surrogate (\cref{sec:emerge-as-pulverisation}).
+Under the model, the component instances belong to the robots,
+and the server executes them on their behalf (\cref{sec:emerge-as-pulverisation}).
 %
 It supports \cref{rq:model} by showing that a deployment admitted by the model runs on real hardware.
 %
@@ -396,29 +397,29 @@ The contribution is reported in~\cite{Farabegoli:2027:ProjectEmerge}, an extensi
 \begin{table}[t]
     \centering
     \small
-    \caption[Contributions, chapters, publications, and research questions]{Each contribution, the chapter that develops it, the publication it comes from, and the research question it answers.}
+    \caption[Contributions and the research questions they address or support]{Each contribution, the chapter that develops it, the publication it comes from, and the research question it addresses or supports.}
     \label{tab:contributions}
     \setlength{\tabcolsep}{4pt}
     \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xcll@{}}
         \toprule
         \textbf{Contribution} & \textbf{Ch.} & \textbf{Publication} & \textbf{Question} \\
         \midrule
-        Declarative runtime reconfiguration of a pulverised deployment (PulvReAKt)
-            & \labelcref{chap:pulverization} & FGCS 2024 & \cref{rq:model} \\
         Data-flow partitioning of a macro-program, with deployment independence
             & \labelcref{chap:pulverization} & ACSOS 2024 & \cref{rq:model} \\
+        Declarative runtime reconfiguration of a pulverised deployment (PulvReAKt)
+            & \labelcref{chap:pulverization} & FGCS 2024 & \cref{rq:model} \\
         \camil: capabilities unifying three coordination paradigms
             & \labelcref{chap:language-and-coordination} & TOPLAS, under review & \cref{rq:languages} \\
         ScalaTropy: monadic communication primitives
             & \labelcref{chap:language-and-coordination} & COORDINATION 2026 & \cref{rq:languages} \\
         A body of knowledge for generating aggregate programs
-            & \labelcref{chap:language-based-macroprogramming} & ACM TIoT 2025 & \cref{rq:generation} \\
-        Battery-triggered offloading rule
-            & \labelcref{chap:deployment-and-reconfiguration} & ACSOS 2024 & \cref{rq:deployment} \\
+            & \labelcref{chap:language-based-macroprogramming} & ACM TIoT 2025 & \cref{rq:languages} \\
         Field-based reconfiguration over self-organising coordination regions
             & \labelcref{chap:deployment-and-reconfiguration} & Internet of Things 2024 & \cref{rq:deployment} \\
         Declarative planner for green deployments
             & \labelcref{chap:deployment-and-reconfiguration} & COORDINATION 2025 & \cref{rq:deployment} \\
+        Battery-triggered offloading rule
+            & \labelcref{chap:deployment-and-reconfiguration} & ACSOS 2024 & \cref{rq:deployment} \\
         Learned collective offloading over a heterogeneous graph
             & \labelcref{chap:heterogeneous-gnn} & FGCS 2026 & \cref{rq:deployment} \\
         Project Emerge: one admissible deployment on physical robots
@@ -437,11 +438,11 @@ and the placement, orchestration, and learning techniques used to select deploym
 %
 Part~II presents the deployment model (\cref{chap:pulverization})
 and the language support that produces its components:
-the language and coordination support (\cref{chap:language-and-coordination})
-and the generation of macro-programs from natural language (\cref{chap:language-based-macroprogramming}).
+the composition of coordination paradigms (\cref{chap:language-and-coordination})
+and the generation of aggregate macro-programs in ScaFi from natural language (\cref{chap:language-based-macroprogramming}).
 %
 Part~III studies deployment and reconfiguration:
-reconfiguration policies written by hand (\cref{chap:deployment-and-reconfiguration}),
+collective reconfiguration and declarative planning, with local offloading as a simpler case (\cref{chap:deployment-and-reconfiguration}),
 a policy learned from experience (\cref{chap:heterogeneous-gnn}),
 and one admissible deployment running on physical robots (\cref{chap:demonstrator}).
 %

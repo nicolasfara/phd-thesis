@@ -7,10 +7,10 @@
 \newcommand{\cityevt}{\textsf{CityEvt}\xspace}
 \newcommand{\smrtmob}{\textsf{SmrtMob}\xspace}
 
-% Research questions. The three thesis-level questions, and the sub-question of
-% the second, are numbered by a counter and referenced with \cref{rq:...}, so
-% that no number is ever typed in prose. \rqhead opens the paragraph stating a
-% question; \subrqhead does the same for a sub-question.
+% Research questions. The three thesis-level questions are numbered by a
+% counter and referenced with \cref{rq:...}, so no number is typed in prose.
+% Generation is an unnumbered subcase of the second question. \rqhead opens
+% a question paragraph; \subrqhead remains available for numbered sub-questions.
 \newcounter{researchquestion}
 \newcounter{subresearchquestion}[researchquestion]
 \renewcommand{\theresearchquestion}{RQ\arabic{researchquestion}}

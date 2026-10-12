@@ -22,6 +22,7 @@ allowing a policy to choose and revise a deployment according to non-functional 
 %
 The remaining contributions provide language support for producing deployable components from multiple coordination paradigms,
 and runtime policies that choose among the admissible deployments.
+They also examine generation of aggregate programs from natural-language specifications as a subcase of language support.
 
 \section{Answers to the Research Questions}
 \label{sec:rq-answers}
@@ -112,23 +113,23 @@ and ScalaTropy requires an architecture to be declared before a choreography can
 Neither design selects a deployment:
 the architecture defines the admissible deployments, and \cref{rq:deployment} concerns the choice among them.
 
-\subsection{Generation}
+\subsubsection{Generation from Natural-Language Specifications}
 \label{subsec:answer-generation}
 
-The sub-question asks whether such a program can be obtained from a natural-language specification,
-and what a model has to be told about the language for that to work (\cref{rq:generation}).
+The generation subcase of \cref{rq:languages} asks whether a macro-program can be obtained from a natural-language specification,
+and what a model has to be told about the language for that to work.
 %
 The evaluated pipeline generates aggregate programs in ScaFi from such specifications.
 %
 Performance depends more on a concise operational manual of the operators' round-by-round semantics than on model size.
 
 The evaluation compared sixteen models at three levels of supplied knowledge.
-Generated programs were scored with \emph{pass@k} against eleven test cases checked in simulation (\cref{sec:llm-pipeline}).
+Generated programs were checked against eleven test cases in simulation (\cref{sec:llm-pipeline}).
 %
-Without a body of knowledge, twelve of the sixteen models pass no test case at any $k$, and most generated programs do not compile.
+Without a body of knowledge, twelve of the sixteen models produce no successful solution to any test case, and most generated programs do not compile.
 %
 Supplying the core operators raises most compile rates above 0.90,
-and nine of those twelve models reach a pass@10 between 0.45 and 0.75.
+and enables nine of those twelve models to produce successful solutions to test cases.
 %
 Performance depends more on the supplied knowledge than on model size:
 the largest model leads at no knowledge level,
@@ -172,7 +173,7 @@ a threshold, a quantity for regions to compete over, or an objective and its con
 A learned policy instead derives the deployment rule from experience when supplied with two forms of state information (\cref{chap:heterogeneous-gnn}).
 %
 The state representation must preserve the continuum's heterogeneity.
-It represents application devices, edge servers, and cloud servers as distinct node types,
+It distinguishes application devices from infrastructural devices, which include edge and cloud servers,
 with a \ac{GNN} over the resulting graph as the Q-function (\cref{sec:hetero-graph-state}).
 %
 The input must also include a collective summary that is not explicit in the individual device states.
@@ -223,14 +224,13 @@ The expressivity evidence consists of reimplemented use cases drawn from the lit
 %
 The effort required from developers who did not design the languages has not been evaluated and would require a user study.
 
-\paragraph{Generation (\cref{rq:generation}).}
-The body of knowledge was refined against the test cases used for its evaluation,
+For the generation subcase of the same question, the body of knowledge was refined against the test cases used for its evaluation,
 so the reported rates measure performance within the task family used to co-design the manual rather than transfer to a new task family (\cref{sec:llm-macroprogramming-discussion}).
 %
-\emph{pass@k} counts programs that satisfy assertions.
+The evaluation counts programs that satisfy assertions.
 %
 A program that satisfies the assertions without implementing the intended behaviour is still scored as a success,
-and the metric does not account for evaluation cost.
+and this success criterion does not account for evaluation cost.
 %
 Because providers revise hosted models without notice, the reported ranking may change over time even when the evaluation method remains fixed.
 

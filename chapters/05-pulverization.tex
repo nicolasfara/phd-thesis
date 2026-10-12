@@ -76,8 +76,9 @@ The deployment is not fixed at release time.
 %
 The partitioning itself stays fixed:
 every logical device still decomposes into exactly the same five roles,
-so the number and kind of deployable units a system offers never varies with what the application actually computes,
-and each logical device still corresponds to a single physical device, relocated as a whole.
+so the number and kind of deployable units a system offers never varies with what the application actually computes.
+In particular, the entire behaviour component remains one deployment unit,
+even when its internal computations have different resource requirements.
 
 The model this thesis develops for the rest of Part II generalises pulverisation along an orthogonal axis:
 instead of a catalogue of execution concerns fixed once and for all,

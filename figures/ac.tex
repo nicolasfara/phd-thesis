@@ -10,7 +10,7 @@
   idle/.style={dev,draw=gray!50,fill=gray!22},
   link/.style={draw,gray!75},
   faint/.style={draw,gray!40},
-  msg/.style={->,gray!85,shorten >=1.3mm,shorten <=1.3mm},
+  msg/.style={->,gray!85,shorten >=0.2mm,shorten <=0.2mm},
   lens/.style={draw,gray!55,thin},
 ]
 
@@ -66,7 +66,11 @@
   \node[idle] (c\i) at ({\px+\dx},\dy) {};
   \draw[faint] (c\i) -- (comp);
 }
-\draw[->,gray!85] ([shift=(55:3.3mm)]comp) arc (55:-275:3.3mm);
+\draw[gray!85] ([shift=(55:3.3mm)]comp) arc (55:-275:3.3mm);
+% At the endpoint (85 degrees), the clockwise tangent is -5 degrees.
+\coordinate (comp-tip) at ([shift=(85:3.3mm)]comp);
+\draw[-{Latex[length=1.8mm,width=1.2mm]},gray!85]
+  ([shift=(175:1.8mm)]comp-tip) -- (comp-tip);
 \node[font=\small\bfseries] at (\px,-1.45) {Compute};
 
 % -- interact: the device shares the result with its neighbours --

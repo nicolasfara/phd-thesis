@@ -514,26 +514,12 @@ so the improvement comes from the policy and not from reallocation as such.
 %
 The learned policies lie along a curve rather than clustering,
 so the weights move the outcome gradually between the extremes instead of switching it between two modes.
-%
-\Cref{fig:idhgql-mixed-weights} takes one interior setting, $(\lambda_B,\lambda_C,\lambda_{ES}) = (0.3, 0.1, 0.6)$,
-where the dominant term penalises edge-server load.
-%
-The policy that emerges keeps edge usage low, batteries high, and cost correspondingly high:
-denied the cheap servers, it preserves battery through the expensive ones,
-which is what the three weights together ask for.
 
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=0.75\textwidth]{idhgql-battery-cost-tradeoff.pdf}
     \caption[Battery against cost across weight settings]{Battery remaining against accumulated cost for the policies learned under different weight settings. The points fall along a trade-off curve: battery is preserved by offloading, and offloading is what costs money. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-tradeoff}
-\end{figure}
-
-\begin{figure}[p]
-    \centering
-    \includegraphics[height=0.8\textheight]{idhgql-mixed-weights.pdf}
-    \caption[Learned policy under a mixed reward]{Learned policy with all three objectives active at $(\lambda_B,\lambda_C,\lambda_{ES}) = (0.3, 0.1, 0.6)$, where edge-server load dominates. Edge usage stays low, and battery is preserved through the cloud servers at a correspondingly higher cost. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
-    \label{fig:idhgql-mixed-weights}
 \end{figure}
 
 \subsection{Collective State and Adaptation to Crowding}
@@ -683,7 +669,7 @@ A weighted sum only reaches deployments on the convex portion of the trade-off,
 so a policy that would be optimal in a concave region of the Pareto front is unreachable by any choice of $\lambda_i$.
 %
 The weights are also not calibrated:
-$(0.3, 0.1, 0.6)$ expresses a priority, not a quantity, and moving them is a matter of trial.
+they express relative priorities rather than calibrated quantities, and selecting them is a matter of trial.
 %
 Multi-objective methods that learn a set of policies covering the front, instead of one policy per weight vector, would remove both objections,
 and nothing in the architecture of \cref{subsec:heterognn-q-function} stands in their way.

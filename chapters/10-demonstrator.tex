@@ -147,7 +147,7 @@ The runtime is written in Scala on ScaFi (\cref{subsec:cas-platforms}),
 with the collective behaviours taken from MacroSwarm,
 a library of field-based building blocks for swarm behaviour -- flocking, leader-based coordination, shape formation -- built on top of ScaFi~\cite{DBLP:conf/coordination/AguzziCV23}.
 %
-It is factored into four abstractions plus an entry point, and that structure carries the requirements of \cref{sec:emerge-requirements} into code.\footnote{The toolchain, the companion rover hardware, and a reproducible capsule are released as open source: \url{https://github.com/Project-Emerge} and \url{https://doi.org/10.5281/zenodo.18224119}.}
+It is factored into four abstractions plus an entry point, and that structure carries the requirements of \cref{sec:emerge-requirements} into code.\footnote{The toolchain, the companion rover hardware, and a reproducible capsule are released as open source: \url{https://github.com/Project-Emerge} and \href{https://doi.org/10.5281/zenodo.18224119}{\nolinkurl{doi:10.5281/zenodo.18224119}}.}
 
 An \texttt{Environment} models the physical context of one evaluation:
 which robots are currently present, where each is, who its neighbours are, and what the sensors read.
@@ -353,7 +353,8 @@ The dashboard, shown in \cref{fig:emerge-dashboard}, was part of the exhibit rat
 the neighbourhood relation it draws is otherwise invisible,
 and a visitor could change the neighbourhood radius and watch the formation reorganise.
 
-\begin{figure}[tbp]
+% Keep these figures with the discussion rather than on a sparse float-only page.
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{emerge-dashboard.png}
     \caption[The dashboard used to observe and perturb the running team]{The dashboard used to observe and perturb the running team. Lines between robots draw the current neighbourhood relation, which is otherwise invisible to an observer. The controls load a different aggregate program and retune the neighbourhood radius; selecting a robot exposes its state, a manual movement control, and the option to elect it leader. From~\cite{Farabegoli:2027:ProjectEmerge}.}
@@ -380,7 +381,7 @@ In every case tried, the team absorbed the perturbation and recovered the format
 %
 \Cref{fig:emerge-selfhealing} shows one such recovery.
 
-\begin{figure}[htbp]
+\begin{figure}[!htb]
     \centering
     \begin{subfigure}[t]{0.32\textwidth}
         \centering

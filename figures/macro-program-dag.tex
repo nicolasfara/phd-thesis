@@ -46,13 +46,13 @@
 
 % ---------- upstream / downstream axis ----------
 \draw[->,thick,gray!60] ([xshift=4mm]mp.north east) -- ([xshift=4mm]mp.south east);
-\node[anchor=west,font=\scriptsize,gray!60] at ([xshift=4mm]mp.north east) {upstream};
-\node[anchor=west,font=\scriptsize,gray!60] at ([xshift=4mm]mp.south east) {downstream};
+\node[anchor=west,font=\scriptsize,text=black] at ([xshift=4mm]mp.north east) {upstream};
+\node[anchor=west,font=\scriptsize,text=black] at ([xshift=4mm]mp.south east) {downstream};
 
 % ---------- callouts ----------
-\draw[gray!60] (c2i) ++(2mm,1mm) -- ++(6mm,4mm) node[right,font=\scriptsize] {port};
-\draw[gray!60] (c3o) ++(-2mm,-2mm) -- ++(-2mm,-4mm) node[left,font=\scriptsize] {binding};
+\draw[gray!60] (c2i) ++(2mm,1mm) -- ++(6mm,4mm) node[right,font=\scriptsize,text=black] {port};
+\draw[gray!60] (c3o) ++(-2mm,-2mm) -- ++(-2mm,-4mm) node[left,font=\scriptsize,text=black] {binding};
 \draw[gray!60] ([yshift=-3mm]c4o) ++(2mm,-1mm) -- ++(8mm,-7mm)
-  node[right,font=\scriptsize,align=left] {global\\output port};
+  node[right,font=\scriptsize,align=left,text=black] {global\\output port};
 
 \end{tikzpicture}

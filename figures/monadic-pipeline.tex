@@ -25,12 +25,12 @@
 \end{scope}
 
 % ---------- process monad ----------
-\draw[split] (pipe.south) to[out=-100,in=90] node[pos=0.45,above,font=\scriptsize\itshape] {process monad} (-1.8,2.4);
+\draw[split] (pipe.south) to[out=-100,in=90] node[pos=0.45,above,font=\scriptsize\itshape,text=black] {process monad} (-1.8,2.4);
 
 % ---------- what actually runs (bottom) ----------
 \node[host] (nodea) at (-1.8,1.6) {\textbf{Node A}\\[1pt]\scriptsize\emph{pipeline runs here}};
 \node[host] (nodeb) at ( 2.4,1.6) {\textbf{Node B}\\[1pt]\scriptsize\emph{remote process}};
-\draw[msg] (nodea.east) to[bend left=15] node[midway,above,font=\scriptsize] {send} (nodeb.west);
-\draw[msg] (nodeb.west) to[bend left=15] node[midway,below,font=\scriptsize] {reply} (nodea.east);
+\draw[msg] (nodea.east) to[bend left=15] node[midway,above,font=\scriptsize,text=black] {send} (nodeb.west);
+\draw[msg] (nodeb.west) to[bend left=15] node[midway,below,font=\scriptsize,text=black] {reply} (nodea.east);
 
 \end{tikzpicture}

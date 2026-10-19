@@ -17,11 +17,11 @@
 ]
 
 % ---------- components ----------
-\node[comp]     (ba) at (-1.5,6.3)  {\begin{tabular}[c]{c}Biometrics\\Acquisition\end{tabular}};
-\node[collcomp] (es) at (-1.5,4.2)  {\begin{tabular}[c]{c}Emergency\\Service\end{tabular}};
-\node[collcomp] (ss) at (-1.5,2.1)  {\begin{tabular}[c]{c}Steering\\Service\end{tabular}};
+\node[comp]     (ba) at (-1.5,5.7)  {\begin{tabular}[c]{c}Biometrics\\Acquisition\end{tabular}};
+\node[collcomp] (es) at (-1.5,3.8)  {\begin{tabular}[c]{c}Emergency\\Service\end{tabular}};
+\node[collcomp] (ss) at (-1.5,1.9)  {\begin{tabular}[c]{c}Steering\\Service\end{tabular}};
 \node[comp]     (ns) at (-1.5,0.0)  {\begin{tabular}[c]{c}Navigation\\System\end{tabular}};
-\node[comp]     (da) at (2.6,4.2)   {\begin{tabular}[c]{c}Data\\Analysis\end{tabular}};
+\node[comp]     (da) at (2.6,3.8)   {\begin{tabular}[c]{c}Data\\Analysis\end{tabular}};
 
 % ---------- ports ----------
 \node[port] (bao)  at (ba.south) {};
@@ -58,15 +58,16 @@
 
 % ---------- enclosing macro-program box ----------
 \begin{scope}[on background layer]
-  \node[draw,rounded corners,fill=gray!3,fit=(ba)(es)(ss)(ns)(da),inner sep=6mm] (mp) {};
+  \node[draw,rounded corners,fill=gray!3,fit=(ba)(es)(ss)(ns)(da),inner sep=5mm] (mp) {};
 \end{scope}
 \node[anchor=south,font=\small] at (mp.north) {macro-program};
 
 % ---------- legend ----------
 % This figure appears before \subsec{local-collective-components} formally
-% defines the double-border convention, so a one-line reminder is kept here
+% defines the double-border convention, so a brief reminder is kept here
 % (unlike the abstract-notation figures later in the chapter, which rely on
 % that earlier definition and carry no legend of their own).
-\node[anchor=north,font=\scriptsize,gray!60] at ([yshift=-2mm]mp.south) {double border marks a collective component};
+% Use the empty area below Data Analysis instead of increasing the figure height.
+\node[font=\scriptsize,text=black,align=center,text width=22mm] at (2.6,1.0) {double border marks a collective component};
 
 \end{tikzpicture}

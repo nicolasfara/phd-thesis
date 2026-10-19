@@ -12,7 +12,7 @@
   comp/.style={draw,rounded corners,thick,fill=gray!8,minimum width=18mm,minimum height=8mm,align=center},
   collcomp/.style={comp,double,double distance=0.6pt,fill=orange!10,draw=orange!55!black},
   ghost/.style={draw=gray!35,rounded corners,fill=gray!4,text=gray!55,minimum width=18mm,minimum height=8mm,align=center},
-  relay/.style={draw,thick,dashed,gray!55,rounded corners,fill=gray!2,minimum width=24mm,minimum height=14mm,align=center},
+  relay/.style={draw,thick,dashed,gray!55,rounded corners,fill=gray!2,minimum width=24mm,minimum height=14mm,align=center,text=black},
   port/.style={draw,fill=gray!55,minimum width=2mm,minimum height=2mm,inner sep=0pt},
   ghostport/.style={draw=gray!35,fill=gray!20,minimum width=2mm,minimum height=2mm,inner sep=0pt},
   bind/.style={->,thick,black!75},
@@ -47,7 +47,7 @@
 % An intermediate hop of the chain: it passes the component's messages on
 % without ever executing the component itself.
 \node[relay] (relay) at (4.75,1.5) {$\deviceId_1$};
-\node[anchor=north,font=\scriptsize,gray!60,align=center] at (relay.south) {relays without\\executing};
+\node[anchor=north,font=\scriptsize,text=black,align=center] at (relay.south) {relays without\\executing};
 
 % ================= infrastructural device / surrogate (right) =================
 % Mirrored left-right relative to the application device, so the forwarded

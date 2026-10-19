@@ -336,7 +336,7 @@ The gap between the two measures separates compilation success from success on t
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\textwidth]{llm-knowledge-improvement.pdf}
+    \includegraphics[width=0.85\textwidth]{llm-knowledge-improvement.pdf}
     \caption[Pass rate against knowledge level]{Pass rate at $k=10$ against knowledge level. The effect of supplying core operators and building blocks varies across models. Data from~\cite{DBLP:journals/tiot/AguzziFV25}.}
     \label{fig:llm-knowledge-improvement}
 \end{figure}
@@ -411,6 +411,9 @@ rep[Option[Double]](
 \end{lstlisting}
 \end{minipage}
 
+% Keep the explanation from starting with a single line at the foot of a page.
+\begingroup
+\clubpenalty=10000
 The \code{map} on \cref{line:nbr-map} operates on the local \code{Option} value.
 %
 \code{nbr(distance)} does not return the neighbours' distances as a collection to be traversed;
@@ -418,6 +421,8 @@ it causes the surrounding expression to be evaluated once per aligned neighbour,
 and \code{minHood} folds those evaluations.
 %
 Treating this value as a collection of neighbours confuses Scala's local operations with ScaFi's neighbourhood evaluation.
+\par
+\endgroup
 
 The other is using \code{branch} where \code{mux} is meant,
 as in \cref{lst:branch-misuse}.
@@ -457,6 +462,9 @@ The third question was whether a model given the vocabulary composes it into som
 %
 Two results from Gemini 2.5 Pro show that it does.
 
+% Keep the final lines of this example together across a page break.
+\begingroup
+\widowpenalty=10000
 The first is the channel with obstacles.
 %
 The body of knowledge builds channels the standard way,
@@ -472,6 +480,8 @@ It avoids obstacles by returning an infinite value from the metric at obstacle d
 so the potential routes around them by construction.
 %
 Neither move appears in the manual.
+\par
+\endgroup
 
 The second result reconstructs a pattern that has a name in the literature.
 %
@@ -520,6 +530,9 @@ The crowding-monitor task tests the generated program on a mobile network.
 \begin{lstlisting}[
   style=scala3,
   escapeinside={(*@}{@*)},
+  aboveskip=4pt,
+  belowskip=4pt,
+  lineskip=-1pt,
   caption={The generated crowding monitor: local density, then distance to the nearest crowded area.},
   label={lst:crowding-monitor},
 ]
@@ -536,6 +549,8 @@ G[Double](
 \end{lstlisting}
 \end{minipage}
 
+\begingroup
+\clubpenalty=10000
 The program is the two-part decomposition the task calls for.
 %
 \Cref{line:crowd-count} estimates local density by folding a constant over the neighbourhood,
@@ -543,6 +558,8 @@ using the \code{foldhoodPlus} variant so a device does not count itself.
 %
 The estimate rests on proximity and needs no positions,
 so the privacy constraint of \cref{sec:multiparty-motivation} is met by the choice of operator rather than by a separate mechanism.
+\par
+\endgroup
 %
 The gradient cast from \cref{line:crowd-source} then turns the boolean field of overcrowded devices into a distance field,
 so every device knows how far the nearest crowded area is

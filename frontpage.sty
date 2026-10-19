@@ -9,9 +9,14 @@
 \usepackage{setspace}
 \usepackage{fancyhdr}
 
+% Keep footnotes together so URL links cannot continue through another page.
+\interfootnotelinepenalty=10000
+
+% Reserve space for the page number when a chapter title wraps in the footer.
 \fancypagestyle{plain}{
 	\fancyhf{}
-	\fancyfoot[RE,LO]{\leftmark}
+	\fancyfoot[RE]{\parbox[t]{\dimexpr\headwidth-3em\relax}{\raggedleft\leftmark}}
+	\fancyfoot[LO]{\parbox[t]{\dimexpr\headwidth-3em\relax}{\raggedright\leftmark}}
 	\fancyfoot[LE,RO]{\thepage}
 	\renewcommand{\footrulewidth}{1pt}
 }
@@ -19,7 +24,8 @@
 \fancypagestyle{fancy}{
 	\fancyhf{}
 	\fancyhead[CE,CO]{\rightmark}
-	\fancyfoot[RE,LO]{\leftmark}
+	\fancyfoot[RE]{\parbox[t]{\dimexpr\headwidth-3em\relax}{\raggedleft\leftmark}}
+	\fancyfoot[LO]{\parbox[t]{\dimexpr\headwidth-3em\relax}{\raggedright\leftmark}}
 	\fancyfoot[LE,RO]{\thepage}
 	\renewcommand{\headrulewidth}{1pt}
 	\renewcommand{\footrulewidth}{1pt}

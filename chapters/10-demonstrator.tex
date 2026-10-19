@@ -1,4 +1,4 @@
-\chapter{A Demonstrator for Self-organizing Robot Teams}
+\chapter{Project Emerge: Aggregate Programming for Robot Teams}
 \label{chap:demonstrator}
 
 % NOTE: this chapter reports Project Emerge as the physical realisation of one
@@ -52,7 +52,7 @@ and what the demonstrator establishes and leaves untouched (\cref{sec:emerge-dis
 %
 The contribution is published as~\cite{Farabegoli:2027:ProjectEmerge}, extending~\cite{DBLP:conf/coordination/AguzziBBCCDFPV25}.
 
-\section{What a Physical Deployment Requires}
+\section{Physical Deployment Requirements}
 \label{sec:emerge-requirements}
 
 Aggregate computing assumes a device that senses, computes, and actuates in rounds (\cref{subsubsec:ac-execution-model}).
@@ -63,7 +63,7 @@ A demonstrator's engineering effort goes into closing that gap.
 %
 Six requirements describe the gap.
 
-\paragraph{Positioning.}
+\paragraph{Position and orientation tracking.}
 A macro-program that computes movement needs to know where its devices are.
 %
 Position alone is not enough:
@@ -72,7 +72,7 @@ so the positioning system must report \emph{orientation} as well.
 %
 Satellite positioning answers this outdoors, but not indoors, where the demonstrator runs.
 
-\paragraph{Homogeneous program loading.}
+\paragraph{Consistent program updates.}
 One program specifies the behaviour of the whole team (\cref{sec:macro-programming}),
 and every robot must be running it for the collective behaviour to be the one specified.
 %
@@ -81,13 +81,13 @@ Loading it must not require shutting the team down.
 During a switch the two versions coexist until every robot has moved across,
 and they must not interfere while they do.
 
-\paragraph{Neighbourhood policy.}
+\paragraph{Configurable neighbourhoods.}
 A device's neighbours are a dynamic set, and in a physical deployment membership is decided by physical facts:
 proximity, line of sight, achievable data rate.
 %
 The substrate has to make that policy explicit and replaceable, rather than fixing one notion of adjacency.
 
-\paragraph{Actuation agnosticism.}
+\paragraph{Platform-independent actuation.}
 The output of a round must not presuppose a chassis.
 %
 The program's output is an intention -- move this way, turn that way --
@@ -95,7 +95,7 @@ and translating an intention into wheel or rotor commands belongs to the platfor
 %
 Without that separation the same program cannot run on two different robots.
 
-\paragraph{Openness to platforms, and to where the program runs.}
+\paragraph{Local and remote program execution.}
 The previous requirement concerns which robots a program can drive;
 this one concerns which robots can drive themselves.
 %
@@ -105,13 +105,13 @@ so the substrate must be able to evaluate the program on the robot, or remotely 
 This requirement matters most for this thesis.
 The demonstrator states it but satisfies only its remote half (\cref{sec:emerge-as-pulverisation}).
 
-\paragraph{Interaction.}
+\paragraph{Monitoring and operator interaction.}
 Emergent behaviour is hard to trust when there is nothing to look at.
 %
 An operator needs to observe device states and the fields the program computes,
 and to perturb the system while it runs -- displace a device, change a parameter, swap the program.
 
-\section{Architecture of the Demonstrator}
+\section{Project Emerge Architecture}
 \label{sec:emerge-architecture}
 
 Project Emerge meets those six requirements with five subsystems communicating over a single MQTT broker:
@@ -214,7 +214,7 @@ so each robot turns to face the leader.
 
 The runtime loads one program for the whole team, and a message on the broker switches it to another while the team is running.
 
-\section{The Deployment as a Pulverised One}
+\section{Interpretation as a Pulverised Deployment}
 \label{sec:emerge-as-pulverisation}
 
 The description just given is the demonstrator's own.

@@ -235,7 +235,7 @@ Its specialised operators may be sparsely represented in an \ac{LLM}'s training 
 %
 \emph{Can an \ac{LLM} generate an aggregate macro-program in ScaFi from a natural-language specification, and what does it need to be told about the language for this to work?}
 
-\rqhead{rq:deployment}{Runtime deployment decision}
+\rqhead{rq:deployment}{Runtime deployment decisions}
 Under the model's conditions, deployment independence gives every correct deployment the same stabilised outputs,
 but it does not say which one to choose.
 %
@@ -250,7 +250,7 @@ so the system must be able to revise it at runtime.
 Each contribution below identifies the chapter that develops it, its associated publication, and the research question it addresses or supports.
 \Cref{tab:contributions} summarises this information.
 
-\paragraph{A deployment model for macro-programs.}
+\paragraph{Deployment model for macro-programs.}
 A macro-program is partitioned along its own data flow into a \ac{DAG} of independently deployable components.
 %
 A component is local if its computation involves one device and collective if it involves neighbouring devices.
@@ -279,7 +279,7 @@ and makes the component-to-host assignment revisable at runtime through a declar
 %
 The five-role partitioning and the data-flow partitioning cut along different axes and can be combined (\cref{sec:pulverization-discussion}).
 
-\paragraph{One type discipline for three coordination paradigms.}
+\paragraph{Capability-based composition of coordination paradigms.}
 \camil combines the three paradigms through \emph{capabilities},
 values that code must hold to use a paradigm's operations.
 %
@@ -297,7 +297,7 @@ Three further applications combine paradigms in a single program (\cref{sec:cami
 The design is under review~\cite{Farabegoli:2026:CaMiL}
 and addresses the composition and static guarantees required by \cref{rq:languages}.
 
-\paragraph{Differentiated communication primitives for multiparty coordination.}
+\paragraph{Typed communication primitives for multiparty coordination.}
 Choreographic and multitier languages support several communication patterns besides point-to-point exchange.
 %
 Each language exposes different constructs,
@@ -316,7 +316,7 @@ With broadcast-and-filter, the same scatter sends a number of bytes that grows l
 The design is published in~\cite{Farabegoli:2026:ScalaTropy}
 and addresses the multiparty communication aspect of \cref{rq:languages}.
 
-\paragraph{A body of knowledge for generating aggregate programs.}
+\paragraph{Operational knowledge for aggregate program generation.}
 ScaFi is an aggregate \ac{DSL} embedded in Scala,
 and the contribution examines how an \ac{LLM} can generate its programs from natural-language specifications.
 %
@@ -355,7 +355,7 @@ Each policy requires a developer to specify its deployment criterion in advance.
 %
 These strategies address the policy design and non-functional trade-offs asked about in \cref{rq:deployment}.
 
-\paragraph{A learned policy for collective offloading.}
+\paragraph{Learning-based collective offloading.}
 The continuum is represented as a heterogeneous graph that distinguishes application devices from infrastructural devices,
 including edge and cloud servers.
 %
@@ -376,7 +376,7 @@ Learning derives the decision rules from experience rather than requiring the op
 The contribution is published in~\cite{Farabegoli:2026:HeteroGNN}
 and addresses \cref{rq:deployment} through learned policies and their non-functional trade-offs.
 
-\paragraph{A physical demonstrator.}
+\paragraph{Robot-team demonstrator.}
 Project Emerge runs one aggregate program on nine mobile robots (\cref{chap:demonstrator}).
 %
 The robots form spatial patterns and restore them after one robot is moved by hand.

@@ -1,22 +1,27 @@
 % Taxonomy of edge-orchestration and placement methods (after Taleb et al.).
 % Requires: \usepackage[edges]{forest}
-% Wrap in \resizebox{\textwidth}{!}{...} in the figure environment: this tree is
-% naturally wider than \textwidth.
+% Three aligned columns: scope, method families, and representative works.
+% All boxes share the same dimensions. The enclosing figure scales the tree
+% to \textwidth.
 \begin{forest}
+  forked edges,
   for tree={
-    draw, rounded corners, align=center, font=\small,
-    parent anchor=south, child anchor=north,
-    edge={-,gray}, l sep=8mm, s sep=6mm, inner sep=3pt,
+    draw, rounded corners, plain content, font=\small,
+    node options={align=center},
+    grow'=east, anchor=west, parent anchor=east, child anchor=west,
+    text width=39mm, minimum height=18mm,
+    edge={-,gray}, fork sep=4mm,
+    l sep=8mm, s sep=6mm, inner sep=3pt,
   }
-  [Edge orchestration \& placement, fill=gray!8
-    [Graph-based\\(exact), fill=gray!16
-      [{ILP / CP over two graphs\\\scriptsize Skarlat et al.; Brogi \& Forti;\\\scriptsize Miloradovi\'{c} \& Papadopoulos}, fill=white]
+  [Edge orchestration\\\& placement, fill=gray!8
+    [Graph-based\\(exact), fill=gray!16, tier=categories
+      [{ILP / CP over two graphs\\{\scriptsize Skarlat et al.; Brogi \& Forti;}\\{\scriptsize Miloradovi\'{c} \& Papadopoulos}}, fill=white, tier=references, font=\footnotesize]
     ]
-    [Heuristic /\\metaheuristic, fill=gray!16
-      [{consolidation, semi-greedy, GA\\\scriptsize Beloglazov et al.; Azizi et al.}, fill=white]
+    [Heuristic /\\metaheuristic, fill=gray!16, tier=categories
+      [{consolidation, semi-greedy, GA\\{\scriptsize Beloglazov et al.; Azizi et al.}}, fill=white, tier=references, font=\footnotesize]
     ]
-    [Machine\\learning, fill=gray!16
-      [{online bandit; deep RL + GNN\\\scriptsize Struh\'{a}r et al.; Huang et al.}, fill=white]
+    [Machine\\learning, fill=gray!16, tier=categories
+      [{online bandit; deep RL + GNN\\{\scriptsize Struh\'{a}r et al.; Huang et al.}}, fill=white, tier=references, font=\footnotesize]
     ]
   ]
 \end{forest}

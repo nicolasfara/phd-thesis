@@ -140,7 +140,7 @@ The result covers aggregate programs in one \ac{DSL}, not the capability-annotat
 The failures that remain after supplying the manual are semantic rather than syntactic (\cref{subsec:llm-failure-modes}).
 The pipeline therefore validates generated programs by simulation rather than relying on compilation alone.
 
-\subsection{Runtime Deployment Decision}
+\subsection{Runtime Deployment Decisions}
 \label{subsec:answer-deployment}
 
 The third question asks how a policy, written in advance or learned from experience,
@@ -198,7 +198,7 @@ so no choice of weights can produce a deployment in a concave region of the Pare
 
 The limitations below are grouped by research question rather than by contribution chapter.
 
-\paragraph{The deployment model (\cref{rq:model}).}
+\paragraph{Deployment model (\cref{rq:model}).}
 Component instances are assumed to hold no state across rounds beyond what their inputs supply.
 %
 This assumption allows one surrogate instance to serve multiple owners.
@@ -234,7 +234,7 @@ and this success criterion does not account for evaluation cost.
 %
 Because providers revise hosted models without notice, the reported ranking may change over time even when the evaluation method remains fixed.
 
-\paragraph{Runtime deployment decision (\cref{rq:deployment}).}
+\paragraph{Runtime deployment decisions (\cref{rq:deployment}).}
 The evidence for this answer is simulated throughout.
 %
 The energy models and the price points come from published measurements,
@@ -275,7 +275,7 @@ Repeating the perturbation experiments under controlled conditions would provide
 Generating the collective behaviours from a natural-language specification, as done for ScaFi in \cref{chap:language-based-macroprogramming},
 would test the complete path from specification to physical actuation.
 
-\paragraph{Extending learned deployment policies.}
+\paragraph{Multi-objective learning and joint component placement.}
 Three extensions address the limitations of the learned policy (\cref{sec:idhgql-discussion}).
 %
 Multi-objective methods that learn a set of policies covering the Pareto front, instead of one policy per weight vector,
@@ -288,7 +288,7 @@ Encoding application-device profiles would also allow the representation to dist
 Placing bound components jointly, by reasoning over the \ac{DAG} as well as over the topology,
 would incorporate information expressed by the model of \cref{chap:pulverization} but not used by the current policy.
 
-\paragraph{Relaxing the model's assumptions.}
+\paragraph{Stateful components and convergence bounds.}
 One extension to \cref{chap:pulverization} would allow a component to retain state across rounds.
 This would require a migration protocol and a definition of which state persists across a move.
 This extension would prevent multiple owners from sharing one surrogate instance but would not invalidate the theorem.
@@ -298,7 +298,7 @@ which establishes functional equivalence between deployments but provides no tim
 %
 Such an account would allow a policy to choose a deployment on timing grounds rather than on energy or cost alone.
 
-\paragraph{Extending language support.}
+\paragraph{Language guarantees and generation support.}
 \camil could support the four communication patterns in \cref{subsec:communication-patterns} through its choreography capability.
 The capability design does not require point-to-point exchange to be the only choreographic primitive (\cref{sec:language-coordination-discussion}).
 %

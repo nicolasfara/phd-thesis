@@ -41,8 +41,14 @@
 \frontmatter
 \input{front}
 
-\begin{abstract}	
-Max 2000 characters, strict.
+\begin{abstract}
+Collective adaptive systems, including Internet of Things applications and robot swarms, must coordinate heterogeneous devices while resources and connectivity change. Engineering them requires expressing collective behaviour and adapting its deployment across the edge-cloud continuum without changing the intended result.
+
+This thesis develops models, languages, and runtime support that separate collective computation from physical deployment. Its central contribution extends pulverisation by decomposing a macro-program along its data flow into independently deployable local and collective components. A deployment-independence theorem establishes conditions under which different component placements yield the same stabilised collective outputs. This permits placement decisions to follow non-functional objectives.
+
+Language support combines aggregate, choreographic, and multitier programming through capabilities and shared placement types, with a soundness proof, and provides typed primitives for multiparty communication. A complementary pipeline generates aggregate programs from natural-language specifications: evaluation across sixteen language models shows that operational knowledge of the specialised language improves generation, while simulation remains necessary to check behaviour.
+
+Runtime policies support declarative reconfiguration, self-organisation, planning for energy and carbon, and offloading learned through heterogeneous graph neural networks and deep Q-learning. Simulations characterise trade-offs among battery preservation, infrastructure cost, server load, and latency, and show how collective context enables adaptation to changing device distributions. A demonstrator with a team of robots realises one admissible deployment on physical hardware. Together, these contributions provide a basis for specifying collective behaviour and revising its deployment according to available resources.
 \end{abstract}
 
 \begin{dedication} % this is optional
@@ -80,7 +86,7 @@ Optional. Max 1 page.
 
 \include{chapters/07-language-based-macroprogramming}
 
-\part{Deployments and Reconfiguration}
+\part{Deployment and Reconfiguration}
 
 \include{chapters/08-deployment-and-reconfiguration}
 

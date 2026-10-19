@@ -1,4 +1,4 @@
-\chapter{Learning-based Collective Task Offloading with Heterogeneous Graph Neural Networks}
+\chapter{Collective Offloading with Heterogeneous GNNs}
 \label{chap:heterogeneous-gnn}
 
 % NOTE: background on RL, deep Q-learning, and GNNs lives in
@@ -43,7 +43,7 @@ Simulations then test the result (\cref{sec:idhgql-evaluation}), and a closing d
 %
 The contribution is published as~\cite{Farabegoli:2026:HeteroGNN}.
 
-\section{Collective Offloading as a Learning Problem}
+\section{Collective Offloading Formulation}
 \label{sec:collective-offloading-learning}
 
 Offloading as posed in \cref{subsec:learning-based-offloading} concerns one computation and two possible hosts:
@@ -95,7 +95,7 @@ A device can measure its own link quality, but cannot tell whether a degraded li
 %
 A policy that ignores congestion will offload precisely where offloading is most expensive.
 
-\paragraph{A running example.}
+\paragraph{Crowd-steering application.}
 The crowd-steering application makes the three properties concrete,
 and is used throughout the chapter.
 %
@@ -123,7 +123,7 @@ and running the same two components locally becomes the better choice, paid for 
 %
 The decision reverses on a property of the crowd, not of the device.
 
-\paragraph{What makes the problem well posed.}
+\paragraph{Conditions for deployment independence.}
 Nothing above says that any assignment of component instances to hosts is admissible.
 %
 That comes from \cref{chap:pulverization}.
@@ -141,7 +141,7 @@ and the reward can be written in terms of battery, money, and latency alone, wit
 Without the theorem, the same formulation would need constraints ruling out placements that break the computation,
 and a reward able to tell a cheap deployment from a wrong one.
 
-\section{Representing the Continuum as a Heterogeneous Graph}
+\section{Heterogeneous Graph Representation of the Continuum}
 \label{sec:hetero-graph-state}
 
 The state a learned policy sees has to expose the structure the decision depends on.
@@ -214,7 +214,7 @@ and varying them tests whether the learner honours it (\cref{subsec:idhgql-multi
 %
 What a linear combination cannot express is taken up in the discussion (\cref{sec:idhgql-discussion}).
 
-\subsection{A Heterogeneous GNN as the Q-function}
+\subsection{Heterogeneous GNN Architecture for Q-value Estimation}
 \label{subsec:heterognn-q-function}
 
 The Q-function of \cref{subsec:reinforcement-learning} maps a state to a value per action.
@@ -314,7 +314,7 @@ and a deep Q-learning procedure over graph-valued transitions.
     \label{fig:idhgql-overview}
 \end{figure}
 
-\subsection{Informing the Policy with Collective State}
+\subsection{Aggregate Computation of Collective State}
 \label{subsec:collective-information}
 
 A \ac{GNN} can, in principle, recover a collective property from the graph alone.
@@ -415,7 +415,7 @@ each device exchanges embeddings with its neighbours, reads its own Q-values, an
 %
 No component of the deployed system needs a view of the network it could not obtain locally.
 
-\section{Experimental Validation}
+\section{Experimental Evaluation}
 \label{sec:idhgql-evaluation}
 
 The evaluation asks two questions.
@@ -428,7 +428,7 @@ or is the graph structure sufficient on its own?
 The second question is the one the design turns on,
 and it is answered with an ablation rather than with a comparison against an external baseline.
 
-\subsection{Setup}
+\subsection{Simulation Setup}
 \label{subsec:idhgql-setup}
 
 The scenario instantiates the crowd-steering application of \cref{sec:collective-offloading-learning}.
@@ -464,7 +464,7 @@ The second is the fraction of component instances running locally.
 %
 The third is the accumulated monetary cost, at \$1.00 per hour per instance hosted on an edge server and \$10.00 per hour on a cloud server.
 
-\subsection{Honouring a Stated Trade-off}
+\subsection{Effect of Reward Weights on Offloading Decisions}
 \label{subsec:idhgql-multiobjective}
 
 The first scenario fixes the reward at
@@ -536,7 +536,7 @@ which is what the three weights together ask for.
     \label{fig:idhgql-mixed-weights}
 \end{figure}
 
-\subsection{The Role of Collective State}
+\subsection{Collective State and Adaptation to Crowding}
 \label{subsec:idhgql-density}
 
 The second scenario is the one the framework was built for.

@@ -1,4 +1,4 @@
-\chapter{Deployment and Reconfiguration Strategies on the Edge-Cloud Continuum}
+\chapter{Deployment and Reconfiguration Policies}
 \label{chap:deployment-and-reconfiguration}
 
 Every correct deployment of a well-formed macro-program yields the same observable behaviour (\cref{thm:deployment-independence}).
@@ -36,7 +36,7 @@ The three are compared on the same terms at the end of the chapter (\cref{sec:de
 how much they improve the quantity they target -- energy, battery life, carbon, or the share of devices able to offload at all --
 and what that improvement costs in extra hops, extra latency, or a transient before it appears.
 
-\section{A Self-organising Offloading Rule Triggered by Battery Level}
+\section{Battery-triggered Component Offloading}
 \label{sec:battery-triggered-offloading}
 
 The evaluation uses the rescue scenario of \cref{fig:rescue-case-study}, reduced to the two components the offloading decision affects:
@@ -100,7 +100,7 @@ It does not generalise beyond the signal and the component it was written for.
 %
 A second bottleneck, or a second component worth offloading under different conditions, would need a second threshold chosen by hand.
 
-\section{A Field-based Reconfiguration Policy over Self-organising Coordination Regions}
+\section{Load-aware Reconfiguration with Coordination Regions}
 \label{sec:global-self-organising-reconfiguration}
 
 The question is the same as in \cref{sec:battery-triggered-offloading}:
@@ -148,7 +148,7 @@ Both advantages are larger in the scale-free topology than in the lobster one:
 removing a node from a lobster network is far more likely to segment it,
 cutting off the alternative routes the field-based policy needs to redirect load elsewhere~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 
-\section{A Declarative Planner for Green Deployments}
+\section{Declarative Planning for Energy and Carbon}
 \label{sec:declarative-green-planning}
 
 Forti and Brogi's continuous reasoning repairs a deployment incrementally against a stated goal (\cref{subsec:declarative-deployment})~\cite{DBLP:journals/logcom/FortiBB22}.

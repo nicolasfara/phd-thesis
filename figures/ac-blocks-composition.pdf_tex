@@ -64,7 +64,7 @@
     \put(0,0){\includegraphics[width=\unitlength,page=5]{ac-blocks-composition.pdf}}%
     \put(0.2839933,0.78651378){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\footnotesize{\texttt{distanceTo}}\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{ac-blocks-composition.pdf}}%
-    \put(0.548469,0.78651381){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\footnotesize{\texttt{distanceBeetwen}}\end{tabular}}}}%
+    \put(0.548469,0.78651381){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\footnotesize{\texttt{distanceBetween}}\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{ac-blocks-composition.pdf}}%
     \put(0.11870268,1.082211){\color[rgb]{0,0,0}\makebox(0,0)[t]{\smash{\begin{tabular}[t]{c}\small{Source}\end{tabular}}}}%
     \put(0.38298124,1.08069928){\color[rgb]{0,0,0}\makebox(0,0)[t]{\smash{\begin{tabular}[t]{c}\small{Destination}\end{tabular}}}}%

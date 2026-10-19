@@ -10,7 +10,7 @@
 % paper for the rules, following the precedent of \cref{chap:pulverization}.
 
 The pulverisation model of \cref{chap:pulverization} defines deployable components.
-It also establishes that moving a component from one device to another leaves the program's behaviour unchanged.
+The model states conditions under which different placements converge to the same observable behaviour.
 It takes the components as given.
 The three paradigms of \cref{chap:programming-models} produce these components in different ways.
 Aggregate computing derives them from a field computation over an ensemble.
@@ -19,7 +19,7 @@ Multitier programming derives them from placement annotations on the lexical sco
 %
 The literature developed each paradigm separately, with its own guarantees~\cite{DBLP:journals/csur/WeisenburgerWS20,DBLP:journals/csur/Casadei23}.
 
-Few systems can be expressed within a single paradigm.
+An application may require several paradigms.
 %
 One application may need a structured protocol between fixed roles,
 control over where each computation runs,
@@ -47,7 +47,7 @@ The second design, ScalaTropy, joins choreographic and multitier programming thr
 Choreographic and multitier languages generally provide point-to-point exchange and little else;
 ScalaTropy gives each communication pattern its own operation.
 
-\section{One System, Three Paradigms}
+\section{Coordination in the CityEvt Application}
 \label{sec:multiparty-motivation}
 
 \cityevt~\cite{Farabegoli:2026:CaMiL}, the running example of this chapter, supports a public city event.
@@ -105,7 +105,7 @@ the cloud is tied to many phones and to one edge server (\cref{line:cloud-peer})
 The compiler rejects any access the architecture does not allow.
 
 \paragraph{Crowding monitoring.}
-Crowding is a property of the whole ensemble of phones, not of any two of them.
+Crowding depends on the spatial distribution of the ensemble of phones.
 %
 The ensemble's membership changes as participants arrive and leave,
 and no device holds enough information to compute the estimate on its own.
@@ -127,7 +127,7 @@ These exchanges must occur in this order.
 Choreographic programming (\cref{subsec:choreographic-programming}) specifies that order once as a global description and projects it onto each participant,
 so the endpoint code cannot deviate from it.
 
-\subsection{The Cost of Combining Paradigms}
+\subsection{Safety Risks of Combining Frameworks}
 \label{subsec:multiparty-challenge}
 
 Each paradigm fits its own part of \cityevt, but the three parts are not independent.
@@ -153,7 +153,7 @@ the send may never execute, and the receiver waits for a message no one will pro
 
 Two notions are therefore missing: where a value lives, and which operations a given piece of code may perform.
 
-\section{Capabilities as a Unifying Abstraction}
+\section{Capability-based Coordination}
 \label{sec:capabilities-unification}
 
 \camil models each paradigm as a capability~\cite{Farabegoli:2026:CaMiL}.
@@ -274,7 +274,7 @@ The program contains no explicit send operation.
 All communication uses these two operations,
 which are checked against the ties of \cref{lst:scalaloci-architecture}.
 
-\subsection{The Aggregate Capability}
+\subsection{The Collective Capability}
 \label{subsec:aggregate-capability}
 
 The \code{Collective} capability provides \code{rep}, \code{nbr}, and \code{branch},
@@ -362,7 +362,7 @@ Multitier code reads a remote placed value with \code{asLocal}.
 Choreographic code moves one between peers with \code{comm}.
 A collective computation produces one placed value per round, which the other two paradigms can read.
 %
-The architecture, not the capability that produced the value, decides who may read it.
+The architecture determines which peers may read a placed value, regardless of which capability produced it.
 
 \Cref{lst:composition-recommendation} combines choreographic and multitier code in \cityevt's recommendation workflow.
 
@@ -431,7 +431,7 @@ the collective side decides when a new value appears, and the multitier side dec
 
 The capability discipline rules out three errors that appear when the paradigms are combined by hand.
 
-\paragraph{Safe boundaries.}
+\paragraph{Checked interfaces between paradigms.}
 In \cref{lst:composition-recommendation,lst:composition-crowding} the paradigms meet only at placed values.
 %
 Inside a scope, the type system enforces the rules of that paradigm;
@@ -439,7 +439,7 @@ between scopes, the only channel is a placed value, whose type says where it liv
 %
 The paradigms cannot interact directly outside these checked boundaries.
 
-\paragraph{Leak prevention.}
+\paragraph{Prevention of placed-value leakage.}
 A closure can capture a placed value.
 If the closure is sent to another peer and invoked there,
 it tries to read a value that does not exist on that peer.
@@ -499,10 +499,10 @@ The phone then waits on \cref{line:dl-comm} for a value that is never produced.
 %
 \camil also rejects this program at compile time through the mechanism described in \cref{subsec:scala3-machinery}.
 
-\section{Realisation}
+\section{Implementation and Formal Semantics}
 \label{sec:camil-realisation}
 
-\subsection{Type-level Machinery in Scala 3}
+\subsection{Scala 3 Type System Features}
 \label{subsec:scala3-machinery}
 
 \camil needs three features from its host language, and Scala~3 provides them.
@@ -597,14 +597,14 @@ A nested \code{on} would need a second reference to \code{Placement} while the e
 %
 Nesting therefore does not compile.
 %
-The deadlock of \cref{lst:deadlock-avoidance} is ruled out by that general rule, and not by a check written for it.
+This general rule rejects the nested scopes in \cref{lst:deadlock-avoidance}.
 
-\subsection{Formal Account}
+\subsection{Core Calculus and Type Soundness}
 \label{subsec:camil-formalization}
 
 A core calculus gives the four capabilities a single semantics and defines the meaning of programs that mix paradigms~\cite{Farabegoli:2026:CaMiL}.
 %
-As in \cref{subsec:pulverization-execution-model}, the full rules are given in the paper rather than repeated here.
+The paper gives the full typing and reduction rules.
 
 The expression language extends the simply-typed lambda calculus with the placement expressions \code{on} and \code{take}.
 It also provides a \code{handle} construct that supplies a capability and starts execution.
@@ -848,7 +848,7 @@ In \camil, it becomes a single aggregate program that leaves neighbour discovery
 The networking layer defines 60 message and action types for moving data between hosts.
 The reimplementation uses seven communication terms.
 %
-These numbers count code, not run time.
+These measurements describe code structure; execution time was not measured.
 
 \section{Monadic Communication Primitives}
 \label{sec:scalatropy}
@@ -1106,7 +1106,7 @@ The receiving operation of \cref{line:st-iso-recv} is written once for all clien
 Nothing in the program names a participant instance:
 the placement types name peer \emph{types}, and the instances are supplied at run time.
 
-\subsection{Monadic Realisation}
+\subsection{Monadic Encoding and Interpreters}
 \label{subsec:scalatropy-monad}
 
 \Cref{lst:scalatropy-multiparty} leaves the monad \code{F} abstract.
@@ -1243,8 +1243,8 @@ because it is the only one of the three paradigms of \cref{sec:foundational-para
 
 \camil covers all three paradigms and proves the combination sound.
 %
-ScalaTropy covers two paradigms and leaves the metatheory for future work.
-However, it provides differentiated communication primitives that neither \camil nor the paradigms it unifies offer.
+ScalaTropy combines choreographic and multitier programming and provides differentiated communication primitives.
+Formalising its semantics and proving properties such as type safety and deadlock freedom remain future work~\cite{Farabegoli:2026:ScalaTropy}.
 %
 The designs are also complementary.
 Nothing in \camil's capability design requires point-to-point communication to be the only choreographic primitive.
@@ -1259,24 +1259,8 @@ This rule prevents deadlocks caused by nested scopes but also rejects safe nesti
 ScalaTropy's strong architecture imposes a related restriction.
 A choreography that assumes full connectivity requires the developer to define an architecture first.
 
-The pulverisation model of \cref{chap:pulverization} requires a macro-program represented as a graph of independently deployable components.
-Each component has declared inputs and outputs.
-%
-The three paradigms produce such components, but in incompatible terms,
-which is why a system built from more than one of them cannot be pulverised as a whole.
-%
-One notion of placement for all three removes that obstacle.
-%
-A placement type says where a component's value resides, and the architecture fixes which placements may exchange values.
-%
-The deployment model uses this information to determine where a component may run (\cref{sec:pulverization-abstractions}).
-%
-Neither design chooses a deployment.
-The architecture only constrains the set of admissible deployments.
-Runtime policies must choose among them and revise that choice as the infrastructure changes (\cref{chap:deployment-and-reconfiguration}).
-
-Both designs still require the developer to write a program:
-a capability-annotated Scala program, a monadic pipeline, a field program, or a choreography.
-%
-The generation subcase of \cref{rq:languages} asks whether a macro-program can be obtained from a natural-language specification.
-It is examined for aggregate programs in \cref{chap:language-based-macroprogramming}.
+The pulverisation model represents a macro-program as independently deployable components with declared inputs and outputs (\cref{sec:pulverization-abstractions}).
+A common placement type lets components from different paradigms share this representation.
+It records where each value resides, while the architecture constrains which placements may exchange values.
+These constraints restrict the admissible deployments.
+A runtime policy must select a deployment and revise it as resources and connectivity change.

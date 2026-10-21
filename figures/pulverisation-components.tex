@@ -1,18 +1,24 @@
 % Original five-role decomposition, following Casadei et al. (2020).
 % Lines denote dependencies, not an execution order or physical placement.
+% Colours and link styles match pulverisation-deployments.tex: dotted boxes are
+% logical elements, one colour per logical device.
+\colorlet{pdA}{blue!18}
+\colorlet{pdB}{red!18}
+\colorlet{pdC}{green!25}
 \begin{tikzpicture}[
   font=\small,
-  role/.style={draw,rounded corners,fill=gray!8,
-    minimum width=27mm,minimum height=9mm,align=center},
+  role/.style={draw,densely dotted,fill=pdA,
+    minimum width=30mm,minimum height=9mm,align=center},
   dependency/.style={thick,gray!75},
-  neighbour/.style={draw,rounded corners,dashed,fill=gray!4,
+  neighbourlink/.style={red!75!black,densely dotted,line width=1pt},
+  neighbour/.style={draw,densely dotted,fill=#1,
     text width=23mm,minimum height=13mm,align=center,font=\scriptsize},
 ]
-  \node[role] (behaviour) at (0,0) {Behaviour};
-  \node[role] (state) at (-1.9,1.4) {State};
-  \node[role] (communication) at (1.9,1.4) {Communication};
-  \node[role] (sensing) at (-1.9,-1.4) {Sensing};
-  \node[role] (actuation) at (1.9,-1.4) {Actuation};
+  \node[role] (behaviour) at (0,0) {Behaviour ($\beta$)};
+  \node[role] (state) at (-2.0,1.4) {State ($\kappa$)};
+  \node[role] (communication) at (2.0,1.4) {Communication ($\chi$)};
+  \node[role] (sensing) at (-2.0,-1.4) {Sensing ($\sigma$)};
+  \node[role] (actuation) at (2.0,-1.4) {Actuation ($\alpha$)};
 
   \draw[dependency] (behaviour) -- (state);
   \draw[dependency] (behaviour) -- (communication);
@@ -20,13 +26,13 @@
   \draw[dependency] (behaviour) -- (actuation);
 
   \begin{scope}[on background layer]
-    \node[draw,rounded corners,fill=gray!3,
+    \node[draw,densely dotted,rounded corners,fill=pdA!25,
       fit=(state)(communication)(sensing)(actuation),inner sep=5mm] (logical) {};
   \end{scope}
   \node[anchor=south] at ([yshift=1mm]logical.north) {Logical device};
 
-  \node[neighbour] (n1) at (6.1,1.4) {Neighbouring\\logical device};
-  \node[neighbour] (n2) at (6.1,-1.1) {Neighbouring\\logical device};
-  \draw[dependency] (communication.east) -- (n1.west);
-  \draw[dependency] (communication.east) -- ++(0.8,0) |- (n2.west);
+  \node[neighbour=pdB] (n1) at (6.3,1.4) {Neighbouring\\logical device};
+  \node[neighbour=pdC] (n2) at (6.3,-1.1) {Neighbouring\\logical device};
+  \draw[neighbourlink] (communication.east) -- (n1.west);
+  \draw[neighbourlink] (communication.east) -- ++(0.8,0) |- (n2.west);
 \end{tikzpicture}

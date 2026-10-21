@@ -109,9 +109,6 @@ Both designs impose restrictions to obtain their guarantees.
 %
 \camil rejects every nested placed scope, not only the ones that deadlock,
 and ScalaTropy requires an architecture to be declared before a choreography can be written.
-%
-Neither design selects a deployment:
-the architecture defines the admissible deployments, and \cref{rq:deployment} concerns the choice among them.
 
 \subsubsection{Generation from Natural-Language Specifications}
 \label{subsec:answer-generation}
@@ -193,13 +190,15 @@ These experiments demonstrate control over the trade-off, not global optimality.
 A weighted sum reaches the convex portion of the trade-off,
 so no choice of weights can produce a deployment in a concave region of the Pareto front.
 
-\section{Limitations}
+\section{Limitations and Future Work}
 \label{sec:limitations}
+\label{sec:future-work}
 
-The limitations below are grouped by research question rather than by contribution chapter.
+\subsection{Deployment Model}
+\label{subsec:limits-model}
 
-\paragraph{Deployment model (\cref{rq:model}).}
-Component instances are assumed to hold no state across rounds beyond what their inputs supply.
+\paragraph{Limitations.}
+Component instances are assumed to hold no state across rounds beyond what their inputs supply (\cref{rq:model}).
 %
 This assumption allows one surrogate instance to serve multiple owners.
 A component with private state would prevent such instance sharing but would not invalidate the theorem (\cref{sec:pulverization-discussion}).
@@ -210,11 +209,56 @@ The hardware evidence covers one hand-selected deployment.
 It evaluates none of the runtime policies developed in \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn},
 uses neither the language support in \cref{chap:language-and-coordination} nor the generation pipeline in \cref{chap:language-based-macroprogramming},
 and reports no measurements (\cref{sec:emerge-discussion}).
-%
-Possible extensions of this evidence are described in \cref{sec:future-work}.
 
-\paragraph{Language and coordination support (\cref{rq:languages}).}
-\camil uses a coarse rule to prevent deadlock.
+\paragraph{Future work.}
+Stateful components could be supported by a migration protocol together with a definition of which state persists across a move.
+%
+Shared surrogate instances would then be restricted to stateless components,
+while \cref{thm:deployment-independence} would still apply.
+
+Convergence bounds could build on the composable real-time specifications proposed by Audrito et al.~\cite{DBLP:conf/isola/AudritoDT24}.
+%
+Each specification bounds the time after which the output of an aggregate function matches its abstract model.
+The bound depends on network indicators such as the diameter, the maximum interval between rounds, the communication range, and the speed of devices.
+%
+Their minimal specification assumes fixed inputs and composes:
+if $f$ and each $g_i$ meet it with bounds $T_f$ and $T_{g_i}$,
+then $f(g_1, \dots, g_n)$ meets it with bound $T_f + \max_i T_{g_i}$.
+%
+This composition rule has the same structure as the step in the proof of \cref{thm:deployment-independence}
+in which upstream components stabilise first and downstream components follow.
+%
+Applied along the \ac{DAG}, bounds for the individual components would therefore yield a bound at the macro-program's global output ports.
+%
+A forwarding chain adds hops to the inputs and to the result of an offloaded component,
+so this bound would depend on the length of each chain and hence on the deployment.
+%
+A real-time bound already exists for gradient-based distance estimation~\cite{DBLP:conf/rtss/AudritoDVB18}.
+The gradient is one of the two services simulated in \cref{subsec:pulverization-validation},
+so its simulated convergence could be compared with the analytical bound.
+%
+The approximate and continuous specifications of the same work bound the output error when inputs change and devices move within given limits.
+They would cover the transient observed in simulation while the nodes move, for which the minimal specification gives no guarantee.
+%
+A bound that depends on the deployment would allow a policy to choose among admissible deployments on timing grounds as well as on energy or cost.
+
+The hardware evidence could be extended in three steps (\cref{sec:emerge-discussion}).
+%
+Giving every robot a local runtime instance and replacing camera-based localisation with decentralised radio ranging
+would add a monolithic deployment to the centralised one already implemented.
+A policy would then have two alternatives to choose from.
+%
+Adding communication delays to the simulation engine would provide a measurable cost for mixed deployments
+that the policies of \cref{chap:deployment-and-reconfiguration} or \cref{chap:heterogeneous-gnn} could optimise.
+%
+Repeating the perturbation experiments under controlled conditions would measure convergence time on physical devices,
+which could be compared with the bounds discussed above.
+
+\subsection{Language and Coordination Support}
+\label{subsec:limits-languages}
+
+\paragraph{Limitations.}
+\camil uses a coarse rule to prevent deadlock (\cref{rq:languages}).
 It rejects all nested placed scopes, including those permitted by existing multitier languages that would not deadlock.
 %
 ScalaTropy covers two paradigms while \camil covers three,
@@ -222,7 +266,7 @@ and of the two designs only the capability-based one has a soundness result.
 %
 The expressivity evidence consists of reimplemented use cases drawn from the literature of the three paradigms.
 %
-The effort required from developers who did not design the languages has not been evaluated and would require a user study.
+The effort required from developers who did not design the languages has not been evaluated.
 
 For the generation subcase of the same question, the body of knowledge was refined against the test cases used for its evaluation,
 so the reported rates measure performance within the task family used to co-design the manual rather than transfer to a new task family (\cref{sec:llm-macroprogramming-discussion}).
@@ -233,9 +277,38 @@ A program that satisfies the assertions without implementing the intended behavi
 and this success criterion does not account for evaluation cost.
 %
 Because providers revise hosted models without notice, the reported ranking may change over time even when the evaluation method remains fixed.
+%
+The pipeline also covers a single \ac{DSL}.
 
-\paragraph{Runtime deployment decisions (\cref{rq:deployment}).}
-The evidence for this answer is simulated throughout.
+\paragraph{Future work.}
+A finer rule for nested placed scopes, rejecting the nestings that deadlock rather than all of them,
+would admit safe programs that \camil currently rejects.
+%
+\camil could support the four communication patterns in \cref{subsec:communication-patterns} through its choreography capability.
+The capability design does not require point-to-point exchange to be the only choreographic primitive (\cref{sec:language-coordination-discussion}).
+%
+A metatheory for ScalaTropy would provide a formal result corresponding to the soundness result for the capability-based design.
+%
+A user study with developers who did not take part in the design could measure the effort of writing the reimplemented use cases,
+and compare it with the effort of combining the source languages directly.
+
+For generation, an evaluation on a task family written after the body of knowledge is fixed would measure transfer to new tasks.
+%
+Comparing the execution trace of a generated program with that of a reference program over several networks
+would detect programs that satisfy the assertions without implementing the intended behaviour.
+%
+Reporting the tokens and attempts spent on each solution would add evaluation cost to the success criterion.
+%
+Repeating the evaluation on open-weight models with fixed versions would make the ranking reproducible.
+%
+Whether a body of knowledge can be written for a capability-annotated language is open.
+Extending generation to such a language would require detecting placement errors in addition to misinterpretations of field semantics.
+
+\subsection{Runtime Deployment Decisions}
+\label{subsec:limits-deployment}
+
+\paragraph{Limitations.}
+The evidence for this answer is simulated throughout (\cref{rq:deployment}).
 %
 The energy models and the price points come from published measurements,
 but no policy of either kind has run on physical devices, and the discrepancy between simulation and hardware has not been quantified (\cref{sec:idhgql-discussion}).
@@ -258,24 +331,13 @@ so two components joined by a binding can be assigned to different surrogates.
 %
 Deployment independence preserves functional behaviour, but the policy does not account for the latency introduced by this forwarding chain.
 
-\section{Future Work}
-\label{sec:future-work}
+\paragraph{Future work.}
+Once the demonstrator supports both a monolithic and a centralised deployment,
+a policy could run on it and the discrepancy between simulated and measured energy and latency could be quantified.
+%
+A shared benchmark, fixing the workload, a set of topologies, and the energy model,
+would allow the three hand-written policies and the learned policy to be compared on the same quantities.
 
-\paragraph{Integrating the demonstrator with the deployment platform.}
-Four extensions would connect the physical deployment to the other contributions of this thesis (\cref{sec:emerge-discussion}).
-%
-The first is to give every robot a local runtime instance and replace camera-based localisation with decentralised radio ranging:
-this would add a monolithic deployment to the centralised deployment already implemented and give a policy two alternatives.
-%
-Adding communication delays to the simulation engine would provide a measurable cost for mixed deployments
-that the policies of \cref{chap:deployment-and-reconfiguration} or \cref{chap:heterogeneous-gnn} could optimise.
-%
-Repeating the perturbation experiments under controlled conditions would provide a quantitative measure of convergence time.
-%
-Generating the collective behaviours from a natural-language specification, as done for ScaFi in \cref{chap:language-based-macroprogramming},
-would test the complete path from specification to physical actuation.
-
-\paragraph{Multi-objective learning and joint component placement.}
 Three extensions address the limitations of the learned policy (\cref{sec:idhgql-discussion}).
 %
 Multi-objective methods that learn a set of policies covering the Pareto front, instead of one policy per weight vector,
@@ -287,35 +349,19 @@ Encoding application-device profiles would also allow the representation to dist
 %
 Placing bound components jointly, by reasoning over the \ac{DAG} as well as over the topology,
 would incorporate information expressed by the model of \cref{chap:pulverization} but not used by the current policy.
+The latency of the resulting forwarding chains could then enter the reward.
 
-\paragraph{Stateful components and convergence bounds.}
-One extension to \cref{chap:pulverization} would allow a component to retain state across rounds.
-This would require a migration protocol and a definition of which state persists across a move.
-This extension would prevent multiple owners from sharing one surrogate instance but would not invalidate the theorem.
-%
-A quantitative account of convergence under a given deployment would complement \cref{thm:deployment-independence},
-which establishes functional equivalence between deployments but provides no timing bounds.
-%
-Such an account would allow a policy to choose a deployment on timing grounds rather than on energy or cost alone.
+\subsection{End-to-End Validation}
+\label{subsec:end-to-end-validation}
 
-\paragraph{Language guarantees and generation support.}
-\camil could support the four communication patterns in \cref{subsec:communication-patterns} through its choreography capability.
-The capability design does not require point-to-point exchange to be the only choreographic primitive (\cref{sec:language-coordination-discussion}).
+No experiment in this thesis covers the complete sequence from specification to physical actuation.
 %
-A metatheory for ScalaTropy would provide a formal result corresponding to the soundness result for the capability-based design.
-%
-A finer rule for nested placed scopes, rejecting the nestings that deadlock rather than all of them,
-would admit safe programs that \camil currently rejects.
-%
-The generation pipeline of \cref{chap:language-based-macroprogramming} is currently limited to one \ac{DSL}.
-%
-Whether a body of knowledge can be written for a capability-annotated language is open,
-and extending generation to such a language would require detecting placement errors in addition to misinterpretations of field semantics.
-
-\paragraph{End-to-end validation.}
-An end-to-end experiment would integrate the contributions:
+Such an experiment would integrate the contributions:
 a macro-program written with the capabilities of \cref{chap:language-and-coordination} or generated from a natural-language specification,
 partitioned into the components of \cref{chap:pulverization},
 and deployed on physical devices by a policy that revises the deployment as batteries drain and links fail.
 %
-No experiment in this thesis covers this complete sequence.
+The demonstrator could provide the physical devices.
+%
+Its runtime is built on ScaFi, the language the generation pipeline targets,
+so its collective behaviours could be generated from natural-language specifications (\cref{chap:language-based-macroprogramming}).

@@ -1,0 +1,110 @@
+% IDHGQL framework overview: network state at t, aggregate computing enrichment,
+% heterogeneous GNN producing local actions, feedback through the environment.
+% Requires: \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,shapes.geometric}
+% Coordinates are in units of 1/11.2 of \textwidth, y growing downwards.
+\definecolor{idhApp}{HTML}{F3E6D8}%
+\definecolor{idhProg}{HTML}{7F9CD0}%
+\definecolor{idhProgLight}{HTML}{C3D0EC}%
+\definecolor{idhStar}{HTML}{7FDCC4}%
+\definecolor{idhObs}{HTML}{D2A898}%
+\definecolor{idhEnv}{HTML}{C4F5A0}%
+\definecolor{idhGlow}{HTML}{F08A8A}%
+\begin{tikzpicture}[
+  x=\textwidth/11.2, y=-\textwidth/11.2,
+  >={Latex[length=2.2mm,width=2mm]},
+  app/.style={circle,draw,thick,fill=idhApp,minimum size=0.58\textwidth/11.2,inner sep=0pt},
+  infra/.style={circle,draw,thick,densely dotted,fill=white,minimum size=0.58\textwidth/11.2,inner sep=0pt},
+  prog/.style={rectangle,rounded corners=0.9mm,fill=idhProg,minimum width=0.40\textwidth/11.2,minimum height=0.14\textwidth/11.2,inner sep=0pt},
+  progl/.style={prog,fill=idhProgLight},
+  collobs/.style={star,star points=5,star point ratio=2.3,fill=idhStar,minimum size=0.17\textwidth/11.2,inner sep=0pt},
+  locobs/.style={regular polygon,regular polygon sides=5,fill=idhObs,minimum size=0.18\textwidth/11.2,inner sep=0pt},
+  stage/.style={draw,thick,rounded corners=2pt,fill=white,minimum width=0.66\textwidth/11.2,minimum height=2.85\textwidth/11.2},
+  flow/.style={->,line width=1.6pt},
+  gear/.pic={
+    \draw[line width=0.35pt,fill=white]
+      (-12:0.085) \foreach \a in {0,45,...,315} {
+        -- ({\a-12}:0.085) -- ({\a+12}:0.085) -- ({\a+18}:0.062) -- ({\a+27}:0.062)
+      } -- cycle;
+    \draw[line width=0.35pt] (0,0) circle (0.032);
+  },
+]
+
+% ----- collective field of the aggregate program (stage 2) -----
+\shade[inner color=idhGlow!75, outer color=white] (5.72,2.05) ellipse (1.35 and 1.55);
+
+% ----- the three network snapshots -----
+\foreach \s/\dx in {1/0, 2/4.1, 3/8.28} {
+  \begin{scope}[shift={(\dx,0)}]
+    \node[app]   (A\s) at (2.05,0.38) {};
+    \node[app]   (B\s) at (0.32,0.95) {};
+    \node[infra] (C\s) at (1.45,1.30) {};
+    \node[app]   (D\s) at (2.40,1.80) {};
+    \node[app]   (E\s) at (0.35,2.12) {};
+    \node[app]   (F\s) at (1.75,2.58) {};
+    \node[infra] (G\s) at (0.80,2.92) {};
+    \node[app]   (H\s) at (2.48,3.25) {};
+    \foreach \u/\v in {A/B, A/C, A/D, B/C, B/E, C/E, C/F, C/D, D/F, D/H, E/F, F/G, F/H, G/E, G/H}
+      \draw (\u\s) -- (\v\s);
+  \end{scope}
+}
+
+% stage 1: plain macroprogram on every device
+\foreach \n in {A,B,D,E,F,H} \node[prog] at (\n1) {};
+\foreach \n in {C,G} \node[progl] at (\n1) {};
+
+% stage 2: local observations (infrastructure) enriched into collective ones (applications)
+\foreach \n in {A,B,D,E,F,H} {
+  \node[prog] at ([yshift=0.10\textwidth/11.2]\n2.center) {};
+  \node[collobs] at ([yshift=-0.13\textwidth/11.2]\n2.center) {};
+}
+\foreach \n in {C,G} {
+  \node[progl] at ([yshift=0.10\textwidth/11.2]\n2.center) {};
+  \node[locobs] at ([yshift=-0.13\textwidth/11.2]\n2.center) {};
+}
+
+% stage 3: local action at each application device
+\foreach \n in {A,B,D,E,F,H} {
+  \node[prog] at ([yshift=0.10\textwidth/11.2]\n3.center) {};
+  \path ([yshift=-0.13\textwidth/11.2]\n3.center) pic {gear};
+}
+\foreach \n in {C,G} \node[progl] at (\n3) {};
+
+% ----- processing stages -----
+\node[stage] (ac)   at (3.66,2.22) {};
+\node[rotate=90,font=\bfseries,align=center] at (ac)   {Aggregate\\Computing};
+\node[stage] (hgnn) at (7.66,2.22) {};
+\node[rotate=90,font=\bfseries,align=center] at (hgnn) {Heterogeneous\\GNN};
+\draw[flow] (2.83,2.27) -- (3.25,2.27);
+\draw[flow] (6.80,2.27) -- (7.22,2.27);
+
+% ----- environment and feedback -----
+\filldraw[idhEnv, rounded corners=3pt]
+  (1.30,3.80) -- (10.70,3.80) -- (9.85,4.35) -- (0.45,4.35) -- cycle;
+\node[font=\large\bfseries] at (5.58,4.08) {Environment};
+\draw[flow] (1.63,3.72) -- (1.63,3.36);
+\draw[flow] (9.80,3.22) -- (9.80,3.65);
+
+% ----- time -----
+\draw[->,thick] (0.12,4.50) -- (11.15,4.50);
+\node[anchor=south] at (0.15,4.46) {$t$};
+\node[anchor=south east] at (11.2,4.46) {$t+1$};
+
+% ----- legend -----
+\begin{scope}[legend/.style={minimum size=0.30\textwidth/11.2}]
+  \node[infra,legend] at (0.20,4.90) {};
+  \node[anchor=west] at (0.42,4.90) {Infrastructural device};
+  \node[app,legend] at (0.20,5.30) {};
+  \node[anchor=west] at (0.42,5.30) {Application device};
+
+  \node[prog] at (3.40,4.90) {};
+  \node[anchor=west] at (3.68,4.90) {Macroprogram};
+  \path (3.40,5.30) pic[scale=1.5] {gear};
+  \node[anchor=west] at (3.68,5.30) {Local action};
+
+  \node[collobs,minimum size=0.26\textwidth/11.2] at (5.90,4.90) {};
+  \node[anchor=west] at (6.10,4.90) {Collective enriched local observation};
+  \node[locobs,minimum size=0.26\textwidth/11.2] at (5.90,5.30) {};
+  \node[anchor=west] at (6.10,5.30) {Local observation};
+\end{scope}
+\end{tikzpicture}%

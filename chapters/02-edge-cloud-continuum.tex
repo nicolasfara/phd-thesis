@@ -237,7 +237,7 @@ ARGoS provides a modular, multi-engine simulation infrastructure built specifica
 and Webots offers a general-purpose mobile-robot simulator with a graphical front-end~\cite{Michel2004}.
 Both simulators allow swarm algorithms to be evaluated at scales that would be costly to reproduce on real robots.
 
-\subsection{Collective Adaptive Systems}
+\subsection{Collective Adaptive Systems and Their Deployment}
 \label{subsec:collective-adaptive-systems}
 
 \ac{IoT} ecosystems and robot swarms are two instances of a broader class,
@@ -269,9 +269,6 @@ with a formal semantics that supports reasoning about the system as it reconfigu
 %
 Macroprogramming expresses the behaviour of a collective as a whole and provides programming abstractions for engineering \ac{CAS} at scale~\cite{DBLP:journals/csur/Casadei23}.
 
-\subsection{Deployment and Coordination Challenges}
-\label{subsec:environment-challenges}
-
 Deploying \ac{CAS} across the continuum raises two challenges.
 %
 First, computation and coordination logic must be assigned to heterogeneous hosts,
@@ -283,8 +280,8 @@ Second, coordination must continue to meet the collective's objectives as device
 An architectural model must therefore identify units of computation that can be placed independently
 and allow their host assignments to be revised at run time.
 Microservices, functions, and actors provide useful deployment units,
-but their usual deployment mechanisms leave unresolved how to separate a logical device's execution roles and reassign them across constrained, changing hosts,
-as discussed in the next section.
+but their usual deployment mechanisms leave unresolved how to separate a logical device's execution roles and reassign them across constrained, changing hosts
+(\cref{subsec:paradigm-limitations}).
 
 \section{Architectural Paradigms for Pervasive Systems}
 \label{sec:architectural-paradigms}
@@ -419,7 +416,7 @@ These roles provide separate deployment units with the dependencies shown in \cr
 \begin{figure}[tbp]
     \centering
     \input{figures/pulverisation-components}
-    \caption[The five component roles of a logical device]{The five component roles of a logical device in the original pulverisation model~\cite{DBLP:journals/fi/CasadeiPPVW20}. Lines represent dependencies between roles and communication with neighbouring logical devices. The boundary denotes a logical participant; its components can be hosted on different physical devices.}
+    \caption[The five component roles of a logical device]{The five component roles of a logical device in the original pulverisation model~\cite{DBLP:journals/fi/CasadeiPPVW20}. Grey lines represent dependencies between roles, and red dotted lines communication with neighbouring logical devices; colours distinguish logical devices. The boundary denotes a logical participant; its components can be hosted on different physical devices.}
     \label{fig:pulverisation-components}
 \end{figure}
 
@@ -434,6 +431,34 @@ which computes actions and returns them to the robot.
 The robot remains one logical participant.
 The additional communication affects latency and resource use,
 so the suitability of this assignment depends on the task and the available links.
+
+The original model distinguishes \emph{thick} hosts, which can execute computation,
+possibly on behalf of several logical devices,
+from \emph{thin} hosts, which can carry sensors and actuators but cannot compute~\cite{DBLP:journals/fi/CasadeiPPVW20}.
+%
+\Cref{fig:pulverisation-deployments} shows four deployments of the same roles,
+ordered by how many of them move to a shared host.
+In a peer-to-peer deployment,
+each logical device runs entirely on its own host and exchanges messages with its neighbours directly (\cref{fig:pulverisation-deployments-p2p}).
+A broker-based deployment moves only the communication components to a shared host,
+as in publish/subscribe \ac{IoT} protocols such as MQTT (\cref{fig:pulverisation-deployments-broker}).
+%
+Moving the state components there as well concentrates the system's data in the cloud,
+while each device still evaluates its own behaviour (\cref{fig:pulverisation-deployments-cloud}).
+When devices are thin hosts,
+behaviour also moves to the shared host,
+and each device retains only sensing and actuation (\cref{fig:pulverisation-deployments-thin}).
+%
+The peer-to-peer deployment requires every device to execute its behaviour component.
+A battery-powered sensor node may lack the computational resources to do so,
+which rules that deployment out on such hardware.
+
+\begin{figure}[tbp]
+    \centering
+    \input{figures/pulverisation-deployments}
+    \caption[Notable deployments of the five component roles]{Notable deployments of the five component roles, redrawn from Casadei et al.~\cite{DBLP:journals/fi/CasadeiPPVW20}. Solid boxes are hosts and dotted boxes are components; colours distinguish logical devices, as in \cref{fig:pulverisation-components}. From (a) to (d), an increasing number of roles moves to a shared host.}
+    \label{fig:pulverisation-deployments}
+\end{figure}
 
 Farabegoli et al.~\cite{DBLP:journals/fgcs/FarabegoliPCV24} add declarative runtime remapping.
 PulvReAKt describes component requirements and host capabilities separately from application behaviour.

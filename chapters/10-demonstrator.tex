@@ -5,7 +5,9 @@
 % deployment admitted by the model of \cref{chap:pulverization}. The pulverisation
 % reading of its architecture is the thesis's own: the paper never uses that
 % vocabulary. Aggregate computing background lives in
-% \cref{subsec:aggregate-computing}; reference it instead of re-explaining.
+% \cref{subsec:aggregate-computing}; do not re-explain it.
+% Back-references are kept sparse on purpose: cite an earlier chapter or section
+% only where a claim depends on a specific definition or result there.
 % Two caveats must stay visible: the runtime exchanges neighbour messages in
 % memory rather than over forwarding chains (\cref{sec:emerge-as-pulverisation}),
 % and the chapter does not exercise
@@ -13,9 +15,7 @@
 % \cref{sec:emerge-discussion} states that gap rather than claiming otherwise.
 
 So far, every claim about deployment has been checked in simulation:
-the pulverisation model in Alchemist (\cref{subsec:pulverization-validation}),
-the reconfiguration policies of \cref{chap:deployment-and-reconfiguration} in the same simulator,
-and the learned offloading policy of \cref{chap:heterogeneous-gnn} against a simulated continuum.
+the pulverisation model, the reconfiguration policies, and the learned offloading policy.
 %
 Simulation is the right instrument for the questions those chapters ask, because it makes topologies, failures, and network sizes controllable.
 %
@@ -40,13 +40,11 @@ Project Emerge was built to make aggregate computing demonstrable on hardware, a
 %
 The deployment it arrived at, for reasons of its own -- microcontrollers too small to host a runtime -- is one of those licensed by \cref{thm:deployment-independence}.
 The freedom the theorem grants would let the same program run elsewhere unchanged.
-%
-The model left the deployment ``taken as given'' (\cref{sec:pulverization-discussion}); this chapter builds one such deployment on hardware.
 
 The chapter follows the demonstrator from requirement to discussion:
 what running a macro-program on real robots demands of the substrate (\cref{sec:emerge-requirements}),
 the toolchain built to meet those demands (\cref{sec:emerge-architecture}),
-how its deployment reads in the vocabulary of \cref{chap:pulverization} (\cref{sec:emerge-as-pulverisation}),
+how its deployment reads as a pulverised one (\cref{sec:emerge-as-pulverisation}),
 what the robots did (\cref{sec:emerge-demonstration}),
 and what the demonstrator establishes and leaves untouched (\cref{sec:emerge-discussion}).
 %
@@ -55,7 +53,7 @@ The contribution is published as~\cite{Farabegoli:2027:ProjectEmerge}, extending
 \section{Physical Deployment Requirements}
 \label{sec:emerge-requirements}
 
-Aggregate computing assumes a device that senses, computes, and actuates in rounds (\cref{subsubsec:ac-execution-model}).
+Aggregate computing assumes a device that senses, computes, and actuates in rounds.
 %
 A simulator supplies all three by construction.
 On physical robots each one has to be built, or delegated to a component that supplies it instead.
@@ -73,7 +71,7 @@ so the positioning system must report \emph{orientation} as well.
 Satellite positioning answers this outdoors, but not indoors, where the demonstrator runs.
 
 \paragraph{Consistent program updates.}
-One program specifies the behaviour of the whole team (\cref{sec:macro-programming}),
+One program specifies the behaviour of the whole team,
 and every robot must be running it for the collective behaviour to be the one specified.
 %
 Loading it must not require shutting the team down.
@@ -143,11 +141,11 @@ and lets an operator drag a robot to a new position, retune a parameter, elect a
 \subsection{The Aggregate Runtime}
 \label{subsec:emerge-runtime}
 
-The runtime is written in Scala on ScaFi (\cref{subsec:cas-platforms}),
+The runtime is written in Scala on ScaFi~\cite{casadei2022scafi},
 with the collective behaviours taken from MacroSwarm,
 a library of field-based building blocks for swarm behaviour -- flocking, leader-based coordination, shape formation -- built on top of ScaFi~\cite{DBLP:conf/coordination/AguzziCV23}.
 %
-It is factored into four abstractions plus an entry point, and that structure carries the requirements of \cref{sec:emerge-requirements} into code.\footnote{The toolchain, the companion rover hardware, and a reproducible capsule are released as open source: \url{https://github.com/Project-Emerge} and \href{https://doi.org/10.5281/zenodo.18224119}{\nolinkurl{doi:10.5281/zenodo.18224119}}.}
+It is factored into four abstractions plus an entry point, and that structure carries the requirements above into code.\footnote{The toolchain, the companion rover hardware, and a reproducible capsule are released as open source: \url{https://github.com/Project-Emerge} and \href{https://doi.org/10.5281/zenodo.18224119}{\nolinkurl{doi:10.5281/zenodo.18224119}}.}
 
 An \texttt{Environment} models the physical context of one evaluation:
 which robots are currently present, where each is, who its neighbours are, and what the sensors read.
@@ -219,7 +217,7 @@ The runtime loads one program for the whole team, and a message on the broker sw
 
 The description just given is the demonstrator's own.
 %
-Restated in the terms of \cref{chap:pulverization}, it describes a deployment, subject to one qualification given below.
+Restated in the terms of the pulverisation model, it describes a deployment, subject to one qualification given below.
 %
 Nothing in this section is a claim the demonstrator makes about itself.
 
@@ -239,7 +237,7 @@ one process, one instance per robot, each evaluated against its own view of the 
 %
 The broker relays messages without executing any: this is the role of the intermediate hop $\deviceId_1$ in \cref{fig:pulverization-forwarding}.
 %
-Writing the deployment predicate of \cref{subsec:forwarding-chains} for robot $\deviceId_j$ gives
+Writing the deployment predicate for robot $\deviceId_j$ gives
 %
 \[
     \deploy(\deviceId_j,\ \component_{\mathit{beh}},\ \deviceId_j\ \mathit{broker}\ \mathit{server}),
@@ -260,7 +258,7 @@ Under the model those messages would travel along forwarding chains.
 The demonstrator therefore realises the limit case in which every chain terminates at the same host,
 so the exchange the model would put on the network happens inside the surrogate instead.
 %
-The model admits that case: it is the same collapsing of instances licensed in \cref{subsec:forwarding-chains}.
+The model admits that case: it is the collapsing of instances described above.
 The reason for it is performance, not semantics.
 %
 A deployment that spread the same instances over several surrogates would have to send those messages, and would pay for them.
@@ -281,20 +279,20 @@ The requirement is met by construction:
 the camera reports each robot's own position and orientation, the same quantities an onboard sensor would have reported for that robot.
 %
 The demonstrator thus satisfies the theorem's second hypothesis for the one sensing modality it uses,
-and it satisfies the first by building its behaviours out of MacroSwarm's self-stabilising blocks (\cref{subsec:aggregate-computing}).
+and it satisfies the first by building its behaviours out of MacroSwarm's self-stabilising blocks.
 
 The arrangement the demonstrator settled on is not an alternative to the pulverisation model but an instance of it, arrived at independently.
 The reasons that forced it -- microcontrollers that cannot host a runtime, sensing better done from the ceiling than from the chassis --
-are the capability mismatches that offloading answers in \cref{subsec:forwarding-chains}.
+are the capability mismatches that offloading is meant to answer.
 %
-The requirement of \cref{sec:emerge-requirements} that the program be executable \emph{either} on the robot \emph{or} on a supporting host
-names the same freedom \cref{thm:deployment-independence} grants, and the demonstrator takes only its second branch.
+The requirement that the program be executable \emph{either} on the robot \emph{or} on a supporting host
+names the same freedom deployment independence grants, and the demonstrator takes only its second branch.
 %
 Its own plan for the first is, in the model's terms, the monolithic deployment in which every component runs at its owner:
 each robot would run a local instance of the runtime, with localisation decentralised through radio ranging.
 %
 The two are the extremes of one space; the mixed deployments lie between them,
-and revising the choice among them at run time is the problem addressed in \crefrange{chap:deployment-and-reconfiguration}{chap:heterogeneous-gnn}.
+and revising the choice among them at run time is the reconfiguration problem.
 The demonstrator does not yet do so.
 
 \section{Demonstration and Observed Behaviour}
@@ -346,7 +344,7 @@ Between them they cover symmetry, alignment, leader-based coordination, and glob
     \label{fig:emerge-formations}
 \end{figure}
 
-Programs were switched while the team was running, as the requirement of \cref{sec:emerge-requirements} demands.
+Programs were switched while the team was running.
 The audience saw one formation dissolve into the next without the system being restarted.
 %
 The dashboard, shown in \cref{fig:emerge-dashboard}, was part of the exhibit rather than an operator tool:
@@ -374,7 +372,7 @@ removing a robot from the arena and later putting it back,
 and changing the formation parameters or the elected leader while the team was converging.
 %
 Removal and reinsertion is the most informative of the three.
-It is node churn -- one of the perturbation classes the definition of self-stabilisation quantifies over (\cref{subsec:deployment-independence}) --
+It is node churn -- one of the perturbation classes the definition of self-stabilisation quantifies over --
 applied to hardware rather than to a simulated network.
 %
 In every case tried, the team absorbed the perturbation and recovered the formation without intervention.
@@ -419,10 +417,10 @@ so a program validated against it and a program run in the arena are the same pr
 
 The demonstrator establishes something narrow.
 %
-A deployment admitted by the model of \cref{chap:pulverization} has been built on real hardware and run in front of an audience.
+A deployment admitted by the pulverisation model has been built on real hardware and run in front of an audience.
 %
 That is evidence that the model's admissible deployments are not only simulable but realisable,
-and that the capability mismatches motivating offloading in \cref{subsec:forwarding-chains} are the ones physical robots present.
+and that the capability mismatches motivating offloading are the ones physical robots present.
 %
 The sensing substitution shows this most clearly.
 Condition \emph{(ii)} of \cref{thm:deployment-independence} reads as a technical hypothesis on paper;
@@ -435,7 +433,7 @@ so it exercises none of \crefrange{chap:deployment-and-reconfiguration}{chap:het
 there is no reconfiguration policy, no declarative plan, and no learned offloading decision in it.
 %
 Its behaviour is one aggregate program rather than a macro-program decomposed into a \ac{DAG} of components,
-so the finer-grained partitioning of \cref{subsec:macroprogram-dag} is not put to work either.
+so the finer-grained partitioning into components is not put to work either.
 What is offloaded is the whole behaviour, as in the original five-role pulverisation.
 %
 It is written in ScaFi and MacroSwarm directly,
@@ -459,11 +457,11 @@ Giving every robot a local runtime instance, with localisation decentralised thr
 at which point a policy has two endpoints to choose between rather than one.
 %
 Injecting communication delays into the simulation engine gives the mixed deployments between those endpoints a cost,
-which is the precondition for a policy of \cref{chap:deployment-and-reconfiguration} or \cref{chap:heterogeneous-gnn} to have anything to optimise.
+which is the precondition for a reconfiguration or learned offloading policy to have anything to optimise.
 %
 Repeating the perturbation experiments under controlled conditions, rather than by hand in a crowded room, turns this chapter's qualitative observation into a measured convergence time.
 %
-And generating the collective behaviours from a natural-language specification, as done for ScaFi in \cref{chap:language-based-macroprogramming},
+And generating the collective behaviours from a natural-language specification, as already done for ScaFi programs,
 would put the whole chain from specification to physical actuation under test.
 %
 The four are taken up again in \cref{chap:conclusions}.

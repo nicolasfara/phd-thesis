@@ -73,6 +73,7 @@ The second concerns specification: \emph{how can the intended collective behavio
 The two problems interact, because the specification determines what can be deployed,
 but choosing a host should not require rewriting the collective behaviour.
 
+\paragraph{Deployment units across the continuum.}
 For the architectural problem, the edge-cloud continuum offers resources between the constrained devices and remote data centres.
 Latency constraints, data locality, limited bandwidth, and intermittent connectivity motivate execution near the devices that produce the data,
 while computationally demanding tasks can benefit from hosts with greater capacity~\cite{DBLP:journals/iotj/ShiCZLX16,DBLP:journals/computer/Satyanarayanan17}.
@@ -84,6 +85,7 @@ the actor model uses stateful entities that communicate by asynchronous messages
 %
 These architectures provide different units and lifecycles for distributed execution.
 
+\paragraph{Macroprogramming paradigms.}
 For the specification problem, macroprogramming provides abstractions over the ensemble,
 so that the programmer can describe collective behaviour without reconstructing it from separately written device programs~\cite{DBLP:journals/csur/Casadei23}.
 %
@@ -98,6 +100,7 @@ Aggregate computing describes computations over fields, distributed values spann
 Its spatial and temporal abstractions express behaviours such as propagating information through a neighbourhood
 or maintaining a distance estimate as the network changes~\cite{VIROLI2019100486}.
 
+\paragraph{The placement gap.}
 Automatic placement alone does not resolve the architectural problem.
 A container orchestrator can reschedule a service, and an actor runtime such as Orleans can place actors automatically~\cite{DBLP:conf/cloud/BykovGKLPT11}.
 %
@@ -116,6 +119,7 @@ and the compiler generates the corresponding per-tier code~\cite{DBLP:journals/c
 These choices identify logical execution units or constrain their locations,
 but leave the mapping of those units to available physical hosts as a separate concern.
 
+\paragraph{Pulverisation.}
 Pulverisation addresses this separation by distinguishing a device's logical execution from the hosts that carry it out.
 %
 Casadei et al.\ split each logical device into sensing, actuation, behaviour, state, and communication components,
@@ -130,6 +134,7 @@ even when its parts have different resource requirements and are suited to diffe
 A finer partition must preserve the defining guarantee of pulverisation:
 deployments satisfying the model's conditions converge to the same collective result.
 
+\paragraph{Combining coordination paradigms.}
 The specification problem has a corresponding gap: each paradigm makes one aspect of coordination convenient to express,
 but applications can require all three.
 An application supporting a public event, for instance, can use multitier organisation to register participants and connect phones to cloud services,
@@ -148,6 +153,7 @@ Running the frameworks side by side can therefore lose guarantees about their in
 for instance when an external operation disrupts a choreography's communication order.
 The problem is to compose organisational, protocol, and spatial abstractions while preserving the guarantees of each.
 
+\paragraph{Specification effort and language models.}
 The specification problem remains demanding even when suitable abstractions are available.
 The macroprogramming literature identifies a fragmented landscape of approaches,
 with different abstractions for expressing and reasoning about system-level behaviour~\cite{DBLP:journals/csur/Casadei23}.
@@ -172,6 +178,7 @@ but validation must also check that the generated computation realises the inten
 For aggregate programming, supplying operational knowledge of the \ac{DSL} offers a way to address this gap~\cite{DBLP:journals/tiot/AguzziFV25}.
 This motivates examining both what knowledge a model needs and how its output can be evaluated beyond compilation.
 
+\paragraph{Revising deployments at runtime.}
 Once a specification yields deployable components, the remaining problem is to choose their hosts and revise that choice during operation.
 A placement can become infeasible when a host disappears or a link fails,
 or cease to meet its objective as load and battery levels change.
@@ -189,7 +196,7 @@ PulvReAKt retains the five-role partitioning,
 and the developer must still write rules that select a deployment and trigger each change.
 %
 Such rules cover only the conditions their author anticipated.
-%
+
 Repeated optimisation offers a different way to select a deployment from explicit objectives and constraints,
 but incurs a computational cost for each new assignment.
 On a rapidly changing infrastructure, the topology may change before the solver produces and applies a new placement.

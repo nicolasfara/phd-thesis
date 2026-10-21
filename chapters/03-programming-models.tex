@@ -26,10 +26,10 @@ With node-centric code,
 the developer must establish how individual behaviours combine to meet that specification,
 including when devices join or leave.
 
-\begin{figure}
+\begin{figure}[tb]
     \centering
     \input{figures/macroprogramming}
-    \caption{Macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}. At the macro level, macro-abstractions relate the goals of a macro-program to observables of the system as a whole. A macro-to-micro mapping derives the programs executed by individual entities, whose effects and emergent behaviour determine the macro-observables.}
+    \caption{Macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}. Macro-abstractions relate the goals of a macro-program to observables of the whole system. A macro-to-micro mapping derives the programs of individual entities, whose effects and emergent behaviour determine those observables.}
     \label{fig:macroprogramming}
 \end{figure}
 
@@ -99,11 +99,13 @@ and each device evaluates its own contribution.
 The parameter \texttt{width} is a non-negative value used throughout the network.
 
 \begin{lstlisting}[
-  language={},
+  style=scala3,
+  morekeywords={[4]distanceTo,distanceBetween},
+  morekeywords={[3]source,destination,width},
   numbers=none,
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\footnotesize\color{vscLightText},
   columns=fullflexible,
-  captionpos=b,
+  float=tb,
   caption={Aggregate pseudocode for a channel between two devices.},
   label={lst:aggregate-channel},
 ]
@@ -125,7 +127,7 @@ Thus \texttt{width} bounds excess path length,
 not the geometric distance from a path.
 \Cref{fig:ac-blocks-composition} illustrates this composition.
 
-\begin{figure}
+\begin{figure}[tb]
     \centering
     \def\svgwidth{0.65\textwidth}
     \input{figures/ac-blocks-composition.pdf_tex}
@@ -225,34 +227,38 @@ allowing different parts of the network to execute different field computations~
 % longest signatures would otherwise squeeze the meaning column to a strip and
 % push the table past the bottom of the page. Line breaks are placed by hand so
 % a signature never wraps inside a parameter.
-\begin{table}[!htbp]
+\begin{table}[!tb]
     \centering
     \small
     \renewcommand{\arraystretch}{1.15}
     \caption[Core ScaFi Operators and Self-organising Building Blocks]{Core ScaFi Operators and Self-organising Building Blocks. The second group composes core operators into reusable coordination patterns~\cite{casadei2022scafi,DBLP:conf/saso/BealV14a}.}
     \label{tab:scafi-operators}
+    % Signature colours follow the scala3 listing style: operators and building
+    % blocks in the function colour, named types in the type colour.
+    \newcommand{\scFn}[1]{\textcolor{vscLightFunction}{#1}}
+    \newcommand{\scTy}[1]{\textcolor{vscLightType}{#1}}
     \begin{tabularx}{\textwidth}{@{}>{\ttfamily\scriptsize}p{0.52\textwidth} >{\raggedright\arraybackslash}X@{}}
         \toprule
         \multicolumn{1}{@{}l}{\textbf{Signature}} & \textbf{Meaning} \\
         \midrule
-        sense[A](name: String): A
+        \scFn{sense}[\scTy{A}](name: \scTy{String}): \scTy{A}
             & Reads a named sensor into a field. \\
-        rep[A](init: A)(evolve: A => A): A
+        \scFn{rep}[\scTy{A}](init: \scTy{A})(evolve: \scTy{A} => \scTy{A}): \scTy{A}
             & Carries per-device state from one round to the next. \\
-        nbr[A](expr: => A): A
+        \scFn{nbr}[\scTy{A}](expr: => \scTy{A}): \scTy{A}
             & Observes the value of \texttt{expr} at each aligned neighbour. \\
-        foldhood[A](init: A)(acc: (A,A) => A)\newline\hspace*{1em}(expr: => A): A
+        \scFn{foldhood}[\scTy{A}](init: \scTy{A})(acc: (\scTy{A},\scTy{A}) => \scTy{A})\newline\hspace*{1em}(expr: => \scTy{A}): \scTy{A}
             & Folds those neighbour values with a binary operator; \texttt{minHood} and \texttt{maxHood} are the common specialisations, and their \texttt{Plus} variants exclude the device itself. \\
-        branch[A](cnd: => Boolean)\newline\hspace*{1em}(th: => A)(el: => A): A
+        \scFn{branch}[\scTy{A}](cnd: => \scTy{Boolean})\newline\hspace*{1em}(th: => \scTy{A})(el: => \scTy{A}): \scTy{A}
             & Evaluates each branch within the domain of devices taking that branch; neighbourhood operations use values from the same domain. \\
-        mux[A](cnd: => Boolean)(th: A)(el: A): A
+        \scFn{mux}[\scTy{A}](cnd: => \scTy{Boolean})(th: \scTy{A})(el: \scTy{A}): \scTy{A}
             & Selects one of two values, leaving the domain intact. \\
         \midrule
-        G[V](source: Boolean, field: V,\newline\hspace*{1em}acc: V => V, metric: () => Double): V
+        \scFn{G}[\scTy{V}](source: \scTy{Boolean}, field: \scTy{V},\newline\hspace*{1em}acc: \scTy{V} => \scTy{V}, metric: () => \scTy{Double}): \scTy{V}
             & Gradient cast: propagates a value outwards from the source region, accumulating along the way. \\
-        C[P,V](potential: P, acc: (V,V) => V,\newline\hspace*{1em}local: V, empty: V): V
+        \scFn{C}[\scTy{P},\scTy{V}](potential: \scTy{P}, acc: (\scTy{V},\scTy{V}) => \scTy{V},\newline\hspace*{1em}local: \scTy{V}, empty: \scTy{V}): \scTy{V}
             & Collect cast: aggregates values down a potential field towards its sources. \\
-        S(grain: Double,\newline\hspace*{1em}metric: () => Double): Boolean
+        \scFn{S}(grain: \scTy{Double},\newline\hspace*{1em}metric: () => \scTy{Double}): \scTy{Boolean}
             & Sparse choice: elects leaders at a mean distance of \texttt{grain}, partitioning the network into regions. \\
         \bottomrule
     \end{tabularx}
@@ -289,9 +295,7 @@ such as the pulverisation approach described in \cref{subsec:pulverisation-backg
 \subsubsection{Application Scenarios}
 \label{subsubsec:ac-application-scenarios}
 
-Alignment, \texttt{nbr}/\texttt{rep}, and self-stabilising building blocks are used across several kinds of collective system.
-%
-Beal and Viroli make this reuse explicit with a shared library of aggregate building blocks for gradients, aggregation, time summarisation, and partitioning.
+Beal and Viroli refactor common patterns into a shared library of aggregate building blocks for gradients, aggregation, time summarisation, and partitioning.
 These blocks compose into higher-level behaviours such as crowd monitoring,
 where a population of mobile devices is tracked and collectively warned away from dense areas without any device observing the entire system~\cite{DBLP:conf/saso/BealV14a}.
 
@@ -413,9 +417,6 @@ HasChor instead performs projection at run time, interpreting a choreography wri
 ChoRus uses the same run-time construction in Rust,
 keeping the implementation within the host language's ecosystem~\cite{kashiwa2024chorus}.
 %
-Aggregate computing (\cref{subsubsec:ac-execution-model}) admits an open, dynamically changing neighbourhood,
-with alignment and self-stabilisation supporting reasoning about the collective computation.
-%
 The basic choreographic execution model uses a statically named set of roles
 and establishes correctness through the conditions on projection for those roles.
 %
@@ -448,7 +449,7 @@ Typical protocols coordinate named services through interactions such as a purch
 a two-factor login,
 or a request-response exchange.
 %
-Their participants and interaction sequences are more tightly specified than in the open collectives that motivate aggregate computing (\cref{subsubsec:ac-application-scenarios}).
+Their participants and interaction sequences are specified in advance.
 %
 Process-polymorphic choreographies extend protocol descriptions to parameterised groups of participants.
 
@@ -705,11 +706,14 @@ the surrounding handler determines how the two operations are executed.
 
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
-  language={},
+  style=scala3,
+  morekeywords={effect,handler},
+  morekeywords={[3]Message},
+  morekeywords={[4]send,receive,resume},
+  morekeywords={[5]Simulated},
   numbers=none,
-  captionpos=b,
   caption={A request expressed through effect operations (pseudocode).},
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\footnotesize\color{vscLightText},
   columns=fullflexible,
   label={lst:effect-request},
 ]
@@ -731,11 +735,14 @@ This resumption is captured formally by continuation-passing semantics~\cite{Hil
 
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
-  language={},
+  style=scala3,
+  morekeywords={effect,handler},
+  morekeywords={[3]Message},
+  morekeywords={[4]send,receive,resume},
+  morekeywords={[5]Simulated},
   numbers=none,
-  captionpos=b,
   caption={Network and simulated interpretations of the same request (pseudocode).},
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\footnotesize\color{vscLightText},
   columns=fullflexible,
   label={lst:effect-handlers},
 ]

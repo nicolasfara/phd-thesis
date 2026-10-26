@@ -19,8 +19,8 @@
   split/.style={->,thick,gray!70},
 ]
 
-% ---------- effectful program (top) ----------
-\node[code] (ecode) at (0,5.15) {%
+% ---------- effectful program (centre) ----------
+\node[code] (ecode) at (0,1.3) {%
   send(Bob, msg)\\
   reply = receive()};
 \node[title,anchor=south] (etitle) at ([yshift=2.5mm]ecode.north) {Effectful program};
@@ -28,28 +28,28 @@
   \node[prog,fit=(etitle)(ecode)] (eff) {};
 \end{scope}
 
-% ---------- network handler (bottom left): a genuine remote call ----------
-\node[htitle] (ntitle) at (-3.2,2.3) {Network handler};
-\node[dev] (na) at (-3.9,1.3) {};
-\node[dev] (nb) at (-2.5,1.3) {};
+% ---------- network handler (left): a genuine remote call ----------
+\node[htitle] (ntitle) at (-4.6,2.3) {Network handler};
+\node[dev] (na) at (-5.3,1.3) {};
+\node[dev] (nb) at (-3.9,1.3) {};
 \draw[msg] (na) to[bend left=22] (nb);
 \draw[msg] (nb) to[bend left=22] (na);
-\node[note,anchor=north] (nnote) at (-3.2,0.7) {\emph{genuine remote call}};
+\node[note,anchor=north] (nnote) at (-4.6,0.7) {\emph{genuine remote call}};
 \begin{scope}[on background layer]
   \node[handler,fit=(ntitle)(na)(nb)(nnote)] (net) {};
 \end{scope}
 
-% ---------- simulation handler (bottom right): a local simulation ----------
-\node[htitle] (stitle) at (3.2,2.3) {Simulation handler};
-\node[dev] (sa) at (3.2,1.3) {};
+% ---------- simulation handler (right): a local simulation ----------
+\node[htitle] (stitle) at (4.6,2.3) {Simulation handler};
+\node[dev] (sa) at (4.6,1.3) {};
 \draw[loop] ([shift=(55:3.3mm)]sa) arc (55:-275:3.3mm);
-\node[note,anchor=north] (snote) at (3.2,0.7) {\emph{local simulation}};
+\node[note,anchor=north] (snote) at (4.6,0.7) {\emph{local simulation}};
 \begin{scope}[on background layer]
   \node[handler,fit=(stitle)(sa)(snote)] (sim) {};
 \end{scope}
 
 % ---------- arrows: same program, two handlers ----------
-\draw[split] (eff.south) to[out=-135,in=90] node[pos=0.55,left=5mm,font=\scriptsize,text=black] {handles} (net.north);
-\draw[split] (eff.south) to[out= -45,in=90] node[pos=0.55,right=5mm,font=\scriptsize,text=black] {handles} (sim.north);
+\draw[split] (eff.west) -- node[midway,above,font=\scriptsize,text=black] {handles} (net.east);
+\draw[split] (eff.east) -- node[midway,above,font=\scriptsize,text=black] {handles} (sim.west);
 
 \end{tikzpicture}

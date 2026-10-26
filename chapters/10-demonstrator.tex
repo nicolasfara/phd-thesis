@@ -182,8 +182,8 @@ rotate towards a direction, move forward along one, hold, stop.
 A MacroSwarm program yields one of these rather than a motor setting:
 a prescriptive action (\cref{subsubsec:ac-execution-model}) that the robot is expected to attempt.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   caption={The boundary between an aggregate program and the robot platform. A program produces an intention; nothing in the type mentions wheels, rotors, or a chassis.},
   label={lst:emerge-actuation},
@@ -197,7 +197,6 @@ enum Actuation:
 trait BaseDemo extends AggregateProgram:
   override def main(): Actuation
 \end{lstlisting}
-\end{minipage}
 
 The updater turns an intention into motion.
 The current implementation targets a differential drive:

@@ -1,5 +1,5 @@
 \usepackage[english]{babel}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage[english]{cleveref}
@@ -8,9 +8,17 @@
 \usepackage[inline]{enumitem}
 \usepackage{setspace}
 \usepackage{fancyhdr}
+\usepackage{emptypage}
+\usepackage[nopatch=footnote]{microtype}
 
 % Keep footnotes together so URL links cannot continue through another page.
 \interfootnotelinepenalty=10000
+% Keep the first and last two lines of a paragraph together.
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+% Preserve natural spacing around floats, headings, and unbreakable listings.
+\raggedbottom
 
 % Reserve space for the page number when a chapter title wraps in the footer.
 \fancypagestyle{plain}{
@@ -51,10 +59,14 @@
 
 \newcommand{\chapterWithoutNumber}[1]{\chapter*{#1}\addcontentsline{toc}{chapter}{#1}}
 
-\let\oldbibliography\bibliography
-\renewcommand{\bibliography}[1]{
-	\addcontentsline{toc}{chapter}{\bibname}
-	\oldbibliography{#1}
+% Write the contents entry after the bibliography heading creates its anchor.
+\AtBeginDocument{%
+    \let\thesisbibliographybegin\thebibliography
+    \renewcommand{\thebibliography}[1]{%
+        \microtypesetup{expansion=false}%
+        \thesisbibliographybegin{#1}%
+        \addcontentsline{toc}{chapter}{\bibname}%
+    }%
 }
 
 \def\themainlinespacing{1}

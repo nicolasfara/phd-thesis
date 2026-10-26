@@ -89,6 +89,7 @@ It also defines the \emph{ties} between peers and the cardinality of each tie.
 In ScalaLoci~\cite{DBLP:journals/pacmpl/WeisenburgerKS18}, the \cityevt architecture reads as follows.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The CityEvt architecture as a ScalaLoci peer specification.},
@@ -212,6 +213,7 @@ The \code{Placement} capability provides two operations:
 \code{on} places a value on a peer, and \code{take} reads a value placed on the local peer.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The placement capability: placing a value on a peer and reading it back.},
@@ -249,6 +251,7 @@ In multitier programming, communication may appear anywhere inside a placed scop
 \Cref{lst:multitier-registration} is \cityevt's registration written with this capability.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={User registration with the multitier capability.},
@@ -282,6 +285,7 @@ the field-calculus constructs~\cite{VIROLI2019100486} described in \cref{subsubs
 It also provides an entry point that opens a collective computation on a peer type and sets its round duration.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={Crowd density estimation with the collective capability.},
@@ -300,7 +304,7 @@ def crowding(using Placement, Collective): Signal[Double] on Phone =
 
 \Cref{line:coll-scope} opens a collective scope on the \code{Phone} peer type, with one-second rounds.
 %
-Inside, the estimate uses the same self-stabilising blocks available in ScaFi~\cite{casadei2022scafi}.
+Inside, the estimate uses ScaFi's self-stabilising building blocks~\cite{casadei2022scafi}.
 %
 The result has type \code{Signal[Double]}\;\code{on}\;\code{Phone}:
 a stream that emits a new density value at every round, placed on the phones that compute it.
@@ -325,6 +329,7 @@ The \code{Choreography} capability provides \code{comm}, \code{multicast}, and \
 \Cref{lst:choreography-recommendation} is the recommendation protocol.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The recommendation protocol with the choreography capability.},
@@ -367,6 +372,7 @@ The architecture determines which peers may read a placed value, regardless of w
 \Cref{lst:composition-recommendation} combines choreographic and multitier code in \cityevt's recommendation workflow.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={CityEvt's recommendation workflow, combining choreographic and multitier code.},
@@ -400,6 +406,7 @@ Both values are ordinary placed values and are type-checked as such.
 \Cref{lst:composition-crowding} combines collective and multitier code.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={Reporting the collectively computed crowding level to the cloud.},
@@ -447,6 +454,7 @@ it tries to read a value that does not exist on that peer.
 \Cref{lst:leak-prevention} shows the pattern.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={A placed closure that captures a local value and is then sent to another peer.},
@@ -479,6 +487,7 @@ If two nested \code{on} blocks name different peers, the inner body never runs o
 The system deadlocks when a participant waits for a value that the inner body should have produced.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={Nested placed blocks naming different peers, a pattern that causes deadlock.},
@@ -517,6 +526,7 @@ In both cases the compiler resolves the argument at the call site from the lexic
 \camil gives each paradigm a marker for its own scope and gates that paradigm's operations on the marker.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The base capability and the per-paradigm scope capability.},
@@ -533,6 +543,7 @@ Each paradigm's companion object then supplies an \code{apply} that opens its sc
 as \cref{lst:multitier-object} shows for the multitier case.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The multitier capability: a scope marker, an operation gated on it, and the entry point that supplies it.},
@@ -581,6 +592,7 @@ It distinguishes read-only capabilities, which can be shared freely, from capabi
 \camil declares \code{Placement} mutable, as \cref{lst:placement-mutable} shows.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The placement capability is mutable, so it cannot be aliased.},
@@ -772,7 +784,7 @@ The reimplementations total 3874 lines of \camil code:
 %
 For this corpus, representing a paradigm as a capability therefore did not reduce expressivity relative to a dedicated language.
 
-The same use cases test the safety properties of \cref{subsec:capability-safety}.
+These use cases also test the safety properties of \cref{subsec:capability-safety}.
 %
 For each paradigm, \camil rejects programs that are ill-formed under the rules of the corresponding dedicated language.
 It rejects communication along undeclared ties and attempts to take a placed value on the wrong peer.
@@ -996,6 +1008,7 @@ multitier languages assume a \emph{strong} one, in which the ties fix who may ta
 ScalaTropy uses the strong form and encodes it with Scala~3 structural types.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={A three-peer architecture as a type-level specification.},
@@ -1013,6 +1026,7 @@ The cardinalities of \cref{def:arch-satisfaction} become an enumeration indexed 
 and each cardinality gets a named refinement.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={Tie cardinalities and the refinements built from them.},
@@ -1037,6 +1051,7 @@ The DSL defines every operation in a single trait, parameterised by the monad \c
 \Cref{lst:scalatropy-multiparty} collects these primitives.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The MultiParty trait: placed computation and the four communication primitives.},
@@ -1085,6 +1100,7 @@ using a default for recipients omitted from the map.
 \Cref{lst:scalatropy-isotropic} shows an isotropic exchange.
 
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={An isotropic exchange that sends one update to every client.},
@@ -1154,6 +1170,7 @@ so that the anisotropic and co-anisotropic primitives can operate as topology me
 \begin{lstlisting}[
   style=scala3,
   escapeinside={(*@}{@*)},
+  float=tb,
   caption={A master-worker application in ScalaTropy.},
   label={lst:scalatropy-master-worker},
 ]

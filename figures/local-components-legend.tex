@@ -1,0 +1,14 @@
+% Shared legend outside the data panels; the caller supplies the levels used.
+\begingroup
+\definecolor{local0}{rgb}{0.267004,0.004874,0.329415}
+\definecolor{local50}{rgb}{0.127568,0.566949,0.550556}
+\definecolor{local100}{rgb}{0.993248,0.906157,0.143936}
+\begin{tikzpicture}[font=\footnotesize]
+    \node[anchor=east] at (-0.3,0) {Local components:};
+    \foreach[count=\i from 0] \level in \localcomponentlevels {
+        \node[fill=local\level,minimum width=3mm,minimum height=2mm,inner sep=0pt]
+            at (1.5*\i,0) {};
+        \node[anchor=west] at (1.5*\i+0.2,0) {\level\%};
+    }
+\end{tikzpicture}
+\endgroup

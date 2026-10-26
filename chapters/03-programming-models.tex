@@ -29,7 +29,7 @@ including when devices join or leave.
 \begin{figure}[tb]
     \centering
     \input{figures/macroprogramming}
-    \caption{Macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}. Macro-abstractions relate the goals of a macro-program to observables of the whole system. A macro-to-micro mapping derives the programs of individual entities, whose effects and emergent behaviour determine those observables.}
+    \caption[Macroprogramming and the macro-to-micro mapping]{Macroprogramming, adapted from Casadei~\cite{DBLP:journals/csur/Casadei23}. Macro-abstractions relate the goals of a macro-program to observables of the whole system. A macro-to-micro mapping derives the programs of individual entities, whose effects and emergent behaviour determine those observables.}
     \label{fig:macroprogramming}
 \end{figure}
 
@@ -131,7 +131,7 @@ not the geometric distance from a path.
     \centering
     \def\svgwidth{0.65\textwidth}
     \input{figures/ac-blocks-composition.pdf_tex}
-    \caption{Composition of computational fields in the \emph{channel} building block. The sum of distances to \emph{Source} and \emph{Destination} is compared pointwise with their shortest separation, computed by \texttt{distanceBetween}, plus \emph{Width}. The result marks devices whose excess path length is at most \emph{Width}.}
+    \caption[Composition of fields in the channel building block]{Composition of computational fields in the \emph{channel} building block. The sum of distances to \emph{Source} and \emph{Destination} is compared pointwise with their shortest separation, computed by \texttt{distanceBetween}, plus \emph{Width}. The result marks devices whose excess path length is at most \emph{Width}.}
     \label{fig:ac-blocks-composition}
 \end{figure}
 
@@ -167,7 +167,7 @@ repeatedly performing \emph{sense-compute-interact} rounds.
 \begin{figure}[t]
     \centering
     \input{figures/ac}
-    \caption{
+    \caption[Distributed architecture and execution rounds in aggregate computing]{
         Distributed system architecture for aggregate computing.
         Each device executes an instance of the aggregate program, interacting with its neighbours through local communication.
         The collective behaviour emerges from the composition of individual device computations and interactions.}
@@ -670,7 +670,7 @@ The chosen monad defines how these steps are sequenced and interpreted.
 \begin{figure}
     \centering
     \input{figures/monadic-pipeline}
-    \caption{A monadic effect pipeline, illustrated with the Cloud Haskell process monad~\cite{DBLP:conf/haskell/EpsteinBJ11}.
+    \caption[A monadic effect pipeline]{A monadic effect pipeline, illustrated with the Cloud Haskell process monad~\cite{DBLP:conf/haskell/EpsteinBJ11}.
     The protocol is written as a bind-sequenced local pipeline (top).
     The process monad executes the pipeline on its host node and performs the required network communication (bottom).}
     \label{fig:monadic-pipeline}
@@ -704,8 +704,8 @@ The program sends a message to Bob and returns the reply.
 It uses ordinary sequential control flow;
 the surrounding handler determines how the two operations are executed.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   morekeywords={effect,handler},
   morekeywords={[3]Message},
@@ -724,7 +724,6 @@ def request():
     send(Bob, "ping")
     return receive()
 \end{lstlisting}
-\end{minipage}
 
 When an operation is invoked,
 control passes to its case in the selected handler.
@@ -733,7 +732,6 @@ using \texttt{value} as its result.
 The handler remains active during the resumed computation.
 This resumption is captured formally by continuation-passing semantics~\cite{Hillerström:2017}.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   style=scala3,
   morekeywords={effect,handler},
@@ -741,6 +739,7 @@ This resumption is captured formally by continuation-passing semantics~\cite{Hil
   morekeywords={[4]send,receive,resume},
   morekeywords={[5]Simulated},
   numbers=none,
+  float=tb,
   caption={Network and simulated interpretations of the same request (pseudocode).},
   basicstyle=\ttfamily\footnotesize\color{vscLightText},
   columns=fullflexible,
@@ -760,7 +759,6 @@ handler Simulated:
 handle request() with Network
 handle request() with Simulated
 \end{lstlisting}
-\end{minipage}
 
 In \cref{lst:effect-handlers},
 \texttt{transport} supplies the underlying network operations.
@@ -778,9 +776,9 @@ they are not programs in a specific implementation language.
 \begin{figure}
     \centering
     \input{figures/effect-handlers}
-    \caption{Algebraic effect handlers applied to a coordination protocol.
-    The effectful program (top) issues \texttt{send} and \texttt{receive} operations against a fixed signature without specifying their implementation.
-    A network handler interprets them as remote communication, whereas a simulation handler executes the same operations locally.}
+    \caption[Effect handlers interpreting a coordination protocol]{Algebraic effect handlers applied to a coordination protocol.
+    The effectful program (centre) issues \texttt{send} and \texttt{receive} operations against a fixed signature without specifying their implementation.
+    The network handler (left) interprets them as remote communication, whereas the simulation handler (right) executes the same operations locally.}
     \label{fig:effect-handlers}
 \end{figure}
 
@@ -819,8 +817,7 @@ using capability types to rule out unsafe sharing between concurrent computation
 %
 Both build on Scala 3, whose reference documents the language features this line of work extends~\cite{odersky2021scala3}.
 
-For multiparty coordination,
-monadic composition organises protocol steps,
-handlers separate those steps from their execution,
-and effect and capability types restrict the operations available to each computation.
-These mechanisms support the protocol and placement checks introduced for choreographic and multitier programming (\cref{subsec:choreographic-programming,subsec:multitier-programming}).
+Monadic composition organises multiparty protocols,
+handlers interpret their steps,
+and effect and capability types restrict operations.
+Together they support the protocol and placement checks of choreographic and multitier programming (\cref{subsec:choreographic-programming,subsec:multitier-programming}).

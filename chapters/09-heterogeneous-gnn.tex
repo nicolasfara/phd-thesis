@@ -500,11 +500,13 @@ so the improvement comes from the policy and not from reallocation as such.
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=\textwidth]{idhgql-edge-case-battery.pdf}
+    \includegraphics[width=\textwidth]{idhgql-edge-case-battery-readable.pdf}
     \\[0.3em]
-    \includegraphics[width=\textwidth]{idhgql-edge-case-cost.pdf}
+    \includegraphics[width=\textwidth]{idhgql-edge-case-cost-readable.pdf}
     \\[0.3em]
-    \includegraphics[width=\textwidth]{idhgql-edge-case-server-load.pdf}
+    \includegraphics[width=\textwidth]{idhgql-edge-case-server-load-readable.pdf}
+    \par\medskip
+    \input{figures/offloading-strategy-legend}
     \caption[Learned policies under single-objective rewards]{Learned policies when one objective carries the whole reward: battery only, $\lambda_B=1$ (top); cost only, $\lambda_C=1$ (middle); edge-server load only, $\lambda_{ES}=1$ (bottom). Each row reports the three metrics against the static strategies over the run. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-edge-cases}
 \end{figure}
@@ -549,21 +551,24 @@ and nobody can state that judgement in advance for a venue whose crowd keeps cha
     \centering
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-baseline-s1th5.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-baseline-s1th5-readable.pdf}
         \caption{$s = 1$, $\mathit{th} = 5$}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-baseline-s1th10.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-baseline-s1th10-readable.pdf}
         \caption{$s = 1$, $\mathit{th} = 10$}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-baseline-s3th20.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-baseline-s3th20-readable.pdf}
         \caption{$s = 3$, $\mathit{th} = 20$}
     \end{subfigure}
+    \par\medskip
+    \def\localcomponentlevels{0,100}
+    \input{figures/local-components-legend}
     \caption[The hand-written density heuristic under three parameter settings]{The hand-written heuristic under three settings of its hop radius $s$ and threshold $\mathit{th}$. Each point is an application device, placed at its position in the venue; colour distinguishes devices executing locally from devices offloading. Which devices the rule classifies as crowded changes substantially with the parameters. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-density-baseline}
 \end{figure}
@@ -584,15 +589,18 @@ and expressing them is why the action space assigns one component at a time.
     \centering
     \begin{subfigure}{0.47\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-ac.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-ac-readable.pdf}
         \caption{With the collective density field}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.47\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-no-ac.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-no-ac-readable.pdf}
         \caption{Without it (ablation)}
     \end{subfigure}
+    \par\medskip
+    \def\localcomponentlevels{0,50,100}
+    \input{figures/local-components-legend}
     \caption[Learned offloading policy with and without collective state]{The policy learned by IDHGQL at the end of training, with and without the collective density term in the observation. Each point is an application device at its position in the venue; colour gives the fraction of its component instances executed locally. With the collective term the policy is spatially differentiated; without it, every device settles on roughly the same partial offloading regardless of where it sits. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-density-ablation}
 \end{figure}
@@ -625,25 +633,30 @@ Acting on a topology that keeps changing requires exactly this inductive behavio
     \centering
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-eval-t0.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-eval-t0-readable.pdf}
         \caption{$t = 0$}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-eval-t50.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-eval-t50-readable.pdf}
         \caption{$t = 50$}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{idhgql-density-eval-t150.pdf}
+        \includegraphics[width=\textwidth]{idhgql-density-eval-t150-readable.pdf}
         \caption{$t = 150$}
     \end{subfigure}
+    \par\medskip
+    \def\localcomponentlevels{0,50,100}
+    \input{figures/local-components-legend}
     \caption[The trained policy following devices that move between regions]{The trained policy applied without further learning while three devices move out of a dense zone at $t = 100$. Colour gives the fraction of component instances executed locally. By $t = 150$ the three devices have switched from local execution to offloading, following the density field rather than a rule fixed at training time. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-density-mobility}
 \end{figure}
 
+% Finish the results figures before the discussion and its running heading.
+\clearpage
 \section{Discussion}
 \label{sec:idhgql-discussion}
 

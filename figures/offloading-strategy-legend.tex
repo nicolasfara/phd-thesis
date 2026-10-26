@@ -1,0 +1,22 @@
+\begingroup
+\definecolor{policyLearned}{RGB}{54,92,141}
+\definecolor{policyLocal}{RGB}{194,223,35}
+\definecolor{policyEdge}{RGB}{30,155,138}
+\definecolor{policyCloud}{RGB}{253,231,37}
+\definecolor{policyRandom}{RGB}{86,29,37}
+\begin{tikzpicture}[font=\scriptsize,baseline]
+    \foreach \x/\colour/\label in {
+        0/policyLearned/IDHGQL,
+        2.4/policyLocal/Local,
+        4.2/policyEdge/Edge server,
+        7/policyCloud/Cloud server,
+        10/policyRandom/Random allocation}{
+        \ifdim\x pt=0pt
+            \draw[\colour,thick] (\x,0) -- +(0.45,0);
+        \else
+            \draw[\colour,thick,dashed] (\x,0) -- +(0.45,0);
+        \fi
+        \node[anchor=west] at (\x+0.5,0) {\label};
+    }
+\end{tikzpicture}
+\endgroup

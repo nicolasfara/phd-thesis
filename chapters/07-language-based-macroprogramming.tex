@@ -121,11 +121,11 @@ and a minimal program using it together with the values that program produces ov
 \Cref{lst:bok-entry} is the entry for temporal evolution,
 the first one in the sequence.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
   numbers=none,
   frame=single,
   captionpos=b,
+  float=tb,
   basicstyle=\ttfamily\scriptsize,
   caption={The body-of-knowledge entry for temporal evolution.},
   label={lst:bok-entry},
@@ -144,7 +144,6 @@ Round 1: 0
 Round 2: 1
 Round 3: 2
 \end{lstlisting}
-\end{minipage}
 
 The trace shows the values produced at each device over successive rounds.
 For \code{rep}, it illustrates how each device retains and updates its own state.
@@ -207,8 +206,8 @@ so the only things that vary between runs are the body of knowledge and the task
 %
 \Cref{lst:prompt-template} gives it in full.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   numbers=none,
   frame=single,
   captionpos=b,
@@ -233,7 +232,6 @@ FORMAT REQUIREMENTS:
 
 Your answer:
 \end{lstlisting}
-\end{minipage}
 
 The required shape, \code{def}\;\code{main(): Any}, lets the evaluation harness compile each response without manual editing.
 Responses that violate the format are recorded as failures.
@@ -394,8 +392,8 @@ One is reading \code{nbr} as a collection.
 %
 \Cref{lst:nbr-misuse} is a gradient attempt from Gemini 2.0 Flash that compiles and is wrong.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={A gradient in which \texttt{nbr} is mistaken for a collection.},
@@ -409,7 +407,6 @@ rep[Option[Double]](
   } { distance }
 }.getOrElse(Double.PositiveInfinity)
 \end{lstlisting}
-\end{minipage}
 
 % Keep the explanation from starting with a single line at the foot of a page.
 \begingroup
@@ -427,8 +424,8 @@ Treating this value as a collection of neighbours confuses Scala's local operati
 The other is using \code{branch} where \code{mux} is meant,
 as in \cref{lst:branch-misuse}.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={A gradient whose conditional separates source and non-source evaluation domains.},
@@ -440,7 +437,6 @@ rep(Double.MaxValue) { dist =>
   }
 }
 \end{lstlisting}
-\end{minipage}
 
 The code assigns zero to sources and computes a neighbourhood minimum elsewhere.
 However, \code{branch} evaluates these expressions in separate domains.
@@ -487,8 +483,8 @@ The second result reconstructs a pattern that has a name in the literature.
 %
 \Cref{lst:scr-rediscovery} is the model's answer to the area-wise alarm.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   caption={The area-wise temperature alarm, as generated with the building blocks available.},
@@ -504,7 +500,6 @@ val averageTemperature =
 val alarm = averageTemperature > 30.0
 G(isLeader, alarm, (a: Boolean) => a, nbrRange)(*@\label{line:scr-broadcast}@*)
 \end{lstlisting}
-\end{minipage}
 
 This is the self-organising coordination regions pattern~\cite{DBLP:journals/fgcs/PianiniCVN21}.
 %
@@ -526,8 +521,8 @@ The crowding-monitor task tests the generated program on a mobile network.
 %
 \Cref{lst:crowding-monitor} is what the best-performing model produced for it.
 
-\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[
+  float=tb,
   style=scala3,
   escapeinside={(*@}{@*)},
   aboveskip=4pt,
@@ -547,7 +542,6 @@ G[Double](
   metric = nbrRange
 )
 \end{lstlisting}
-\end{minipage}
 
 \begingroup
 \clubpenalty=10000

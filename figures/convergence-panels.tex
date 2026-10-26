@@ -1,0 +1,10 @@
+% The caller sets \convergenceplot to the source PDF's basename.
+% Cropping each original column avoids shrinking labels with a three-column row.
+\foreach \nodes in {50,100,200}{%
+    \noindent\begin{minipage}[c]{0.13\linewidth}
+        \centering\small\nodes{} nodes
+    \end{minipage}%
+    \begin{minipage}[c]{0.68\linewidth}
+        \includegraphics[width=\linewidth]{\convergenceplot-\nodes.pdf}
+    \end{minipage}\par\smallskip
+}

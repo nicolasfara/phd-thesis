@@ -23,7 +23,7 @@ Stating the rule is straightforward when the objective is a single quantity:
 keep the battery above a threshold, or keep the plan within a carbon budget.
 %
 It stops being straightforward when several objectives compete,
-and when the quantity that should drive the decision belongs to the collective rather than to any device.
+and when the quantity that should drive the decision depends on the collective state of the network.
 %
 One such quantity is network congestion.
 %
@@ -31,7 +31,7 @@ Congestion is produced by the offloading decisions themselves, and no device obs
 Whether a device should offload under congestion depends on where in the network it sits.
 %
 A hand-written policy has to guess the thresholds.
-A learned policy can be trained to find them instead.
+A learned policy can be trained to find them.
 
 This chapter builds that learned policy, which removes the need to state the rule in advance.
 %
@@ -51,14 +51,11 @@ The contribution is published as~\cite{Farabegoli:2026:HeteroGNN}.
 Offloading as posed in \cref{subsec:learning-based-offloading} concerns one computation and two possible hosts:
 run it here, or send it there.
 %
-The unit placed here is not one computation.
-%
 A macro-program is a \ac{DAG} of components (\cref{subsec:macroprogram-dag}),
 instantiated once per application device,
 and each of the resulting component instances is separately deployable.
 %
-A device therefore does not decide whether to offload.
-It decides, for each of its component instances, where that instance runs,
+For each of its component instances, a device decides where that instance runs,
 choosing among the infrastructural devices it can reach and itself:
 $\ihostIdSet \cup \{\deviceId\}$.
 %
@@ -69,7 +66,7 @@ Three further properties separate this problem from single-agent offloading.
 
 First, every application device takes the decision concurrently, with no central arbiter.
 %
-This is a constraint inherited from the setting, not a design preference:
+The setting requires decentralised decisions:
 \acp{CAS} have no node that sees the whole network,
 and a policy assuming one would not run on them.
 %
@@ -92,7 +89,7 @@ When many devices in one area offload at once,
 the wireless links they share congest,
 and the offloading that caused the congestion is itself slowed by it.
 %
-Congestion belongs to a region of the network, not to a device.
+Congestion is a regional property of the network.
 A device can measure its own link quality, but cannot tell whether a degraded link is caused by local crowding or by something else.
 %
 A policy that ignores congestion will offload precisely where offloading is most expensive.
@@ -123,7 +120,7 @@ When a crowd forms,
 the devices that most need a fresh route are the ones whose links are most congested,
 and running the same two components locally becomes the better choice, paid for in battery.
 %
-The decision reverses on a property of the crowd, not of the device.
+The crowd's density determines this reversal.
 
 \paragraph{Conditions for deployment independence.}
 Nothing above says that any assignment of component instances to hosts is admissible.
@@ -160,7 +157,7 @@ application-to-infrastructural,
 infrastructural-to-application,
 and infrastructural-to-infrastructural.
 %
-The distinction is not cosmetic.
+These edge types support different interactions.
 %
 An application-to-application edge carries the peer-to-peer neighbourhood $\nbrhood$ over which collective components exchange state.
 %
@@ -198,7 +195,7 @@ The action space is
 of size $|\overline\component| \cdot |\ihostIdSet \cup \{\deviceId\}|$:
 the number of components times the number of reachable hosts.
 %
-It is not exponential in the number of instances,
+This size grows linearly with the number of components for a fixed set of reachable hosts,
 because each device decides for itself alone and for one component at a time.
 
 The reward scalarises the competing objectives into one signal.
@@ -230,14 +227,14 @@ an infrastructural device by price, spare capacity, and latency.
 The two feature vectors have different dimensions and different meanings,
 so the network cannot start from a single input layer.
 %
-It starts instead from a per-type projection into a shared hidden space of dimension $h$,
+It starts from a per-type projection into a shared hidden space of dimension $h$,
 after which every node embedding lives in the same space and messages from different kinds of neighbour can be summed.
 %
 In practice this is a homogeneous graph attention network~\cite{DBLP:conf/iclr/VelickovicCCRLB18}
 whose message-passing operator is replicated once per edge type,
 each replica holding its own weights and projecting into the common space.
 %
-It realises heterogeneous message passing by replication rather than by a dedicated architecture~\cite{DBLP:conf/www/WangJSWCYY19}.
+Replicating the homogeneous operator across edge types provides heterogeneous message passing~\cite{DBLP:conf/www/WangJSWCYY19}.
 
 A message crossing an edge of type $\tau$ from $u$ to $v$ at layer $\ell$ is
 \begin{equation}
@@ -279,7 +276,7 @@ they enter the computation only as information about the available targets.
     \label{fig:heterognn-architecture}
 \end{figure}
 
-The architecture is chosen as much for where it can run as for what it can represent.
+The architecture supports both heterogeneous representations and execution on individual devices.
 %
 Both \cref{eq:hetero-message,eq:hetero-aggregation} are defined over a node and its direct neighbours,
 so a trained network can be evaluated without assembling the graph anywhere.
@@ -287,9 +284,7 @@ so a trained network can be evaluated without assembling the graph anywhere.
 Each device computes its own embedding from messages exchanged with the devices it is already connected to,
 and reads its Q-values off its own head.
 %
-Training may assume the global graph; execution does not.
-%
-The decentralisation the setting requires is preserved rather than approximated.
+Training may use the global graph, while execution remains fully decentralised.
 
 \section{Informed Deep Hetero Graph Q-Learning}
 \label{sec:idhgql}
@@ -323,7 +318,8 @@ The cost is depth.
 Each layer of \cref{eq:hetero-aggregation} moves information one hop,
 so a property that depends on a region of diameter $D$ needs $O(D)$ layers before it reaches the nodes that should act on it.
 %
-Making the network that deep to compute a quantity as simple as local crowding spends parameters and training time on something the network could be handed instead.
+Computing local crowding with a network of that depth consumes parameters and training time;
+the density estimate can also be supplied as an input.
 
 Aggregate computing computes that same quantity natively.
 %
@@ -360,7 +356,7 @@ written against the same abstractions and running on the same network,
 is also the sensor that tells the deployment policy what the collective is doing.
 %
 The paradigm that expresses collective behaviour expresses the observation of that behaviour just as well.
-The policy therefore learns only what to do about a congestion estimate it is handed, not how to compute one.
+The policy therefore learns how to act on a congestion estimate supplied by the aggregate program.
 
 \subsection{Training and Execution}
 \label{subsec:idhgql-training}
@@ -404,7 +400,7 @@ The parameters $\theta$ are updated by gradient descent on the mean squared erro
 averaged over the devices in the batch,
 and $\theta^-$ is refreshed from $\theta$ every $C$ steps.
 
-Training is centralised and execution is not.
+Training is centralised; execution is distributed across the devices.
 %
 During training the procedure holds the whole graph and samples from one buffer,
 so the joint effect of concurrent decisions becomes learnable.
@@ -424,8 +420,7 @@ Does the framework learn policies that honour a stated trade-off among conflicti
 And does the collective term change what it learns,
 or is the graph structure sufficient on its own?
 %
-The second question is the one the design turns on,
-and it is answered with an ablation rather than with a comparison against an external baseline.
+Ablating the collective term addresses the second question by comparing variants of the same framework.
 
 \subsection{Simulation Setup}
 \label{subsec:idhgql-setup}
@@ -442,7 +437,7 @@ and can reach every edge and cloud server.
 %
 A run lasts between 50 and 150 steps of one simulated minute each, depending on the scenario,
 starting from full batteries and an entirely local deployment,
-so any offloading observed follows from the policy rather than from the initial condition.
+so every observed offloading action is selected by the policy.
 
 Runs are simulated in Alchemist~\cite{DBLP:journals/jos/PianiniMV13},
 the simulator already used for the functional validation of the model (\cref{subsec:pulverization-validation}).
@@ -496,7 +491,7 @@ with $\lambda_{ES} = 1$ it stops using the edge servers.
 Each row reaches the extreme its weights ask for, which is the least the learner should achieve.
 %
 Against the random-allocation strategy the learned policies are better on every metric they were asked to optimise,
-so the improvement comes from the policy and not from reallocation as such.
+showing the benefit of policy-guided reallocation.
 
 \begin{figure}[tbp]
     \centering
@@ -513,8 +508,8 @@ so the improvement comes from the policy and not from reallocation as such.
 
 \Cref{fig:idhgql-tradeoff} plots battery against cost across the weight settings.
 %
-The learned policies lie along a curve rather than clustering,
-so the weights move the outcome gradually between the extremes instead of switching it between two modes.
+The learned policies lie along a curve,
+so the weights move the outcome gradually between the extremes.
 
 \begin{figure}[tbp]
     \centering
@@ -542,7 +537,7 @@ count the devices within $s$ hops, execute locally if that count exceeds a thres
 The partition it induces between local and offloading devices shifts substantially with the parameters,
 and none of the three separates the two dense zones from their surroundings cleanly.
 %
-The rule is not wrong; it is underdetermined.
+The rule is underdetermined.
 %
 Its parameters encode a judgement about how much crowding is too much,
 and nobody can state that judgement in advance for a venue whose crowd keeps changing.
@@ -616,7 +611,7 @@ and the difference that should have driven the decision was still present in the
 At the depth used, it did not reach the nodes that needed it.
 %
 This comparison is the chapter's central evidence:
-what makes the policy context-aware is not the learner and not the graph, but the collective computation feeding them.
+in this experiment, the collective computation supplies the information the policy needs to adapt to local crowding.
 
 A last run tests whether the policy tracks a change it did not see during training.
 %
@@ -625,7 +620,7 @@ and the trained network is applied unchanged, with no further learning.
 %
 \Cref{fig:idhgql-density-mobility} shows the three switching from local execution to offloading once they arrive in the sparse region.
 %
-The policy responds to the density field it reads, not to the positions it was trained on.
+The policy responds to the current density field as devices move beyond their training positions.
 %
 Acting on a topology that keeps changing requires exactly this inductive behaviour.
 
@@ -651,7 +646,7 @@ Acting on a topology that keeps changing requires exactly this inductive behavio
     \par\medskip
     \def\localcomponentlevels{0,50,100}
     \input{figures/local-components-legend}
-    \caption[The trained policy following devices that move between regions]{The trained policy applied without further learning while three devices move out of a dense zone at $t = 100$. Colour gives the fraction of component instances executed locally. By $t = 150$ the three devices have switched from local execution to offloading, following the density field rather than a rule fixed at training time. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
+    \caption[The trained policy following devices that move between regions]{The trained policy applied without further learning while three devices move out of a dense zone at $t = 100$. Colour gives the fraction of component instances executed locally. By $t = 150$ the three devices have switched from local execution to offloading in response to the current density field. Data from~\cite{Farabegoli:2026:HeteroGNN}.}
     \label{fig:idhgql-density-mobility}
 \end{figure}
 
@@ -660,7 +655,7 @@ Acting on a topology that keeps changing requires exactly this inductive behavio
 \section{Discussion}
 \label{sec:idhgql-discussion}
 
-The results show that a deployment policy can be learned rather than written,
+The results show that a deployment policy can be learned from experience,
 provided the learner is handed a representation that keeps the continuum's heterogeneity
 and a collective summary it would otherwise have to rediscover.
 %
@@ -668,7 +663,7 @@ Four limits qualify that.
 
 The evidence is simulated.
 %
-The energy model and the price points are taken from published measurements rather than invented,
+The energy model and the price points are taken from published measurements,
 and the network conditions come from the same simulator used for the functional validation of the model.
 %
 A simulator, though, reproduces only the mechanisms it was given.
@@ -681,15 +676,15 @@ A weighted sum only reaches deployments on the convex portion of the trade-off,
 so a policy that would be optimal in a concave region of the Pareto front is unreachable by any choice of $\lambda_i$.
 %
 The weights are also not calibrated:
-they express relative priorities rather than calibrated quantities, and selecting them is a matter of trial.
+they express relative priorities, and selecting them is a matter of trial.
 %
-Multi-objective methods that learn a set of policies covering the front, instead of one policy per weight vector, would remove both objections,
+Multi-objective methods that jointly learn a set of policies covering the front would remove both objections,
 and nothing in the architecture stands in their way.
 
 The learned policies polarise.
 %
 When both kinds of server are available,
-a device tends to commit to the edge or to the cloud rather than splitting its components across the two,
+a device tends to place all its offloaded components on servers of one kind, either edge or cloud,
 even where a mixed placement would score better.
 %
 The likely cause is in the representation.

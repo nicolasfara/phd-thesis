@@ -123,8 +123,7 @@ The final comparison selects devices for which this length exceeds the shortest 
 With \texttt{width} equal to zero,
 it selects devices on shortest paths;
 larger values admit longer detours.
-Thus \texttt{width} bounds excess path length,
-not the geometric distance from a path.
+Thus \texttt{width} specifies the maximum permitted detour, measured as excess path length.
 \Cref{fig:ac-blocks-composition} illustrates this composition.
 
 \begin{figure}[tb]
@@ -412,7 +411,7 @@ Library embeddings can implement \ac{EPP} as a function in the host language.
 %
 Choral compiles a choreography to a set of ordinary Java classes, one per role, so that projection happens ahead of time and the resulting endpoints are plain object-oriented libraries~\cite{10.1145/3632398}.
 %
-HasChor instead performs projection at run time, interpreting a choreography written as a free monad of located computations directly against each role's local view~\cite{10.1145/3607849}.
+HasChor performs projection at run time, interpreting a choreography written as a free monad of located computations directly against each role's local view~\cite{10.1145/3607849}.
 %
 ChoRus uses the same run-time construction in Rust,
 keeping the implementation within the host language's ecosystem~\cite{kashiwa2024chorus}.
@@ -516,14 +515,14 @@ and how the resulting programs execute.
 %
 Explicit placement, the norm among the languages surveyed above, leaves the assignment of each program fragment to the programmer, expressed through whichever mechanism -- annotation, escaping and quoting, or a placement type -- the language provides.
 %
-Automatic placement instead derives the assignment from a static analysis of the whole program:
+Automatic placement derives the assignment from a static analysis of the whole program:
 source-to-source transformation can assign primitive operations to tiers and insert the resulting remote calls~\cite{10.1145/1040305.1040324}.
 %
 Search-based tier assignment optimises the split for a metric such as offline availability~\cite{Philips:2018}.
 
 Partitioned execution splits the program into independent components that run concurrently and communicate as peers over the network, the strategy adopted by Links, ML5, and ScalaLoci~\cite{DBLP:conf/fmco/CooperLWY06,10.5555/1793574.1793585,DBLP:journals/pacmpl/WeisenburgerKS18}.
 %
-Staged execution instead runs the tiers in sequence:
+Staged execution runs the tiers in sequence:
 the server stage executes first and generates the program for the next stage,
 splicing values it has already computed into the generated code before shipping it,
 so the client program produced by Hop, Ur/Web, or Eliom already carries those server-side values~\cite{DBLP:conf/oopsla/SerranoGL06,10.1145/2676726.2677004,Radanne:2016}.
@@ -586,7 +585,7 @@ letting a developer declare a custom architecture -- a pipeline, a ring, a maste
 Multitier Modules extend the same peer-type discipline across module boundaries,
 allowing a distributed architecture to be assembled from reusable subsystems~\cite{Weisenburger:2019:Multitier}.
 %
-AmbientTalk/R instead targets loosely coupled mobile ad hoc networks.
+AmbientTalk/R targets loosely coupled mobile ad hoc networks.
 Peers export and discover each other's services directly,
 and reactive programming abstractions propagate a changing value to whichever peers happen to be in communication range at a given moment~\cite{DBLP:conf/tools/CarretonMCM10}.
 %

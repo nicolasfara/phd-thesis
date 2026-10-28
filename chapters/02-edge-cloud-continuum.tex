@@ -115,8 +115,7 @@ while a mobile robot or drone carries a powerful system-on-chip on a battery bud
 and a sensor node may run indefinitely on a harvested,
 intermittent supply.
 %
-Placement decisions must therefore account for how long and how often a node can sustain a computation,
-not only what it can compute.
+Placement decisions must therefore account for a node's computational capacity and for how long and how often it can sustain a computation.
 
 
 \subsection{Network Volatility and Partitioning}
@@ -133,7 +132,7 @@ Delay/disruption-tolerant networking has long addressed this problem without ass
 It buffers messages at intermediate nodes and forwards them opportunistically when contact becomes available~\cite{DBLP:conf/sigcomm/Fall03}.
 %
 Opportunistic networking applies the same principle to mobile ad hoc settings,
-where a route is not computed in advance but assembled hop by hop as devices happen to come within range of one another~\cite{DBLP:journals/cm/PelusiPC06}.
+where a route is assembled hop by hop as devices come within range of one another~\cite{DBLP:journals/cm/PelusiPC06}.
 
 Drone swarms are an extreme case of this volatility.
 %
@@ -307,7 +306,7 @@ and replaced independently of the others~\cite{DBLP:books/sp/17/DragoniGLMMMS17}
 Independent deployability makes the model attractive for the continuum:
 a unit that can be deployed on its own can,
 in principle,
-be placed on an edge node rather than in the cloud.
+be placed on either an edge node or a cloud host.
 %
 Osmotic computing develops this observation into an architectural vision,
 in which microservices migrate between edge and cloud infrastructure in response to resource availability and application requirements,

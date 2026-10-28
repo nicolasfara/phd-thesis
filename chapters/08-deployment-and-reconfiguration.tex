@@ -52,13 +52,13 @@ The rule evaluated here therefore moves Emergency Service alone, and Steering Se
 In the monolithic deployment both components run at their owner.
 This is the baseline already used to check deployment independence (\cref{subsec:pulverization-validation}).
 %
-The deployment evaluated here offloads Emergency Service instead.
+The deployment evaluated here offloads Emergency Service.
 %
 Each device starts a run with a battery level drawn at random.
 As soon as that level falls below 30\%, the device forwards its Emergency Service instance to the nearest edge server acting as its surrogate (\cref{subsec:forwarding-chains}),
 and switches to another surrogate if it loses the connection to the current one.
 %
-No other condition drives the decision: not load, not the state of the network elsewhere, only the device's own battery.
+The device's own battery level is the sole decision criterion.
 %
 The rule is self-organising in the narrowest sense:
 each device decides for itself, from one locally observed number, without negotiating and without knowing what the other devices do.
@@ -91,8 +91,7 @@ The offloaded deployment leaves devices with more battery at the end of the run.
 It exchanges slightly more messages in return, as the right-hand chart of \cref{fig:power-consumption} shows:
 reaching Emergency Service at its surrogate and returning its result requires hops that a local execution does not.
 %
-The cost is not paid in energy, since the offloaded devices are the ones with more battery left.
-It is paid in bandwidth, as extra messages along the forwarding chain to the surrogate.
+The additional cost is bandwidth: extra messages along the forwarding chain to the surrogate, while application devices retain more battery.
 
 The rule obtains this result from a minimal specification: one threshold, one component, and no coordination between devices.
 %
@@ -106,7 +105,7 @@ A second bottleneck, or a second component worth offloading under different cond
 The question is the same as in \cref{sec:battery-triggered-offloading}:
 which infrastructural device should run the component an application device would rather not run locally.
 %
-The answer is no longer read off a single, locally observed number.
+This policy bases its answer on collectively computed load information.
 
 Every infrastructural device seeds a potential field weighted by its own current load.
 %
@@ -115,8 +114,8 @@ and each application device is claimed by the field that reaches it with the low
 %
 The construction is the self-organising coordination regions pattern already used in \cref{subsec:pulverization-validation}~\cite{DBLP:journals/fgcs/PianiniCVN21}, with one difference.
 %
-Leaders are not elected at a fixed grain: every infrastructural device is already a leader,
-and its region-forming field encodes its own current load rather than distance alone.
+Every infrastructural device acts as a leader,
+and its region-forming field incorporates both distance and its current load.
 A leader carrying more work therefore commands a smaller region.
 
 A converge-cast brings each region's candidate components to its leader.
@@ -124,7 +123,7 @@ A converge-cast brings each region's candidate components to its leader.
 The leader accepts as many as its own capacity allows and casts the decision back over the same region,
 so every application device either keeps its component locally or runs it on the infrastructural device that claimed it.
 %
-The regions resize themselves as load shifts, so the decision follows the whole network's topology instead of one local signal.
+The regions resize themselves as load shifts, so the decision accounts for load across the network's topology.
 %
 The policy relies on the same split between infrastructural and application devices that the middleware maintains (\cref{chap:pulverization}).
 
@@ -160,11 +159,11 @@ Every deployment unit declares its hardware requirements and the maximum latency
 Every candidate host declares its available and total capacity, the power-usage effectiveness of running work on it, and the mix of energy sources that supplies it, with its carbon intensity.
 %
 A Prolog-based generator searches this space for an assignment of every deployment unit to a host that meets both kinds of requirement.
-The requirements are stated as Prolog facts, and the search is ordinary logic-program resolution rather than a bespoke solver.
+The requirements are stated as Prolog facts, and the search uses ordinary logic-program resolution.
 
 The assignment problem is the combinatorial placement problem that is too costly to solve exactly at scale (\cref{subsec:constraint-based-placement}).
 %
-The generator therefore tries candidate hosts from the least to the most carbon-intensive, reaching a low-carbon assignment quickly instead of exploring the space exhaustively.
+The generator therefore tries candidate hosts from the least to the most carbon-intensive, reaching a low-carbon assignment quickly through a heuristic search.
 %
 For every candidate it considers, the same declarative program estimates the resulting energy draw and carbon emissions
 from each host's load before and after the placement, its power-usage effectiveness, and the carbon intensity of its energy mix.
@@ -174,7 +173,7 @@ The generator is invoked at a fixed interval from inside Alchemist~\cite{DBLP:jo
 Each time it runs, it receives the infrastructure's current state and returns a new assignment,
 so the running deployment is periodically replaced by the one the search currently favours.
 %
-This is the repeated declarative repair of \cref{subsec:declarative-deployment}, driven here by an explicit energy and carbon objective rather than by an incremental reasoner reacting to a stated goal.
+This applies the repeated declarative repair of \cref{subsec:declarative-deployment} by rerunning the search against an explicit energy and carbon objective.
 
 The published planner states its requirements over five deployment units per device: sensing, actuation, behaviour, state, and communication.
 %
@@ -187,7 +186,7 @@ The search itself is not tied to that count or to a single unit the others all d
 A hardware requirement and a latency bound towards whatever a unit depends on are the kind of per-component declaration the bindings of \cref{subsec:macroprogram-dag} already make explicit for a macro-program of any size.
 The same Prolog predicates would therefore run unchanged over a \ac{DAG} of arbitrarily many components.
 %
-What is evaluated below is the five-unit instantiation, not a macro-program pulverised into such a \ac{DAG}.
+The evaluation below is limited to the five-unit instantiation.
 %
 The mechanism generalises; the reported numbers say nothing about deployments finer than five units per device.
 
@@ -234,15 +233,14 @@ For a pulverised deployment, this is the time-varying objective described for a 
     \label{fig:green-planner-latencies}
 \end{figure}
 
-The energy reduction of \cref{fig:green-planner-carbon-energy} is not free.
-\Cref{fig:green-planner-latencies} shows what it costs.
+The energy reduction of \cref{fig:green-planner-carbon-energy} incurs the latency costs shown in \cref{fig:green-planner-latencies}.
 
 Intra-component latency is the delay a device experiences reaching its own deployment units, now spread across more than one host.
 %
 It rises well above the near-zero, in-memory cost of the peer-to-peer baseline: the expected price of leaving units off the device that owns them.
 %
 The increase stays within the same order of magnitude as the network grows,
-so the search keeps a device's units close together instead of scattering them further on larger problems.
+so the search keeps a device's units close together as the problem size grows.
 
 Inter-device latency is the delay between the communication units of neighbouring devices, and it is the one that matters for the collective computation itself.
 %
@@ -284,8 +282,7 @@ That recovery depends on the topology it runs on, a dependence left untested for
 The planner's objective covers several concerns at once: energy, carbon, and a latency bound enforced as a hard constraint.
 Someone still had to write that objective and those constraints beforehand, and any further concern has to be stated by hand too.
 
-The next chapter drops that requirement (\cref{chap:heterogeneous-gnn}).
+The next chapter learns the decision rule from experience (\cref{chap:heterogeneous-gnn}).
 %
-Instead of a rule or an objective fixed in advance,
-a policy is trained to weigh the same non-functional concerns from experience,
+Training addresses the same non-functional concerns,
 under a condition none of the three policies of this chapter was built to see: network congestion.

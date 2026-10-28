@@ -74,14 +74,14 @@ The crowding monitor in \cityevt (\cref{sec:multiparty-motivation}) estimates cr
 Its requirements provide a task for program generation:
 density is estimated from proximity between participants' phones,
 never from their positions,
-and an alert has to reach the region around a crowded area rather than the whole system.
+and an alert has to reach only the region around a crowded area.
 %
 A non-expert states the task in one sentence --
 mark the areas where devices are packed more densely than a threshold, and tell every device how far it is from the nearest such area.
 %
 Implementing this description in ScaFi requires knowing that neighbour counting is a fold over the neighbourhood,
 that the fold has a variant excluding the device itself,
-and that distance-to-a-region is a gradient rather than a broadcast.
+and that a gradient computes distance to a region.
 
 The body of knowledge supplies examples of these operations.
 
@@ -276,7 +276,7 @@ since neither of the first two stages says anything about conditions the simulat
 
 Eleven test cases were built, in three groups.
 %
-Five exercise either time or space, not both:
+Five exercise a single dimension, either time or space:
 counting down from a fixed value, which needs only \code{rep};
 counting neighbours, in two variants, one counting the device itself and one not;
 gathering neighbours' identifiers;
@@ -551,7 +551,7 @@ The program is the two-part decomposition the task calls for.
 using the \code{foldhoodPlus} variant so a device does not count itself.
 %
 The estimate rests on proximity and needs no positions,
-so the privacy constraint of \cref{sec:multiparty-motivation} is met by the choice of operator rather than by a separate mechanism.
+so the operator itself satisfies the privacy constraint of \cref{sec:multiparty-motivation}.
 \par
 \endgroup
 %

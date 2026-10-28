@@ -2,7 +2,7 @@
 \label{chap:introduction}
 
 A \ac{CAS} consists of many autonomous entities that interact locally.
-Its useful behaviour is a property of the resulting collective, not of any single entity~\cite{DBLP:journals/sttt/NicolaJW20}.
+Its useful behaviour emerges from the interactions within the collective~\cite{DBLP:journals/sttt/NicolaJW20}.
 %
 This thesis focuses on two families of such systems:
 \ac{IoT} ecosystems~\cite{DBLP:journals/cn/AtzoriIM10} and robot swarms~\cite{DBLP:journals/swarm/BrambillaFBD13}.
@@ -308,7 +308,7 @@ and addresses the composition and static guarantees required by \cref{rq:languag
 Choreographic and multitier languages support several communication patterns besides point-to-point exchange.
 %
 Each language exposes different constructs,
-and some patterns are encoded indirectly rather than represented by dedicated operations.
+and some patterns require indirect encodings.
 %
 ScalaTropy is a \ac{DSL} for composing typed communication steps.
 It gives point-to-point exchange, broadcast, scatter, and gather their own operations:
@@ -346,7 +346,7 @@ Two complementary strategies select deployments and revise them as the infrastru
 In collective reconfiguration, infrastructural devices compete to host components offloaded by application devices,
 and each resizes the region it leads through a collectively built field~\cite{DBLP:journals/iot/FarabegoliPCV24}.
 %
-Declarative planning instead expresses an objective over energy and carbon together with component requirements.
+Declarative planning expresses an objective over energy and carbon together with component requirements.
 A planner selects assignments according to this objective while satisfying the requirements,
 and repeats the search as the network changes~\cite{DBLP:conf/coordination/BrogiCFFV25}.
 The evaluation uses the original five deployment units per logical device.
@@ -378,7 +378,7 @@ Including the collective term makes decisions sensitive to a device's position w
 In the evaluated setting, devices at the fringe offload only part of their components,
 a choice that whole-program binary offloading cannot express (\cref{sec:idhgql-evaluation}).
 %
-Learning derives the decision rules from experience rather than requiring the operator to prescribe them.
+Learning derives the decision rules from experience.
 %
 The contribution is published in~\cite{Farabegoli:2026:HeteroGNN}
 and addresses \cref{rq:deployment} through learned policies and their non-functional trade-offs.

@@ -42,7 +42,7 @@ and a soundness proof establishes the resulting discipline.
 %
 \camil is evaluated on 46 use cases from the literature and on three applications that mix paradigms in one program.
 %
-The second design, ScalaTropy, joins choreographic and multitier programming through monadic communication primitives rather than capabilities.
+The second design, ScalaTropy, joins choreographic and multitier programming through monadic communication primitives.
 %
 Choreographic and multitier languages generally provide point-to-point exchange and little else;
 ScalaTropy gives each communication pattern its own operation.
@@ -314,8 +314,7 @@ Because the result carries a placement type, the other two paradigms can read it
 A collective computation also requires its peer type to be tied to itself with multiple cardinality.
 %
 Aggregate computing usually leaves this assumption implicit:
-a field computation runs over a homogeneous ensemble of devices that can reach each other,
-not over an arbitrary set of peers.
+a field computation requires a homogeneous ensemble of devices that can reach each other.
 
 \subsection{The Choreography Capability}
 \label{subsec:choreography-capability}
@@ -353,8 +352,8 @@ and the recommendation back to the phone.
 %
 Each \code{comm} names both endpoints and is checked against the architecture.
 %
-Unlike the multitier code of \cref{lst:multitier-registration}, communication forms the structure of this program.
-The placed computations are attached to that structure.
+The multitier code of \cref{lst:multitier-registration} is structured around placed computations.
+Here, communication forms the program's structure, with placed computations attached to it.
 
 \subsection{Composing Paradigms}
 \label{subsec:paradigm-composition}
@@ -477,7 +476,7 @@ The function is sent to the cloud (\cref{line:leak-comm}) and invoked there (\cr
 The captured string is not reachable from the cloud.
 %
 The closure's type tracks the peer-specific capability its \code{take} needs,
-so \camil rejects the program at compile time rather than letting the \code{take} fail at run time.
+so \camil rejects the program at compile time and prevents a run-time failure of \code{take}.
 
 \paragraph{Deadlock avoidance.}
 An \code{on} block runs its body only on the peer its type names, and skips it everywhere else,
@@ -877,7 +876,7 @@ The selected interpreter executes those steps as either real network exchanges o
 %
 ScalaTropy also addresses a limitation shared by both paradigms.
 They provide point-to-point communication but no dedicated operation for sending a different message to each recipient.
-This pattern must instead be encoded manually, usually through broadcasting and filtering.
+This pattern requires a manual encoding, usually through broadcasting and filtering.
 
 \subsection{Communication Patterns in Multiparty Languages}
 \label{subsec:communication-patterns}
@@ -989,7 +988,7 @@ Sensors reporting their own readings to an aggregator are the co-anisotropic cas
 %
 HasChor, a monadic choreographic language in Haskell, provides only the point-to-point case~\cite{10.1145/3607849}.
 %
-ScalaLoci covers all four, but expresses the three non-point-to-point patterns at the type level rather than with dedicated operations.
+ScalaLoci covers all four, encoding the three non-point-to-point patterns at the type level.
 %
 An anisotropic assignment is a value of type \code{Signal[Task] per Worker on Master}, built by a function from a remote reference to a signal.
 %
@@ -1149,15 +1148,14 @@ otherwise the body is skipped and a \code{Remote} is returned.
 When a communication primitive holds a \code{Local}, it sends the value.
 When it holds a \code{Remote}, it retrieves the value from the network.
 %
-This design performs endpoint projection at run time rather than at compile time.
+This design performs endpoint projection at run time.
 %
 Census-polymorphic choreographic programming uses the same strategy to avoid fixing the participants at compile time~\cite{DBLP:journals/pacmpl/BatesKJSKN25}.
 
 The interpreter rests on a small network interface:
 send a value to an address, receive one from an address, report the live instances of a peer type, and name the local host.
 %
-The prototype implements this interface over MQTT, but the language does not depend on that choice;
-HTTP or gRPC could be used instead.
+The prototype implements this interface over MQTT; the language also permits implementations over HTTP or gRPC.
 %
 The one requirement is that the live-instances query returns a non-empty list,
 so that the anisotropic and co-anisotropic primitives can operate as topology membership changes.
@@ -1234,12 +1232,11 @@ differing only in the primitive the scatter uses:
 \code{isotropicComm} in one, \code{anisotropicComm} in the other.
 %
 The figure therefore measures the cost of encoding a selective pattern as broadcast-and-filter.
-It does not compare ScalaTropy with HasChor or ScalaLoci, and it measures bytes rather than execution time.
+Its metric is transmitted bytes. Execution time and comparisons with HasChor or ScalaLoci were not evaluated.
 %
 The experiment does not measure two further properties.
 Sending each recipient only the required data applies the principle of least privilege to communication.
-Naming the pattern in the operation also makes the intent explicit,
-rather than requiring the reader to infer it from the type.
+Naming the pattern in the operation also makes the communication intent explicit at the call site.
 
 \section{Discussion}
 \label{sec:language-coordination-discussion}

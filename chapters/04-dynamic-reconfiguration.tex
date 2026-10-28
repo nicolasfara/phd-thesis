@@ -27,9 +27,9 @@ The units may be services, functions, or actors, and the hosts are connected by 
 A valid mapping must satisfy the resource and connectivity requirements of the units (\cref{fig:placement-mapping}).
 %
 \emph{Static deployment} computes this mapping once, at design or release time, and keeps it fixed for the lifetime of the application.
-Most automatic deployment tools make this assumption because they focus on installing and starting a system rather than revising its placement as conditions change~\cite{DBLP:journals/jss/ArcangeliBL15}.
+Most automatic deployment tools make this assumption because they focus on system installation and startup~\cite{DBLP:journals/jss/ArcangeliBL15}.
 %
-\emph{Dynamic deployment} instead revisits the mapping continuously
+\emph{Dynamic deployment} revisits the mapping continuously
 and adjusts it as devices join,
 leave,
 move,
@@ -106,9 +106,9 @@ Skarlat et al.\ apply the general formulation to \ac{IoT} services deployed on f
 Their objective weighs the \ac{QoS} attributes of both applications and resources.
 They combine an exact solver with a genetic-algorithm heuristic for instances that make the exact method impractical~\cite{DBLP:journals/soca/SkarlatNSBL17}.
 %
-Brogi and Forti instead determine which assignments are eligible.
+Brogi and Forti determine which assignments are eligible.
 Their model for multi-component \ac{IoT} applications on cloud-fog infrastructure is implemented in FogTorch.
-It filters candidate placements by the hardware, software, and \ac{QoS} constraints that each component and host must jointly satisfy rather than searching for a single numerical optimum~\cite{DBLP:journals/iotj/BrogiF17}.
+It filters candidate placements by the hardware, software, and \ac{QoS} constraints that each component and host must jointly satisfy~\cite{DBLP:journals/iotj/BrogiF17}.
 %
 Miloradovic and Papadopoulos formulate application offloading over the Edge-to-Cloud Continuum both as an \ac{ILP} and as a constraint-programming model~\cite{DBLP:conf/cdc/MiloradovicP23}.
 %
@@ -174,13 +174,13 @@ so it must revise any placement that assigns work to the node.
 Fog- and edge-specific proposals adjust the objective to these conditions.
 %
 Azizi et al., for instance, use semi-greedy heuristics to schedule \ac{IoT} tasks across fog nodes.
-They jointly minimise total energy consumption and deadline-violation time instead of using data-centre-style consolidation~\cite{DBLP:journals/jnca/AziziSAB22}.
+They jointly minimise total energy consumption and deadline-violation time~\cite{DBLP:journals/jnca/AziziSAB22}.
 %
 Their scheduler is one of many heuristic and metaheuristic fog schedulers that pursue the same energy/deadline trade-off under different search strategies.
 %
 These schedulers still treat energy as a quantity to be minimised wherever and whenever the work runs.
 %
-Wiesner et al.\ instead minimise carbon emissions.
+Wiesner et al.\ minimise carbon emissions.
 %
 Emissions per unit of electricity vary through the day as the grid's generation mix changes.
 Guided by forecasts of carbon intensity,
@@ -192,8 +192,7 @@ At the edge, energy from renewable or harvested sources also fluctuates over tim
 %
 Struhár et al.\ address this by framing container placement at the edge as a multi-armed bandit problem~\cite{DBLP:conf/ucami/StruharPAAF25}.
 %
-The orchestrator learns online which placement to use as each node's green-energy supply fluctuates,
-instead of optimising a fixed budget assumed at deployment time.
+The orchestrator learns online which placement to use as each node's green-energy supply fluctuates.
 %
 Any planner requires representations of the components and infrastructure.
 
@@ -207,11 +206,11 @@ Industrial deployment tools commonly use declarative specifications.
 TOSCA, the \emph{Topology and Orchestration Specification for Cloud Applications}, standardises a portable model of an application's components, their relationships, and their management operations.
 This model allows different orchestrators to enact the same deployment description~\cite{DBLP:books/sp/aws14/BinzBKL14}.
 %
-\emph{Infrastructure as code} generalises the practice: provisioning and configuration are written as versioned, executable specifications rather than performed by hand~\cite{DBLP:journals/infsof/RahmanMW19}.
+\emph{Infrastructure as code} generalises the practice: versioned, executable specifications automate provisioning and configuration~\cite{DBLP:journals/infsof/RahmanMW19}.
 %
 Kubernetes also follows a declarative model: the operator declares a desired state, and controllers continuously reconcile the running system towards it.
 %
-The desired state remains an operations artefact controlled by the platform operator rather than the application.
+The platform operator controls the desired state as an operations artefact.
 
 The deployment specification can also guide the placement search.
 %
@@ -233,20 +232,19 @@ Machine-learning approaches learn a decision rule from observations of the syste
 Online methods, such as the bandit formulation, update this rule during operation.
 Other methods train a policy in advance.
 
-Instead of solving a new optimisation problem for each observed state,
-a learned policy maps the state directly to a placement or offloading decision.
+A learned policy maps each observed state directly to a placement or offloading decision.
 %
 The search occurs during an offline training phase.
 At run time, each decision requires a single forward pass through the learned function.
 %
-Unlike the online bandit, which learns during operation, the methods examined below train in advance against a model of the environment.
+The methods examined below train in advance against a model of the environment.
 %
 An offline-trained policy must generalise to states absent from its training data.
 %
 Supervised learning would require ground-truth optimal placements for training.
 Producing these targets would require solving the expensive optimisation problem that the learned approach is intended to avoid.
 %
-\ac{RL}, by contrast, requires only a reward signal that scores a placement after the fact.
+\ac{RL} requires only a reward signal that scores a placement after the fact.
 %
 A survey of deep \ac{RL} in communications and networking covers its application to this class of resource-allocation and offloading problems~\cite{DBLP:journals/comsur/LuongHGNWLK19}.
 
@@ -262,8 +260,8 @@ The exact and heuristic methods of \cref{subsec:constraint-based-placement} ther
 Solving an \ac{ILP} or constraint-satisfaction problem over the resources of the device and remote host produces an offloading policy.
 The problem must be solved again whenever the channel condition or workload changes.
 %
-Huang et al.\ instead train an agent to choose between local execution and offloading over a wireless-powered link for each arriving task.
-The agent decides directly from the time-varying channel state rather than from a newly solved optimisation problem~\cite{DBLP:journals/tmc/HuangBZ20}.
+Huang et al.\ train an agent to choose between local execution and offloading over a wireless-powered link for each arriving task.
+The agent decides directly from the time-varying channel state~\cite{DBLP:journals/tmc/HuangBZ20}.
 %
 Their network learns a policy for this binary decision from experience,
 avoiding the combinatorial search that the constraint-based formulation would repeat for every new channel state.
@@ -294,7 +292,7 @@ The agent still needs a model of the problem that represents its states, actions
 
 \ac{RL} frames a decision problem as a sequence of interactions between an agent and an environment.
 At each step, the agent observes the environment's state, selects an action, and receives a reward.
-Its goal is to learn a policy that maximises the reward accumulated over time rather than the reward from a single step~\cite{DBLP:books/lib/SuttonB18}.
+Its goal is to learn a policy that maximises cumulative reward over time~\cite{DBLP:books/lib/SuttonB18}.
 %
 For an offloading or placement decision, the state describes the current topology and workload.
 The action selects a placement or decides whether to offload.
@@ -326,19 +324,19 @@ Graph neural networks provide a representation of these relationships.
 A \ac{GNN} processes graph-structured input.
 It represents each node by repeatedly aggregating information from its neighbours~\cite{DBLP:conf/iclr/KipfW17}.
 %
-The aggregation operates on each node and its neighbourhood rather than on the graph as a whole.
-The same learned parameters can therefore apply to graphs that differ in size and connectivity,
-unlike an ordinary network whose input layer fixes the input dimension.
+Aggregation is local to each node and its neighbourhood.
+The same learned parameters can therefore apply to graphs that differ in size and connectivity.
+An ordinary network's input layer fixes its input dimension.
 %
 This locality has made \acp{GNN} a standard tool for problems defined over communication-network topologies,
-where the graph represents physical devices and links rather than abstract relations~\cite{DBLP:journals/wc/LeeYDL22}.
+where the graph represents physical devices and links~\cite{DBLP:journals/wc/LeeYDL22}.
 %
 Kipf and Welling formulate this aggregation as a graph convolution derived from a first-order approximation of spectral graph filtering.
 The operation propagates each node's features to its neighbours.
 With additional layers, a node's learned representation depends on increasingly distant nodes~\cite{DBLP:conf/iclr/KipfW17}.
 %
 Veli\v{c}kovi\'{c} et al.\ replace fixed aggregation weights with attention.
-The mechanism learns the weight assigned to each neighbour instead of deriving that weight only from graph connectivity~\cite{DBLP:conf/iclr/VelickovicCCRLB18}.
+The mechanism learns the weight assigned to each neighbour~\cite{DBLP:conf/iclr/VelickovicCCRLB18}.
 Towards the edge of the continuum, attention can distinguish neighbours with different resources and capabilities.
 %
 Both models still assume a single type of node and link.
@@ -369,7 +367,7 @@ The graph presented at run time may differ from the training graph as nodes join
 The model of Kipf and Welling is transductive.
 It is trained on a fixed graph and cannot directly process nodes or topologies absent at training time~\cite{DBLP:conf/iclr/KipfW17}.
 %
-Hamilton et al.\ remove this restriction with an inductive formulation that learns an aggregation function rather than embeddings bound to one graph.
+Hamilton et al.\ remove this restriction with an inductive formulation that learns an aggregation function shared across graphs.
 The trained model can therefore process nodes and entire topologies that were absent from training~\cite{DBLP:conf/nips/HamiltonYL17}.
 %
 An inductive, heterogeneity-aware representation exposes device capabilities and connectivity to an offloading policy while accommodating changes in the topology.

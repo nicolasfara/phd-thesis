@@ -105,7 +105,7 @@ while adding higher-level building blocks helps some models and lowers the score
 
 These findings concern aggregate programs in one \ac{DSL};
 generation of the capability-annotated programs of \cref{chap:language-and-coordination} remains untested.
-After the manual is supplied, the remaining failures concern semantics rather than syntax (\cref{subsec:llm-failure-modes}).
+After the manual is supplied, the remaining failures concern program semantics (\cref{subsec:llm-failure-modes}).
 Compilation alone is therefore insufficient, and the pipeline checks behaviour in simulation.
 
 \subsection{Runtime Deployment Decisions}
@@ -244,10 +244,10 @@ The results allow comparison of the quantities improved and their associated cos
 but not a direct comparison of policy performance.
 Only the field-based policy was tested on multiple topologies.
 
-For the learned policy, reward weights express priorities and are chosen by trial rather than calibration.
+For the learned policy, reward weights express priorities and are chosen empirically, without a calibration procedure.
 Application devices share a single node type,
 so the representation cannot distinguish unusual battery or workload profiles.
-The policies tend to select either edge or cloud servers instead of mixing them.
+The policies tend to place all offloaded components on servers of one kind, either edge or cloud.
 Components are placed independently, which can assign two components joined by a binding to different surrogates.
 Deployment independence preserves functional behaviour,
 but the policy ignores the latency of the resulting forwarding chain.
